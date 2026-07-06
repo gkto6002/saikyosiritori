@@ -291,6 +291,18 @@ def rows_without_random(rows: list[dict[str, str]]) -> list[dict[str, str]]:
     return [row for row in rows if not match_includes_random(row) and not match_is_self_match(row)]
 
 
+def agent_move_count(row: dict[str, str], side: str) -> int:
+    total_time = to_float(row[f"{side}_total_time_sec"])
+    average_time = to_float(row.get(f"{side}_avg_time_sec", ""))
+    if average_time > 0.0:
+        return max(0, int(round(total_time / average_time)))
+
+    turn_count = int(row["turn_count"])
+    if side == "first":
+        return max(0, (turn_count + 1) // 2)
+    return max(0, turn_count // 2)
+
+
 def summarize_agents_from_matches(rows: list[dict[str, str]]) -> list[dict[str, str]]:
     buckets: dict[tuple[str, int], list[dict[str, str]]] = defaultdict(list)
     for row in rows_without_self_matches(rows):
@@ -323,12 +335,12 @@ def summarize_agents_from_matches(rows: list[dict[str, str]]) -> list[dict[str, 
             turn_count = int(row["turn_count"])
             if side == "first":
                 total_time += to_float(row["first_total_time_sec"])
-                total_moves += max(0, (turn_count + 1) // 2)
+                total_moves += agent_move_count(row, "first")
                 max_time = max(max_time, to_float(row["first_max_time_sec"]))
                 timeouts += int(row["first_timeout_count"])
             else:
                 total_time += to_float(row["second_total_time_sec"])
-                total_moves += turn_count // 2
+                total_moves += agent_move_count(row, "second")
                 max_time = max(max_time, to_float(row["second_max_time_sec"]))
                 timeouts += int(row["second_timeout_count"])
 

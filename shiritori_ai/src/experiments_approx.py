@@ -127,6 +127,18 @@ def rows_without_self_matches(rows: list[dict[str, object]]) -> list[dict[str, o
     return [row for row in rows if not is_self_match(row)]
 
 
+def agent_move_count(row: dict[str, object], side: str) -> int:
+    total_time = float(row[f"{side}_total_time_sec"])
+    average_time = float(row.get(f"{side}_avg_time_sec") or 0.0)
+    if average_time > 0.0:
+        return max(0, int(round(total_time / average_time)))
+
+    turn_count = int(row["turn_count"])
+    if side == "first":
+        return max(0, (turn_count + 1) // 2)
+    return max(0, turn_count // 2)
+
+
 def write_rows(path: str | Path, fieldnames: list[str], rows: list[dict[str, object]]) -> None:
     output = Path(path)
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -175,12 +187,12 @@ def summarize_agents(rows: list[dict[str, object]]) -> list[dict[str, object]]:
 
             if side == "first":
                 total_time += float(row["first_total_time_sec"])
-                total_moves += max(0, (int(row["turn_count"]) + 1) // 2)
+                total_moves += agent_move_count(row, "first")
                 max_time = max(max_time, float(row["first_max_time_sec"]))
                 timeouts += int(row["first_timeout_count"])
             else:
                 total_time += float(row["second_total_time_sec"])
-                total_moves += int(row["turn_count"]) // 2
+                total_moves += agent_move_count(row, "second")
                 max_time = max(max_time, float(row["second_max_time_sec"]))
                 timeouts += int(row["second_timeout_count"])
 

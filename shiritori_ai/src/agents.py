@@ -42,9 +42,7 @@ class BaseAgent:
         raise NotImplementedError
 
     def legal_moves(self, graph: WordGraph, state: GameState) -> list[int]:
-        if state.current_char is None:
-            return [word_id for word_id in range(len(graph.words)) if word_id not in state.used_ids]
-        return graph.available_word_ids_set(state.current_char, set(state.used_ids))
+        return legal_moves_for_state(graph, state)
 
     def fallback_move(self, graph: WordGraph, state: GameState) -> int | None:
         moves = self.legal_moves(graph, state)
@@ -60,6 +58,13 @@ def legal_moves_for_state(graph: WordGraph, state: GameState) -> list[int]:
     if state.current_char is None:
         return [word_id for word_id in range(len(graph.words)) if word_id not in state.used_ids]
     return graph.available_word_ids_set(state.current_char, set(state.used_ids))
+
+
+def state_after_safe_move(graph: WordGraph, state: GameState, word_id: int) -> GameState | None:
+    end_char = graph.end_chars[word_id]
+    if end_char == "ん":
+        return None
+    return GameState(current_char=end_char, used_ids=state.used_ids | frozenset({word_id}))
 
 
 def greedy_move_score(graph: WordGraph, state: GameState, word_id: int) -> float:
@@ -244,6 +249,36 @@ class MinimaxAgent(BaseAgent):
         else:
             self._non_timeout_streak = 0
 
+    def _search_extra(self, evaluated: int, effective_depth: int, **extra: object) -> dict[str, Any]:
+        return {
+            "evaluated_moves": evaluated,
+            "depth": self.depth,
+            "effective_depth": effective_depth,
+            "next_depth": self.current_depth,
+            "adaptive_depth": self.adaptive_depth,
+            "branch_limit": self.branch_limit,
+            **extra,
+        }
+
+    def _timeout_fallback_decision(
+        self,
+        graph: WordGraph,
+        state: GameState,
+        moves: list[int],
+        started: float,
+        effective_depth: int,
+        **extra: object,
+    ) -> MoveDecision:
+        fallback = self.rng.choice(moves)
+        self._record_depth_result(True)
+        return MoveDecision(
+            word_id=fallback,
+            elapsed_time_sec=time.perf_counter() - started,
+            timed_out=True,
+            score=greedy_move_score(graph, state, fallback),
+            extra=self._search_extra(0, effective_depth, **extra),
+        )
+
     def choose_move(self, graph: WordGraph, state: GameState) -> MoveDecision:
         started = time.perf_counter()
         deadline = self._deadline()
@@ -260,22 +295,7 @@ class MinimaxAgent(BaseAgent):
             limit=self.branch_limit,
         )
         if not ordered:
-            fallback = self.rng.choice(moves)
-            self._record_depth_result(True)
-            return MoveDecision(
-                word_id=fallback,
-                elapsed_time_sec=time.perf_counter() - started,
-                timed_out=True,
-                score=greedy_move_score(graph, state, fallback),
-                extra={
-                    "evaluated_moves": 0,
-                    "depth": self.depth,
-                    "effective_depth": effective_depth,
-                    "next_depth": self.current_depth,
-                    "adaptive_depth": self.adaptive_depth,
-                    "branch_limit": self.branch_limit,
-                },
-            )
+            return self._timeout_fallback_decision(graph, state, moves, started, effective_depth)
         best_move = ordered[0]
         best_score = LOSS_SCORE
         evaluated = 0
@@ -298,14 +318,7 @@ class MinimaxAgent(BaseAgent):
             elapsed_time_sec=time.perf_counter() - started,
             timed_out=final_timed_out,
             score=best_score,
-            extra={
-                "evaluated_moves": evaluated,
-                "depth": self.depth,
-                "effective_depth": effective_depth,
-                "next_depth": self.current_depth,
-                "adaptive_depth": self.adaptive_depth,
-                "branch_limit": self.branch_limit,
-            },
+            extra=self._search_extra(evaluated, effective_depth),
         )
 
     def _score_move(
@@ -316,11 +329,9 @@ class MinimaxAgent(BaseAgent):
         depth: int,
         deadline: float,
     ) -> float:
-        end_char = graph.end_chars[word_id]
-        if end_char == "ん":
+        next_state = state_after_safe_move(graph, state, word_id)
+        if next_state is None:
             return LOSS_SCORE
-        next_used = frozenset(set(state.used_ids) | {word_id})
-        next_state = GameState(current_char=end_char, used_ids=next_used)
         return -self._negamax(graph, next_state, depth - 1, deadline)
 
     def _negamax(self, graph: WordGraph, state: GameState, depth: int, deadline: float) -> float:
@@ -344,17 +355,11 @@ class MinimaxAgent(BaseAgent):
             return evaluate_position(graph, state, deadline)
         best = LOSS_SCORE
         for word_id in ordered:
-            end_char = graph.end_chars[word_id]
-            if end_char == "ん":
+            next_state = state_after_safe_move(graph, state, word_id)
+            if next_state is None:
                 score = LOSS_SCORE
             else:
-                next_used = frozenset(set(state.used_ids) | {word_id})
-                score = -self._negamax(
-                    graph,
-                    GameState(current_char=end_char, used_ids=next_used),
-                    depth - 1,
-                    deadline,
-                )
+                score = -self._negamax(graph, next_state, depth - 1, deadline)
             best = max(best, score)
             if best >= WIN_SCORE:
                 break
@@ -400,22 +405,13 @@ class AlphaBetaAgent(MinimaxAgent):
             limit=self.branch_limit,
         )
         if not ordered:
-            fallback = self.rng.choice(moves)
-            self._record_depth_result(True)
-            return MoveDecision(
-                word_id=fallback,
-                elapsed_time_sec=time.perf_counter() - started,
-                timed_out=True,
-                score=greedy_move_score(graph, state, fallback),
-                extra={
-                    "evaluated_moves": 0,
-                    "depth": self.depth,
-                    "effective_depth": effective_depth,
-                    "next_depth": self.current_depth,
-                    "adaptive_depth": self.adaptive_depth,
-                    "branch_limit": self.branch_limit,
-                    "pruned_count": 0,
-                },
+            return self._timeout_fallback_decision(
+                graph,
+                state,
+                moves,
+                started,
+                effective_depth,
+                pruned_count=0,
             )
 
         best_move = ordered[0]
@@ -444,15 +440,7 @@ class AlphaBetaAgent(MinimaxAgent):
             elapsed_time_sec=time.perf_counter() - started,
             timed_out=final_timed_out,
             score=best_score,
-            extra={
-                "evaluated_moves": evaluated,
-                "depth": self.depth,
-                "effective_depth": effective_depth,
-                "next_depth": self.current_depth,
-                "adaptive_depth": self.adaptive_depth,
-                "branch_limit": self.branch_limit,
-                "pruned_count": pruned_count,
-            },
+            extra=self._search_extra(evaluated, effective_depth, pruned_count=pruned_count),
         )
 
     def _score_move_alpha_beta(
@@ -464,11 +452,9 @@ class AlphaBetaAgent(MinimaxAgent):
         deadline: float,
         alpha: float,
     ) -> tuple[float, int]:
-        end_char = graph.end_chars[word_id]
-        if end_char == "ん":
+        next_state = state_after_safe_move(graph, state, word_id)
+        if next_state is None:
             return LOSS_SCORE, 0
-        next_used = frozenset(set(state.used_ids) | {word_id})
-        next_state = GameState(current_char=end_char, used_ids=next_used)
         pruned_count_ref = [0]
         score = -self._negamax_alpha_beta(
             graph,
@@ -514,14 +500,13 @@ class AlphaBetaAgent(MinimaxAgent):
         for word_id in ordered:
             if time.perf_counter() >= deadline:
                 return best if best != LOSS_SCORE else 0.0
-            end_char = graph.end_chars[word_id]
-            if end_char == "ん":
+            next_state = state_after_safe_move(graph, state, word_id)
+            if next_state is None:
                 score = LOSS_SCORE
             else:
-                next_used = frozenset(set(state.used_ids) | {word_id})
                 score = -self._negamax_alpha_beta(
                     graph,
-                    GameState(current_char=end_char, used_ids=next_used),
+                    next_state,
                     depth - 1,
                     -beta,
                     -alpha,

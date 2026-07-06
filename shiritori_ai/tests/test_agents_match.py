@@ -33,6 +33,7 @@ from dictionary_stats import dictionary_char_total_rows  # noqa: E402
 from game import WordGraph  # noqa: E402
 from human_cli import parse_args as parse_human_args  # noqa: E402
 from match import simulate_match  # noqa: E402
+from visualize import summarize_agents_from_matches  # noqa: E402
 
 
 class AgentsMatchTest(unittest.TestCase):
@@ -210,6 +211,36 @@ class AgentsMatchTest(unittest.TestCase):
         greedy_row = next(row for row in summary_rows if row["agent_name"] == "greedy")
         self.assertEqual(greedy_row["match_count"], 1)
         self.assertEqual(greedy_row["win_count"], 1)
+
+    def test_agent_summary_counts_timed_invalid_decision_as_move(self) -> None:
+        rows = [
+            {
+                "dict_size": 3,
+                "first_agent": "bad_ai",
+                "second_agent": "greedy",
+                "winner": "second",
+                "turn_count": 0,
+                "used_word_count": 0,
+                "first_total_time_sec": 2.0,
+                "second_total_time_sec": 0.0,
+                "first_avg_time_sec": 2.0,
+                "second_avg_time_sec": 0.0,
+                "first_max_time_sec": 2.0,
+                "second_max_time_sec": 0.0,
+                "first_timeout_count": 1,
+                "second_timeout_count": 0,
+            }
+        ]
+
+        summary_rows = summarize_agents(rows)
+        bad_ai_row = next(row for row in summary_rows if row["agent_name"] == "bad_ai")
+        self.assertEqual(bad_ai_row["average_time_per_move_sec"], "2.000000")
+        self.assertEqual(bad_ai_row["timeout_count"], 1)
+
+        visualize_rows = summarize_agents_from_matches([{key: str(value) for key, value in rows[0].items()}])
+        visualize_bad_ai_row = next(row for row in visualize_rows if row["agent_name"] == "bad_ai")
+        self.assertEqual(visualize_bad_ai_row["average_time_per_move_sec"], "2.000000")
+        self.assertEqual(visualize_bad_ai_row["timeout_count"], "1")
 
 
 if __name__ == "__main__":
