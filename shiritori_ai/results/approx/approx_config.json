@@ -1,0 +1,33 @@
+{
+  "agents": [
+    "random",
+    "greedy",
+    "minimax",
+    "monte_carlo"
+  ],
+  "branch_limit": 20,
+  "default_max_moves_policy": "min(dict_size, 3000)",
+  "max_match_time_sec": 960.0,
+  "max_moves": null,
+  "minimax_depth": 3,
+  "monte_carlo_candidates": 20,
+  "monte_carlo_max_moves": 200,
+  "monte_carlo_playouts": 10,
+  "pool_multiplier": 1,
+  "repetitions": 1,
+  "seeds": [
+    0
+  ],
+  "sizes": [
+    1000,
+    3000,
+    5000,
+    10000
+  ],
+  "source": {
+    "mode": "records_csv",
+    "source": "data/generated/jmdict_records.csv"
+  },
+  "time_limit_sec": 4.0,
+  "top_end_chars": 20
+}
