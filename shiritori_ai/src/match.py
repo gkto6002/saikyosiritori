@@ -126,6 +126,12 @@ def simulate_match(
                 "elapsed_time_sec": round(decision.elapsed_time_sec, 6),
                 "timed_out": decision.timed_out,
                 "score": decision.score,
+                "effective_depth": decision.extra.get("effective_depth", ""),
+                "next_depth": decision.extra.get("next_depth", ""),
+                "adaptive_depth": decision.extra.get("adaptive_depth", ""),
+                "pruned_count": decision.extra.get("pruned_count", ""),
+                "evaluated_moves": decision.extra.get("evaluated_moves", ""),
+                "decision_extra": decision.extra,
             }
         )
 

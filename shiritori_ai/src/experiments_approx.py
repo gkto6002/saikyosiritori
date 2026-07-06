@@ -78,6 +78,11 @@ MATCH_FLOW_FIELDS = [
     "elapsed_time_sec",
     "timed_out",
     "score",
+    "effective_depth",
+    "next_depth",
+    "adaptive_depth",
+    "pruned_count",
+    "evaluated_moves",
     "chain_so_far",
 ]
 
@@ -111,6 +116,16 @@ TOP_END_CHAR_FIELDS = [
     "average_elapsed_time_sec",
 ]
 
+AI_MATCH_TIME_LIMIT_SEC = 4.0
+
+
+def is_self_match(row: dict[str, object]) -> bool:
+    return str(row.get("first_agent", "")) == str(row.get("second_agent", ""))
+
+
+def rows_without_self_matches(rows: list[dict[str, object]]) -> list[dict[str, object]]:
+    return [row for row in rows if not is_self_match(row)]
+
 
 def write_rows(path: str | Path, fieldnames: list[str], rows: list[dict[str, object]]) -> None:
     output = Path(path)
@@ -131,7 +146,7 @@ def result_to_row(match_id: str, dict_size: int, random_seed: int, result: Match
 
 def summarize_agents(rows: list[dict[str, object]]) -> list[dict[str, object]]:
     buckets: dict[tuple[str, int], list[dict[str, object]]] = defaultdict(list)
-    for row in rows:
+    for row in rows_without_self_matches(rows):
         dict_size = int(row["dict_size"])
         buckets[(str(row["first_agent"]), dict_size)].append({**row, "side": "first"})
         buckets[(str(row["second_agent"]), dict_size)].append({**row, "side": "second"})
@@ -225,6 +240,11 @@ def build_match_flow_rows(
                 "elapsed_time_sec": turn["elapsed_time_sec"],
                 "timed_out": turn["timed_out"],
                 "score": turn["score"],
+                "effective_depth": turn.get("effective_depth", ""),
+                "next_depth": turn.get("next_depth", ""),
+                "adaptive_depth": turn.get("adaptive_depth", ""),
+                "pruned_count": turn.get("pruned_count", ""),
+                "evaluated_moves": turn.get("evaluated_moves", ""),
                 "chain_so_far": " -> ".join(chain),
             }
         )
@@ -292,6 +312,7 @@ def summarize_agent_end_chars(flow_rows: list[dict[str, object]]) -> list[dict[s
 
 
 def summarize_first_player_by_size(rows: list[dict[str, object]]) -> list[dict[str, object]]:
+    rows = rows_without_self_matches(rows)
     summaries: list[dict[str, object]] = []
     for dict_size in sorted({int(row["dict_size"]) for row in rows}):
         size_rows = [row for row in rows if int(row["dict_size"]) == dict_size]
@@ -372,14 +393,15 @@ def parse_args() -> argparse.Namespace:
     source_group.add_argument("--records")
     parser.add_argument("--sizes", nargs="+", type=int, default=[1000, 3000, 5000, 10000])
     parser.add_argument("--seeds", nargs="+", type=int, default=[0])
-    parser.add_argument("--agents", nargs="+", default=["random", "greedy", "minimax", "monte_carlo"])
+    parser.add_argument("--agents", nargs="+", default=["random", "greedy", "minimax", "monte_carlo", "alpha_beta"])
     parser.add_argument("--repetitions", type=int, default=1)
     parser.add_argument("--output-dir", default="results/approx")
     parser.add_argument("--dataset-dir", default="data/generated/approx")
-    parser.add_argument("--time-limit-sec", type=float, default=4.0)
+    parser.add_argument("--time-limit-sec", type=float, default=AI_MATCH_TIME_LIMIT_SEC)
     parser.add_argument("--max-moves", type=int)
     parser.add_argument("--max-match-time-sec", type=float, default=960.0)
     parser.add_argument("--minimax-depth", type=int, default=3)
+    parser.add_argument("--alpha-beta-depth", type=int, default=4)
     parser.add_argument("--branch-limit", type=int, default=20)
     parser.add_argument("--monte-carlo-candidates", type=int, default=20)
     parser.add_argument("--monte-carlo-playouts", type=int, default=10)
@@ -418,6 +440,8 @@ def main() -> None:
             dictionary_char_rows.extend(dictionary_char_total_rows(graph, dict_size, random_seed))
 
             for first_name, second_name in itertools.product(args.agents, repeat=2):
+                if first_name == second_name:
+                    continue
                 for repetition in range(args.repetitions):
                     match_id = f"D{dict_size}_seed{random_seed}_{first_name}_vs_{second_name}_{repetition}"
                     first_agent = build_agent(
@@ -425,6 +449,7 @@ def main() -> None:
                         time_limit_sec=args.time_limit_sec,
                         random_seed=random_seed * 100_000 + repetition * 100 + 1,
                         minimax_depth=args.minimax_depth,
+                        alpha_beta_depth=args.alpha_beta_depth,
                         branch_limit=args.branch_limit,
                         monte_carlo_candidates=args.monte_carlo_candidates,
                         monte_carlo_playouts=args.monte_carlo_playouts,
@@ -435,6 +460,7 @@ def main() -> None:
                         time_limit_sec=args.time_limit_sec,
                         random_seed=random_seed * 100_000 + repetition * 100 + 2,
                         minimax_depth=args.minimax_depth,
+                        alpha_beta_depth=args.alpha_beta_depth,
                         branch_limit=args.branch_limit,
                         monte_carlo_candidates=args.monte_carlo_candidates,
                         monte_carlo_playouts=args.monte_carlo_playouts,
@@ -482,12 +508,17 @@ def main() -> None:
             "sizes": args.sizes,
             "seeds": args.seeds,
             "agents": args.agents,
+            "include_self_matches": False,
             "repetitions": args.repetitions,
             "time_limit_sec": args.time_limit_sec,
             "max_moves": args.max_moves,
             "default_max_moves_policy": "min(dict_size, 3000)",
             "max_match_time_sec": args.max_match_time_sec,
             "minimax_depth": args.minimax_depth,
+            "alpha_beta_depth": args.alpha_beta_depth,
+            "adaptive_depth": True,
+            "adaptive_depth_min": 1,
+            "adaptive_depth_recovery_turns": 3,
             "branch_limit": args.branch_limit,
             "monte_carlo_candidates": args.monte_carlo_candidates,
             "monte_carlo_playouts": args.monte_carlo_playouts,

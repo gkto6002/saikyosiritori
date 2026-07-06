@@ -1,12 +1,18 @@
 {
+  "adaptive_depth": true,
+  "adaptive_depth_min": 1,
+  "adaptive_depth_recovery_turns": 3,
   "agents": [
     "random",
     "greedy",
     "minimax",
-    "monte_carlo"
+    "monte_carlo",
+    "alpha_beta"
   ],
+  "alpha_beta_depth": 4,
   "branch_limit": 20,
   "default_max_moves_policy": "min(dict_size, 3000)",
+  "include_self_matches": false,
   "max_match_time_sec": 960.0,
   "max_moves": null,
   "minimax_depth": 3,
@@ -28,6 +34,6 @@
     "mode": "records_csv",
     "source": "data/generated/jmdict_records.csv"
   },
-  "time_limit_sec": 4.0,
+  "time_limit_sec": 2.0,
   "top_end_chars": 20
 }

@@ -7,7 +7,7 @@ import json
 import time
 from pathlib import Path
 
-from agents import GameState, build_agent
+from agents import DEFAULT_TIME_LIMIT_SEC, GameState, build_agent
 from dataset import parse_jmdict, read_csv_records, select_records
 from game import WordGraph, normalize_game_char
 from normalize import normalize_reading
@@ -62,12 +62,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--pool-multiplier", type=int, default=1)
     parser.add_argument("--min-length", type=int, default=2)
     parser.add_argument("--max-length", type=int, default=12)
-    parser.add_argument("--agent", choices=["random", "greedy", "minimax", "monte_carlo"], default="greedy")
+    parser.add_argument("--agent", choices=["random", "greedy", "minimax", "monte_carlo", "alpha_beta"], default="greedy")
     parser.add_argument("--human-first", action="store_true")
-    parser.add_argument("--time-limit-sec", type=float, default=0.5)
+    parser.add_argument("--time-limit-sec", type=float, default=DEFAULT_TIME_LIMIT_SEC)
     parser.add_argument("--show-candidates", action="store_true")
     parser.add_argument("--history-output", default="results/human/human_match_history.json")
     parser.add_argument("--minimax-depth", type=int, default=3)
+    parser.add_argument("--alpha-beta-depth", type=int, default=4)
     parser.add_argument("--branch-limit", type=int, default=20)
     parser.add_argument("--monte-carlo-candidates", type=int, default=20)
     parser.add_argument("--monte-carlo-playouts", type=int, default=10)
@@ -84,6 +85,7 @@ def main() -> None:
         time_limit_sec=args.time_limit_sec,
         random_seed=args.random_seed,
         minimax_depth=args.minimax_depth,
+        alpha_beta_depth=args.alpha_beta_depth,
         branch_limit=args.branch_limit,
         monte_carlo_candidates=args.monte_carlo_candidates,
         monte_carlo_playouts=args.monte_carlo_playouts,

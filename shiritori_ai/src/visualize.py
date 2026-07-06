@@ -279,13 +279,21 @@ def match_includes_random(row: dict[str, str]) -> bool:
     return row.get("first_agent") == "random" or row.get("second_agent") == "random"
 
 
+def match_is_self_match(row: dict[str, str]) -> bool:
+    return row.get("first_agent") == row.get("second_agent")
+
+
+def rows_without_self_matches(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    return [row for row in rows if not match_is_self_match(row)]
+
+
 def rows_without_random(rows: list[dict[str, str]]) -> list[dict[str, str]]:
-    return [row for row in rows if not match_includes_random(row)]
+    return [row for row in rows if not match_includes_random(row) and not match_is_self_match(row)]
 
 
 def summarize_agents_from_matches(rows: list[dict[str, str]]) -> list[dict[str, str]]:
     buckets: dict[tuple[str, int], list[dict[str, str]]] = defaultdict(list)
-    for row in rows:
+    for row in rows_without_self_matches(rows):
         dict_size = int(row["dict_size"])
         buckets[(row["first_agent"], dict_size)].append({**row, "side": "first"})
         buckets[(row["second_agent"], dict_size)].append({**row, "side": "second"})
@@ -348,6 +356,7 @@ def summarize_agents_from_matches(rows: list[dict[str, str]]) -> list[dict[str, 
 
 
 def summarize_first_player_from_matches(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    rows = rows_without_self_matches(rows)
     summaries: list[dict[str, str]] = []
     for dict_size in sorted({int(row["dict_size"]) for row in rows}):
         size_rows = [row for row in rows if int(row["dict_size"]) == dict_size]
@@ -410,7 +419,7 @@ def summarize_top_end_chars_from_flow(
     return summaries
 
 
-def build_agent_win_rate_delta_rows(
+def build_agent_win_rate_comparison_rows(
     with_random_rows: list[dict[str, str]],
     without_random_rows: list[dict[str, str]],
 ) -> list[dict[str, str]]:
@@ -434,13 +443,12 @@ def build_agent_win_rate_delta_rows(
                 "dict_size": str(dict_size),
                 "with_random_win_rate": f"{with_rate:.6f}",
                 "without_random_win_rate": f"{without_rate:.6f}",
-                "delta_win_rate": f"{without_rate - with_rate:.6f}",
             }
         )
     return rows
 
 
-def build_first_player_win_rate_delta_rows(
+def build_first_player_win_rate_comparison_rows(
     with_random_rows: list[dict[str, str]],
     without_random_rows: list[dict[str, str]],
 ) -> list[dict[str, str]]:
@@ -463,13 +471,12 @@ def build_first_player_win_rate_delta_rows(
                 "dict_size": str(dict_size),
                 "with_random_first_win_rate": f"{with_rate:.6f}",
                 "without_random_first_win_rate": f"{without_rate:.6f}",
-                "delta_first_win_rate": f"{without_rate - with_rate:.6f}",
             }
         )
     return rows
 
 
-def save_agent_win_rate_delta_chart(
+def save_agent_win_rate_comparison_chart(
     plt,
     rows: list[dict[str, str]],
     output_path: Path,
@@ -477,23 +484,41 @@ def save_agent_win_rate_delta_chart(
     if not rows:
         return
     labels = [f"{row['agent_name']}\nD{row['dict_size']}" for row in rows]
-    values = [to_float(row["delta_win_rate"]) for row in rows]
-    colors = ["#59a14f" if value >= 0 else "#e15759" for value in values]
+    with_values = [to_float(row["with_random_win_rate"]) for row in rows]
+    without_values = [to_float(row["without_random_win_rate"]) for row in rows]
+    x_positions = list(range(len(labels)))
+    bar_width = 0.42
 
     fig_width = max(8, len(labels) * 0.7)
     fig, ax = plt.subplots(figsize=(fig_width, 5.5))
-    ax.bar(labels, values, color=colors)
-    ax.axhline(0, color="#333333", linewidth=1)
-    ax.set_title("Win-rate change after excluding random matches", fontsize=14, pad=12)
-    ax.set_ylabel("Delta win rate (without random - with random)")
+    ax.bar(
+        [position - bar_width / 2 for position in x_positions],
+        with_values,
+        width=bar_width,
+        color="#4e79a7",
+        label="With random matches",
+    )
+    ax.bar(
+        [position + bar_width / 2 for position in x_positions],
+        without_values,
+        width=bar_width,
+        color="#f28e2b",
+        label="Without random matches",
+    )
+    ax.set_ylim(-0.03, 1.03)
+    ax.set_title("Win rate with and without random matches", fontsize=14, pad=12)
+    ax.set_ylabel("Win rate")
+    ax.set_xticks(x_positions)
+    ax.set_xticklabels(labels)
     ax.tick_params(axis="x", labelrotation=45)
     ax.grid(True, axis="y", alpha=0.35)
+    ax.legend()
     fig.tight_layout()
     fig.savefig(output_path, dpi=180)
     plt.close(fig)
 
 
-def save_first_player_win_rate_delta_chart(
+def save_first_player_win_rate_comparison_chart(
     plt,
     rows: list[dict[str, str]],
     output_path: Path,
@@ -501,20 +526,23 @@ def save_first_player_win_rate_delta_chart(
     if not rows:
         return
     x_values = [int(row["dict_size"]) for row in rows]
-    y_values = [to_float(row["delta_first_win_rate"]) for row in rows]
+    with_values = [to_float(row["with_random_first_win_rate"]) for row in rows]
+    without_values = [to_float(row["without_random_first_win_rate"]) for row in rows]
 
     fig, ax = plt.subplots(figsize=(8, 5))
-    ax.plot(x_values, y_values, marker="o", linewidth=2, color="#4e79a7")
-    ax.axhline(0, color="#333333", linewidth=1)
+    ax.plot(x_values, with_values, marker="o", linewidth=2, color="#4e79a7", label="With random matches")
+    ax.plot(x_values, without_values, marker="o", linewidth=2, color="#f28e2b", label="Without random matches")
+    ax.set_ylim(-0.03, 1.03)
     ax.set_title(
-        "First-player win-rate change after excluding random matches",
+        "First-player win rate with and without random matches",
         fontsize=14,
         pad=12,
     )
     ax.set_xlabel("Dictionary size D")
-    ax.set_ylabel("Delta first-player win rate (without random - with random)")
+    ax.set_ylabel("First-player win rate")
     ax.set_xticks(x_values)
     ax.grid(True, alpha=0.35)
+    ax.legend()
     fig.tight_layout()
     fig.savefig(output_path, dpi=180)
     plt.close(fig)
@@ -541,6 +569,10 @@ def remove_stale_random_comparison_figures(fig_dir: Path) -> None:
         "approx_first_player_win_rate_by_dict_size_without_random.png",
         "approx_top_end_chars_with_random.png",
         "approx_top_end_chars_without_random.png",
+        "approx_agent_win_rate_random_delta.png",
+        "approx_agent_win_rate_random_delta.csv",
+        "approx_first_player_win_rate_random_delta.png",
+        "approx_first_player_win_rate_random_delta.csv",
     ]
     for name in stale_names:
         path = fig_dir / name
@@ -548,7 +580,7 @@ def remove_stale_random_comparison_figures(fig_dir: Path) -> None:
             path.unlink()
 
 
-def save_win_rate_delta_outputs(
+def save_win_rate_comparison_outputs(
     plt,
     with_random_agent_rows: list[dict[str, str]],
     with_random_first_player_rows: list[dict[str, str]],
@@ -556,45 +588,43 @@ def save_win_rate_delta_outputs(
     without_random_first_player_rows: list[dict[str, str]],
     fig_dir: Path,
 ) -> None:
-    agent_delta_rows = build_agent_win_rate_delta_rows(
+    agent_comparison_rows = build_agent_win_rate_comparison_rows(
         with_random_agent_rows,
         without_random_agent_rows,
     )
-    first_player_delta_rows = build_first_player_win_rate_delta_rows(
+    first_player_comparison_rows = build_first_player_win_rate_comparison_rows(
         with_random_first_player_rows,
         without_random_first_player_rows,
     )
 
-    save_agent_win_rate_delta_chart(
+    save_agent_win_rate_comparison_chart(
         plt,
-        agent_delta_rows,
-        fig_dir / "approx_agent_win_rate_random_delta.png",
+        agent_comparison_rows,
+        fig_dir / "approx_agent_win_rate_random_comparison.png",
     )
-    save_first_player_win_rate_delta_chart(
+    save_first_player_win_rate_comparison_chart(
         plt,
-        first_player_delta_rows,
-        fig_dir / "approx_first_player_win_rate_random_delta.png",
+        first_player_comparison_rows,
+        fig_dir / "approx_first_player_win_rate_random_comparison.png",
     )
     write_rows(
-        fig_dir / "approx_agent_win_rate_random_delta.csv",
+        fig_dir / "approx_agent_win_rate_random_comparison.csv",
         [
             "agent_name",
             "dict_size",
             "with_random_win_rate",
             "without_random_win_rate",
-            "delta_win_rate",
         ],
-        agent_delta_rows,
+        agent_comparison_rows,
     )
     write_rows(
-        fig_dir / "approx_first_player_win_rate_random_delta.csv",
+        fig_dir / "approx_first_player_win_rate_random_comparison.csv",
         [
             "dict_size",
             "with_random_first_win_rate",
             "without_random_first_win_rate",
-            "delta_first_win_rate",
         ],
-        first_player_delta_rows,
+        first_player_comparison_rows,
     )
 
 
@@ -646,8 +676,12 @@ def main() -> None:
         fig_dir / "exact_first_player_win_rate_by_dict_size.png",
     )
 
-    agent_summary = read_csv_rows(Path(args.approx_dir) / "agent_summary.csv")
     match_rows = read_csv_rows(Path(args.approx_dir) / "matches.csv")
+    agent_summary = (
+        summarize_agents_from_matches(match_rows)
+        if match_rows
+        else read_csv_rows(Path(args.approx_dir) / "agent_summary.csv")
+    )
 
     save_agent_bar_chart(
         plt,
@@ -670,7 +704,11 @@ def main() -> None:
         agent_summary,
         fig_dir / "approx_agent_timeout_count.png",
     )
-    first_player_rows = read_csv_rows(Path(args.approx_dir) / "first_player_by_size.csv")
+    first_player_rows = (
+        summarize_first_player_from_matches(match_rows)
+        if match_rows
+        else read_csv_rows(Path(args.approx_dir) / "first_player_by_size.csv")
+    )
     save_approx_first_player_chart(
         plt,
         first_player_rows,
@@ -688,7 +726,7 @@ def main() -> None:
         no_random_match_rows = rows_without_random(match_rows)
         no_random_agent_summary = summarize_agents_from_matches(no_random_match_rows)
         no_random_first_player_rows = summarize_first_player_from_matches(no_random_match_rows)
-        save_win_rate_delta_outputs(
+        save_win_rate_comparison_outputs(
             plt,
             agent_summary,
             first_player_rows,

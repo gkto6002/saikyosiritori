@@ -1,0 +1,89 @@
+{
+  "winner": "AI",
+  "turn_count": 11,
+  "used_word_count": 11,
+  "loss_reason": "no_legal_move",
+  "ai_total_time_sec": 0.11929304292425513,
+  "ai_average_time_sec": 0.019882173820709188,
+  "ai_max_time_sec": 0.05476016696775332,
+  "history": [
+    {
+      "turn": 1,
+      "player": "ai",
+      "word": "いきかえる",
+      "start_char": "い",
+      "end_char": "る"
+    },
+    {
+      "turn": 2,
+      "player": "human",
+      "word": "るびい",
+      "start_char": "る",
+      "end_char": "い"
+    },
+    {
+      "turn": 3,
+      "player": "ai",
+      "word": "いちがつ",
+      "start_char": "い",
+      "end_char": "つ"
+    },
+    {
+      "turn": 4,
+      "player": "human",
+      "word": "つうる",
+      "start_char": "つ",
+      "end_char": "る"
+    },
+    {
+      "turn": 5,
+      "player": "ai",
+      "word": "るんげ",
+      "start_char": "る",
+      "end_char": "げ"
+    },
+    {
+      "turn": 6,
+      "player": "human",
+      "word": "げつない",
+      "start_char": "げ",
+      "end_char": "い"
+    },
+    {
+      "turn": 7,
+      "player": "ai",
+      "word": "いいようがない",
+      "start_char": "い",
+      "end_char": "い"
+    },
+    {
+      "turn": 8,
+      "player": "human",
+      "word": "いらつしやい",
+      "start_char": "い",
+      "end_char": "い"
+    },
+    {
+      "turn": 9,
+      "player": "ai",
+      "word": "いやおい",
+      "start_char": "い",
+      "end_char": "い"
+    },
+    {
+      "turn": 10,
+      "player": "human",
+      "word": "いづこ",
+      "start_char": "い",
+      "end_char": "こ"
+    },
+    {
+      "turn": 11,
+      "player": "ai",
+      "word": "こいる",
+      "start_char": "こ",
+      "end_char": "る"
+    }
+  ],
+  "saved_at": 1783353554.220575
+}

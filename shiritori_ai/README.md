@@ -58,7 +58,7 @@ python src/experiments_exact.py \
 
 ## 大規模近似AI対戦
 
-標準では `D1000, D3000, D5000, D10000` を対象に、各AI組み合わせを1回ずつ対戦します。大きいDでも止まらないよう、1手ごとの時間制限、最大手数、試合全体の時間制限を分けて設定します。
+標準では `D1000, D3000, D5000, D10000` を対象に、各AI組み合わせを1回ずつ対戦します。自己対戦は勝敗統計の偏りになるため生成しません。大きいDでも止まらないよう、1手ごとの時間制限、最大手数、試合全体の時間制限を分けて設定します。AI同士の対戦では、1手ごとの標準タイムアウトを `4.0` 秒にしています。
 
 ```bash
 python src/experiments_approx.py \
@@ -83,6 +83,8 @@ python src/experiments_approx.py \
 
 打ち切り理由は `no_legal_move`、`ended_with_n`、`max_moves_reached`、`match_timeout` などで記録します。AIの1手制限超過は、各AIの `timeout_count` に記録します。
 
+近似AIは `random`、`greedy`、`minimax`、`monte_carlo`、`alpha_beta` を指定できます。`minimax` と `alpha_beta` は、1手でタイムアウトしたら以後の探索深さを1下げ、タイムアウトしない手が3回続いたら1戻す適応depthを使います。標準depthは `minimax=3`、`alpha_beta=4` です。`alpha_beta` は `minimax` と同じ評価関数を使い、alpha-beta pruning で不要な枝を刈ります。
+
 ## 図の作成
 
 ```bash
@@ -100,8 +102,8 @@ python src/visualize.py
 - `results/figures/approx_agent_timeout_count.png`
 - `results/figures/approx_first_player_win_rate_by_dict_size.png`
 - `results/figures/approx_top_end_chars.png`
-- `results/figures/approx_agent_win_rate_random_delta.png`: random除外によるAI別勝率差分
-- `results/figures/approx_first_player_win_rate_random_delta.png`: random除外による先手勝率差分
+- `results/figures/approx_agent_win_rate_random_comparison.png`: randomを含む場合/除く場合のAI別勝率
+- `results/figures/approx_first_player_win_rate_random_comparison.png`: randomを含む場合/除く場合の先手勝率
 
 ## 人間対AI
 
@@ -115,6 +117,7 @@ python src/human_cli.py \
 ```
 
 人間の入力は読み仮名で受け取り、辞書と同じ正規化を行います。不正な手は理由を表示して再入力を求めます。
+人間対AIでは、AIの1手ごとの標準タイムアウトは `2.0` 秒です。
 
 ## テスト
 
