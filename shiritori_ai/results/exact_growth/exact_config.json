@@ -1,0 +1,33 @@
+{
+  "first_move_policy": "stop_on_first_winning_edge",
+  "max_size": null,
+  "max_states": null,
+  "move_unit": "edge_type_with_multiplicity",
+  "pool_multiplier": 1,
+  "requested_sizes": null,
+  "seed_count": 1,
+  "seeds": [
+    0
+  ],
+  "size_mode": "runtime_prefix_until_all_seeds_timeout",
+  "size_start": 100,
+  "size_step": 50,
+  "sizes": [
+    100,
+    150,
+    200,
+    250,
+    300,
+    350,
+    400
+  ],
+  "source": {
+    "mode": "runtime_dictionary_ranked_prefix",
+    "source": [
+      "data/dictionaries/D170000_L2-12_seed0.runtime.json"
+    ]
+  },
+  "state_encoding": "mixed_radix_edge_usage_v1",
+  "stop_reason": "all_seeds_timed_out",
+  "timeout_sec": 120.0
+}

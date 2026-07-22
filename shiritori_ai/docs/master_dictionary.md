@@ -101,6 +101,6 @@ python -m unittest discover -s tests -v
 
 fixtureは正規化、文字数、重複統合、`re_restr`、`stagk`、`stagr`、品詞継承、優先度、安定出力、メタデータ・統計を検証します。
 
-## 今回実装していないもの
+## 後続段階との接続
 
-マスター辞書からの語数・文字数・品詞・固有名詞・古語・優先度条件による抽出、実験用辞書生成、文字ID、二次元配列、辺数管理、単語バケット、使用済み集合、人間用カーソル、AI・ゲーム状態・対戦・完全解析・HybridAgentの変更は実装していません。これらは第二段階以降で扱います。
+この文書の対象である第一段階には、実験用辞書、文字ID、辺数管理、単語バケット、ゲーム状態は含まれません。現在は後続段階として`src/experiment_dictionary.py`と`src/runtime_dictionary.py`が実装されており、実験辞書生成時に一行一語TXT、詳細JSONL、単語確認CSV、辺確認CSV、RuntimeDictionary JSONを同時生成します。探索エージェント自体の高速化、完全解析の変更、HybridAgentは引き続き対象外です。

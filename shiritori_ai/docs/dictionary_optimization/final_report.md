@@ -4,7 +4,7 @@
 
 JMdictから情報保持型マスター辞書を生成し、そのマスターだけから再現可能な名詞実験辞書を生成し、文字ID・辺数・CSR単語バケットを持つRuntimeDictionaryへ変換した。さらに、AI対AI用の辺数状態、人間対AI用の具体語状態、辞書・文字グラフ分析を実装した。
 
-既存Minimax、AlphaBeta、MonteCarlo、Greedy、Randomの評価・探索処理、探索深度、完全解析は変更していない。新方式は並行APIとアダプタとして追加し、旧方式を残した。
+その後のエージェント高速化で、Minimax、AlphaBeta、MonteCarlo、Greedy、Randomへ辺ネイティブ経路を追加した。評価係数、探索深度、枝刈り条件、playout方針は維持し、旧word方式は比較用に残した。完全解析も辺使用回数だけのメモ化再帰へ移行した。
 
 ## 各段階で実装した内容
 
@@ -24,6 +24,7 @@ JMdictから情報保持型マスター辞書を生成し、そのマスター�
 - 最小・最大文字数フィルタ
 - prefixによる辞書サイズ包含保証
 - 一行一語TXT、詳細JSONL、metadata、stats
+- 実験辞書生成時のRuntime JSON、単語確認CSV、辺確認CSVの同時生成
 - 単一・複数サイズ、単一・複数最大文字数CLI
 
 ### 第三段階
@@ -34,6 +35,7 @@ JMdictから情報保持型マスター辞書を生成し、そのマスター�
 - CSR形式`bucket_offsets/bucket_word_ids`
 - 整数ビット集合`initial_active_end_masks`
 - JSON保存・読込、全構造検証、旧WordGraph比較
+- word ID単位と非空辺単位の安定した確認用CSVビュー
 
 ### 第四段階
 
@@ -42,8 +44,8 @@ JMdictから情報保持型マスター辞書を生成し、そのマスター�
 - 対局後の具体語割当
 - `HumanRuntimeState`: used word IDs、bucket cursors、具体語履歴
 - 理由付き人間入力検証と整合性検査
-- 既存AIを変更しない`RuntimeAgentAdapter`
-- 新方式対局`simulate_runtime_match`
+- 五つの近似AIを直接呼ぶ辺ネイティブ`simulate_runtime_match`
+- AI対AI用の単語を持たない`EdgeDictionary`
 
 ### 第五段階
 
@@ -100,6 +102,8 @@ JMdictから情報保持型マスター辞書を生成し、そのマスター�
   --max-lengths 3,4,5,6,8,10,12 \
   --output data/dictionaries
 
+# 上の実験辞書生成コマンドがRuntime JSONと単語・辺CSVも同時生成する。
+# 次の単独変換コマンドは互換性と再構築用途に残している。
 .venv/bin/python src/runtime_dictionary.py \
   --input data/dictionaries/D10000_L2-12_seed0.jsonl \
   --output data/runtime/D10000_L2-12_seed0.runtime.json
@@ -127,7 +131,7 @@ JMdictから情報保持型マスター辞書を生成し、そのマスター�
 
 ## 全テスト結果
 
-- 自動テスト: 72件成功、失敗0
+- 自動テスト: 86件成功、失敗0
 - 全Pythonファイルの構文検査: 成功
 - マスター生成: 成功
 - 実験辞書生成: 成功
@@ -180,7 +184,9 @@ D10000、seed0:
 
 - 最大3、4、5、6、8、10、12文字
 
-各条件でTXT、詳細JSONL、metadata、statsを生成した。D10000 L2-12のTXT SHA256は`269db7918c542ca574d87d8d7e3d4f37ca57b5daa2bcb5d4cf93dcab649a730d`、詳細JSONL SHA256は`74273ec92dd5b9b50e5d125bf7fc94fc234d4603966a511f8ecb7898b44b9b29`である。
+各条件でTXT、詳細JSONL、単語CSV、辺CSV、Runtime JSON、metadata、statsを生成した。D10000 L2-12のTXT SHA256は`269db7918c542ca574d87d8d7e3d4f37ca57b5daa2bcb5d4cf93dcab649a730d`、詳細JSONL SHA256は`74273ec92dd5b9b50e5d125bf7fc94fc234d4603966a511f8ecb7898b44b9b29`である。
+
+確認用`.words.csv`は一語一行でword ID、読み、文字数、start/end文字・ID、所属辺語数を持つ。`.edges.csv`は非空のstart/end組を一行とし、辺数、word ID一覧、単語一覧を持つ。D10000では単語CSVが10,000行、辺CSVが2,248行で、辺CSVの語数合計は10,000と一致した。
 
 ## 最大文字数ごとの候補語数
 
@@ -245,7 +251,7 @@ D100⊂D200⊂D500⊂D1000⊂D3000⊂D5000⊂D10000を、読みのprefix比較�
 - `active_end_masks`
 - `edge_history`
 
-探索中は具体語を決めず、対局後に各辺のCSRバケットから異なるword IDを順番に割り当てる。apply/undoは対象辺と1ビットだけを変更する。
+探索・対局履歴とも具体語を決めず、start/end ID、辺数、active maskだけを扱う。apply/undoは対象辺と1ビットだけを変更する。`EdgeDictionary`にはword ID、読み、単語バケットが存在しない。
 
 ## 人間対AI状態
 
@@ -304,8 +310,8 @@ Runtime JSONのロードは旧TXTより遅いが、合法語・end列挙は高�
 - `WordGraph`
 - `agents.GameState(current_char, used_ids)`
 - `match.simulate_match`
-- `human_cli.py`の旧画面・対局ループ
-- `exact_solver.py`のused mask完全解析
+- `human_cli.py`の旧JMdict／CSV入力互換経路
+- `experiments_exact.py`の旧JMdict／CSV入力互換経路
 - 全既存AIの評価関数・探索処理
 
 ## 未解決の問題
@@ -313,7 +319,7 @@ Runtime JSONのロードは旧TXTより遅いが、合法語・end列挙は高�
 - `legacy_v1`では一文字語を保持しない。
 - 第二段階と第五段階は303MBマスターをPython objectとして読み、ピークメモリが大きい。
 - Runtime JSONは可読性と全検証を優先しており、バイナリ形式よりロードが遅い。
-- 既存AIアダプタは呼出時にword IDを一時復元する。探索自体はまだ辺ネイティブではない。
+- 辺種類単位のbranch limitにより、旧単語辞書順の同点選択とは結果が変わり得る。
 - D10000は全語が高優先度であり、中・低優先度を含む研究にはD拡大または別の抽出設計が必要。
 - 図の日本語文字は実行環境のフォントに依存する。
 
@@ -327,10 +333,10 @@ Runtime JSONのロードは旧TXTより遅いが、合法語・end列挙は高�
 
 ## 次に行うべきAI側の作業
 
-1. 既存Greedy評価を辺数から直接計算するアダプタを作る。
-2. Minimax/AlphaBetaの合法手をword IDではなくedge IDへ変更する。
-3. apply/undoを探索再帰へ接続し、状態コピーを避ける。
-4. 旧方式と辺ネイティブ方式の探索結果を小規模辞書で完全比較する。
-5. その後に反復深化、置換表、手の並べ替えへ進む。
+1. 辺ネイティブMinimax/AlphaBetaへ反復深化を追加する。
+2. 辺数状態の置換表キーを設計する。
+3. 辺単位の手の並べ替えを強化する。
+4. 辺ネイティブ完全解析と近似探索の接続境界を定める。
+5. その後にHybridAgentへ進む。
 
-Minimax、AlphaBeta、MonteCarlo、Greedy、完全解析のアルゴリズム自体は今回変更していない。
+五つの近似AIは評価方針を維持したまま辺ネイティブ化した。完全解析もword maskから混合基数の辺使用回数コードへ移行し、勝ち初手辺を1本発見した時点でそのDの探索を終了する。最大RuntimeDictionaryの共通語彙順位接頭辞を使い、Dを増加させてタイムアウト時に停止する実験経路も追加した。

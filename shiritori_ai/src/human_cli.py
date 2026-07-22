@@ -7,54 +7,43 @@ import json
 import time
 from pathlib import Path
 
-from agents import DEFAULT_TIME_LIMIT_SEC, GameState, build_agent
+from agents import DEFAULT_TIME_LIMIT_SEC, build_agent
 from dataset import parse_jmdict, read_csv_records, select_records
-from game import WordGraph, normalize_game_char
-from normalize import normalize_reading
+from runtime_dictionary import RuntimeDictionary
+from runtime_state import HumanRuntimeState
 
 
-def load_graph(args: argparse.Namespace) -> WordGraph:
+def load_runtime(args: argparse.Namespace) -> RuntimeDictionary:
+    if args.runtime:
+        return RuntimeDictionary.load(args.runtime)
     if args.words:
         records = read_csv_records(args.words)
     else:
         records, _stats = parse_jmdict(args.jmdict, min_length=args.min_length, max_length=args.max_length)
         records = select_records(records, args.dict_size, args.random_seed, pool_multiplier=args.pool_multiplier)
-    return WordGraph.from_words([record.reading for record in records[: args.dict_size]])
+    return RuntimeDictionary.from_readings(
+        record.reading for record in records[: args.dict_size]
+    )
 
 
-def show_candidates(graph: WordGraph, current_char: str | None, used_ids: set[int], limit: int = 20) -> None:
-    if current_char is None:
-        candidates = [word_id for word_id in range(len(graph.words)) if word_id not in used_ids]
-    else:
-        candidates = graph.available_word_ids_set(current_char, used_ids)
-    words = [graph.words[word_id] for word_id in candidates[:limit]]
+def show_candidates(state: HumanRuntimeState, limit: int = 20) -> None:
+    candidates = [
+        word_id
+        for word_id in range(state.runtime.word_count)
+        if word_id not in state.used_word_ids
+        and (
+            state.required_char_id is None
+            or state.runtime.word_start_ids[word_id] == state.required_char_id
+        )
+    ]
+    words = [state.runtime.word_readings[word_id] for word_id in candidates[:limit]]
     print("候補:", "、".join(words) if words else "なし")
-
-
-def validate_human_move(
-    graph: WordGraph,
-    reading_to_id: dict[str, int],
-    raw_input: str,
-    current_char: str | None,
-    used_ids: set[int],
-) -> tuple[int | None, str | None]:
-    normalized = normalize_reading(raw_input)
-    if normalized is None:
-        return None, "読みを正規化できません"
-    if normalized not in reading_to_id:
-        return None, "辞書に存在しません"
-
-    word_id = reading_to_id[normalized]
-    if word_id in used_ids:
-        return None, "すでに使用済みです"
-    if current_char is not None and normalize_game_char(normalized[0]) != normalize_game_char(current_char):
-        return None, f"現在の文字「{current_char}」から始まっていません"
-    return word_id, None
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     source_group = parser.add_mutually_exclusive_group(required=True)
+    source_group.add_argument("--runtime", help="RuntimeDictionary JSON (recommended)")
     source_group.add_argument("--words", help="CSV file with readings")
     source_group.add_argument("--jmdict", help="JMdict XML or .gz")
     parser.add_argument("--dict-size", type=int, default=1000)
@@ -78,8 +67,8 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    graph = load_graph(args)
-    reading_to_id = graph.word_id_by_reading()
+    runtime = load_runtime(args)
+    state = HumanRuntimeState.initial(runtime)
     ai = build_agent(
         args.agent,
         time_limit_sec=args.time_limit_sec,
@@ -92,8 +81,6 @@ def main() -> None:
         monte_carlo_max_moves=args.monte_carlo_max_moves,
     )
 
-    used_ids: set[int] = set()
-    current_char: str | None = None
     last_word: str | None = None
     history: list[dict[str, object]] = []
     ai_total_time = 0.0
@@ -103,76 +90,74 @@ def main() -> None:
     winner = ""
     reason = ""
 
-    print(f"辞書サイズ: {len(graph.words)}")
+    print(f"辞書サイズ: {runtime.word_count}")
     print(f"AI: {ai.name}")
 
     while True:
         print()
+        current_char = (
+            None
+            if state.required_char_id is None
+            else runtime.id_to_char[state.required_char_id]
+        )
         print(f"現在の文字: {current_char if current_char is not None else '任意'}")
         print(f"直前の読み: {last_word if last_word is not None else 'なし'}")
-        print(f"使用済み語数: {len(used_ids)}")
+        print(f"使用済み語数: {len(state.used_word_ids)}")
 
-        legal_moves = (
-            [word_id for word_id in range(len(graph.words)) if word_id not in used_ids]
-            if current_char is None
-            else graph.available_word_ids_set(current_char, used_ids)
-        )
-        if not legal_moves:
+        if state.edge_search_state().legal_word_count() == 0:
             winner = "AI" if human_turn else "human"
             reason = "no_legal_move"
             break
 
         if human_turn:
             if args.show_candidates:
-                show_candidates(graph, current_char, used_ids)
+                show_candidates(state)
             while True:
                 raw = input("読みを入力してください: ")
-                word_id, error = validate_human_move(graph, reading_to_id, raw, current_char, used_ids)
-                if error is None and word_id is not None:
+                human_result = state.submit_human_reading(raw)
+                if human_result.accepted:
+                    word_id = human_result.word_id
                     break
-                print(f"不正な手: {error}")
+                print(f"不正な手: {human_result.message}")
             player = "human"
         else:
-            state = GameState(current_char=current_char, used_ids=frozenset(used_ids))
-            decision = ai.choose_move(graph, state)
-            word_id = decision.word_id
-            if word_id is None:
+            decision = ai.choose_edge(state.edge_search_state())
+            if decision.start_id is None or decision.end_id is None:
                 winner = "human"
                 reason = "ai_no_move"
                 break
+            word_id = state.choose_ai_word(decision.start_id, decision.end_id)
             ai_total_time += decision.elapsed_time_sec
             ai_max_time = max(ai_max_time, decision.elapsed_time_sec)
             ai_move_count += 1
-            print(f"AIの手: {graph.words[word_id]}")
+            print(f"AIの手: {runtime.word_readings[word_id]}")
             print(f"AI思考時間: {decision.elapsed_time_sec:.6f} 秒")
             player = "ai"
 
         assert word_id is not None
-        word = graph.words[word_id]
-        used_ids.add(word_id)
+        word = runtime.word_readings[word_id]
         last_word = word
         history.append(
             {
                 "turn": len(history) + 1,
                 "player": player,
                 "word": word,
-                "start_char": graph.start_chars[word_id],
-                "end_char": graph.end_chars[word_id],
+                "start_char": runtime.id_to_char[runtime.word_start_ids[word_id]],
+                "end_char": runtime.id_to_char[runtime.word_end_ids[word_id]],
             }
         )
 
-        if graph.end_chars[word_id] == "ん":
+        if runtime.id_to_char[runtime.word_end_ids[word_id]] == "ん":
             winner = "AI" if human_turn else "human"
             reason = "ended_with_n"
             break
 
-        current_char = graph.end_chars[word_id]
         human_turn = not human_turn
 
     print()
     print(f"勝者: {winner}")
     print(f"手数: {len(history)}")
-    print(f"使用単語数: {len(used_ids)}")
+    print(f"使用単語数: {len(state.used_word_ids)}")
     print(f"敗因: {reason}")
     print(f"AI合計思考時間: {ai_total_time:.6f} 秒")
     print(f"AI平均思考時間: {(ai_total_time / ai_move_count) if ai_move_count else 0.0:.6f} 秒")
@@ -185,7 +170,7 @@ def main() -> None:
             {
                 "winner": winner,
                 "turn_count": len(history),
-                "used_word_count": len(used_ids),
+                "used_word_count": len(state.used_word_ids),
                 "loss_reason": reason,
                 "ai_total_time_sec": ai_total_time,
                 "ai_average_time_sec": (ai_total_time / ai_move_count) if ai_move_count else 0.0,

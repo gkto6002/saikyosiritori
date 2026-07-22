@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
+import io
 import json
 import os
 import sys
@@ -17,6 +19,53 @@ from normalize import NORMALIZATION_VERSION
 
 
 FORMAT_VERSION = "runtime_dictionary_v1"
+
+
+@dataclass(frozen=True)
+class EdgeDictionary:
+    """Word-free directed multigraph view used by AI-vs-AI search."""
+
+    dictionary_hash: str
+    normalization_version: str
+    char_to_id: dict[str, int]
+    id_to_char: tuple[str, ...]
+    char_count: int
+    edge_instance_count: int
+    initial_edge_counts: tuple[int, ...]
+    initial_active_end_masks: tuple[int, ...]
+
+    def edge_index(self, start_id: int, end_id: int) -> int:
+        self._validate_char_id(start_id)
+        self._validate_char_id(end_id)
+        return start_id * self.char_count + end_id
+
+    def edge_count(
+        self,
+        start_id: int,
+        end_id: int,
+        counts: list[int] | tuple[int, ...] | None = None,
+    ) -> int:
+        values = self.initial_edge_counts if counts is None else counts
+        return int(values[self.edge_index(start_id, end_id)])
+
+    def available_end_ids(
+        self,
+        start_id: int,
+        active_end_masks: list[int] | tuple[int, ...] | None = None,
+    ) -> list[int]:
+        self._validate_char_id(start_id)
+        masks = self.initial_active_end_masks if active_end_masks is None else active_end_masks
+        mask = int(masks[start_id])
+        result: list[int] = []
+        while mask:
+            least_bit = mask & -mask
+            result.append(least_bit.bit_length() - 1)
+            mask ^= least_bit
+        return result
+
+    def _validate_char_id(self, char_id: int) -> None:
+        if char_id < 0 or char_id >= self.char_count:
+            raise IndexError(f"character ID out of range: {char_id}")
 
 
 @dataclass(frozen=True)
@@ -37,6 +86,33 @@ class RuntimeDictionary:
     bucket_offsets: tuple[int, ...]
     bucket_word_ids: tuple[int, ...]
     initial_active_end_masks: tuple[int, ...]
+
+    @classmethod
+    def from_readings(
+        cls,
+        readings: Iterable[str],
+        dictionary_hash: str = "",
+        normalization_version: str = NORMALIZATION_VERSION,
+    ) -> "RuntimeDictionary":
+        records: list[dict[str, object]] = []
+        for word_id, reading in enumerate(readings):
+            if not reading:
+                raise ValueError(f"word_id={word_id} has an empty reading")
+            records.append(
+                {
+                    "word_id": word_id,
+                    "normalized_reading": reading,
+                    "normalized_length": len(reading),
+                    "start_char": reading[0],
+                    "end_char": reading[-1],
+                    "ends_with_n": reading.endswith("ん"),
+                }
+            )
+        return cls.from_detail_records(
+            records,
+            dictionary_hash=dictionary_hash,
+            normalization_version=normalization_version,
+        )
 
     @classmethod
     def from_detail_records(
@@ -173,6 +249,143 @@ class RuntimeDictionary:
 
     def to_word_graph(self) -> WordGraph:
         return WordGraph.from_words(list(self.word_readings))
+
+    def to_edge_dictionary(self, word_count: int | None = None) -> EdgeDictionary:
+        """Return the full edge dictionary or a stable ranked-prefix view."""
+
+        if word_count is None:
+            word_count = self.word_count
+        if word_count < 0 or word_count > self.word_count:
+            raise ValueError(
+                f"word_count must be between 0 and {self.word_count}: {word_count}"
+            )
+
+        if word_count == self.word_count:
+            edge_counts = self.initial_edge_counts
+            active_end_masks = self.initial_active_end_masks
+            dictionary_hash = self.dictionary_hash
+        else:
+            mutable_edge_counts = [0] * (self.char_count * self.char_count)
+            for start_id, end_id in zip(
+                self.word_start_ids[:word_count],
+                self.word_end_ids[:word_count],
+            ):
+                mutable_edge_counts[start_id * self.char_count + end_id] += 1
+
+            mutable_active_masks = [0] * self.char_count
+            for start_id in range(self.char_count):
+                row_offset = start_id * self.char_count
+                mask = 0
+                for end_id in range(self.char_count):
+                    if mutable_edge_counts[row_offset + end_id] > 0:
+                        mask |= 1 << end_id
+                mutable_active_masks[start_id] = mask
+
+            edge_counts = tuple(mutable_edge_counts)
+            active_end_masks = tuple(mutable_active_masks)
+            dictionary_hash = hashlib.sha256(
+                f"{self.dictionary_hash}\0ranked-prefix\0{word_count}".encode("utf-8")
+            ).hexdigest()
+
+        return EdgeDictionary(
+            dictionary_hash=dictionary_hash,
+            normalization_version=self.normalization_version,
+            char_to_id=dict(self.char_to_id),
+            id_to_char=self.id_to_char,
+            char_count=self.char_count,
+            edge_instance_count=word_count,
+            initial_edge_counts=edge_counts,
+            initial_active_end_masks=active_end_masks,
+        )
+
+    def word_view_rows(self) -> list[dict[str, object]]:
+        """Return a stable, human-readable row for every dictionary word."""
+
+        rows: list[dict[str, object]] = []
+        for word_id, reading in enumerate(self.word_readings):
+            start_id = self.word_start_ids[word_id]
+            end_id = self.word_end_ids[word_id]
+            rows.append(
+                {
+                    "word_id": word_id,
+                    "normalized_reading": reading,
+                    "normalized_length": self.word_lengths[word_id],
+                    "start_id": start_id,
+                    "start_char": self.id_to_char[start_id],
+                    "end_id": end_id,
+                    "end_char": self.id_to_char[end_id],
+                    "ends_with_n": self.id_to_char[end_id] == "ん",
+                    "edge_word_count": self.edge_count(start_id, end_id),
+                }
+            )
+        return rows
+
+    def edge_view_rows(self) -> list[dict[str, object]]:
+        """Return one stable row for every non-empty directed multigraph edge."""
+
+        rows: list[dict[str, object]] = []
+        for start_id in range(self.char_count):
+            for end_id in range(self.char_count):
+                word_ids = self.bucket(start_id, end_id)
+                if not word_ids:
+                    continue
+                rows.append(
+                    {
+                        "edge_index": self.edge_index(start_id, end_id),
+                        "start_id": start_id,
+                        "start_char": self.id_to_char[start_id],
+                        "end_id": end_id,
+                        "end_char": self.id_to_char[end_id],
+                        "word_count": len(word_ids),
+                        "word_ids": json.dumps(list(word_ids), separators=(",", ":")),
+                        "words": json.dumps(
+                            [self.word_readings[word_id] for word_id in word_ids],
+                            ensure_ascii=False,
+                            separators=(",", ":"),
+                        ),
+                    }
+                )
+        return rows
+
+    def export_review_csvs(
+        self,
+        words_path: str | Path,
+        edges_path: str | Path,
+    ) -> tuple[Path, Path]:
+        """Write deterministic CSV views for inspecting words and graph edges."""
+
+        words_output = Path(words_path)
+        edges_output = Path(edges_path)
+        _write_csv(
+            self.word_view_rows(),
+            [
+                "word_id",
+                "normalized_reading",
+                "normalized_length",
+                "start_id",
+                "start_char",
+                "end_id",
+                "end_char",
+                "ends_with_n",
+                "edge_word_count",
+            ],
+            words_output,
+        )
+        _write_csv(
+            self.edge_view_rows(),
+            [
+                "edge_index",
+                "start_id",
+                "start_char",
+                "end_id",
+                "end_char",
+                "word_count",
+                "word_ids",
+                "words",
+            ],
+            edges_output,
+        )
+        return words_output, edges_output
 
     def validate(self) -> None:
         expected_edge_size = self.char_count * self.char_count
@@ -346,6 +559,26 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: source.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _write_csv(rows: Iterable[dict[str, object]], fieldnames: list[str], path: Path) -> None:
+    buffer = io.StringIO(newline="")
+    writer = csv.DictWriter(buffer, fieldnames=fieldnames, lineterminator="\n")
+    writer.writeheader()
+    writer.writerows(rows)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_name: str | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            "w", encoding="utf-8", newline="", dir=path.parent, prefix=f".{path.name}.", delete=False
+        ) as temporary:
+            temporary_name = temporary.name
+            temporary.write(buffer.getvalue())
+        os.replace(temporary_name, path)
+    except OSError:
+        if temporary_name is not None:
+            Path(temporary_name).unlink(missing_ok=True)
+        raise
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:

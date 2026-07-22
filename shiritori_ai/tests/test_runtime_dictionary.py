@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import json
 import sys
 import tempfile
@@ -63,6 +64,26 @@ class RuntimeDictionaryTest(unittest.TestCase):
         mask = self.runtime.initial_active_end_masks[start_id]
         self.assertEqual({index for index in range(self.runtime.char_count) if mask & (1 << index)}, expected)
 
+    def test_ranked_prefix_edge_dictionary_uses_only_prefix_words(self) -> None:
+        prefix_size = 3
+        prefix_edges = self.runtime.to_edge_dictionary(word_count=prefix_size)
+        independently_built = RuntimeDictionary.from_readings(
+            self.words[:prefix_size]
+        ).to_edge_dictionary()
+
+        self.assertEqual(prefix_edges.edge_instance_count, prefix_size)
+        for start_char in independently_built.id_to_char:
+            for end_char in independently_built.id_to_char:
+                expected = independently_built.edge_count(
+                    independently_built.char_to_id[start_char],
+                    independently_built.char_to_id[end_char],
+                )
+                actual = prefix_edges.edge_count(
+                    prefix_edges.char_to_id[start_char],
+                    prefix_edges.char_to_id[end_char],
+                )
+                self.assertEqual(actual, expected)
+
     def test_empty_and_n_ending_buckets(self) -> None:
         a_id = self.runtime.char_to_id["あ"]
         n_id = self.runtime.char_to_id["ん"]
@@ -95,6 +116,41 @@ class RuntimeDictionaryTest(unittest.TestCase):
             loaded = RuntimeDictionary.from_details_jsonl(path)
         self.assertEqual(loaded.word_readings, tuple(self.words))
         self.assertEqual(loaded.word_to_id, {word: word_id for word_id, word in enumerate(self.words)})
+
+    def test_word_and_edge_review_csvs_are_complete_and_stable(self) -> None:
+        word_rows = self.runtime.word_view_rows()
+        edge_rows = self.runtime.edge_view_rows()
+        self.assertEqual(len(word_rows), self.runtime.word_count)
+        self.assertEqual(sum(int(row["word_count"]) for row in edge_rows), self.runtime.word_count)
+        self.assertEqual(
+            [(row["start_id"], row["end_id"]) for row in edge_rows],
+            sorted((row["start_id"], row["end_id"]) for row in edge_rows),
+        )
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            first_words = root / "first.words.csv"
+            first_edges = root / "first.edges.csv"
+            second_words = root / "second.words.csv"
+            second_edges = root / "second.edges.csv"
+            self.runtime.export_review_csvs(first_words, first_edges)
+            self.runtime.export_review_csvs(second_words, second_edges)
+            with first_words.open(encoding="utf-8", newline="") as source:
+                saved_words = list(csv.DictReader(source))
+            with first_edges.open(encoding="utf-8", newline="") as source:
+                saved_edges = list(csv.DictReader(source))
+
+            self.assertEqual(first_words.read_bytes(), second_words.read_bytes())
+            self.assertEqual(first_edges.read_bytes(), second_edges.read_bytes())
+
+        self.assertEqual(len(saved_words), self.runtime.word_count)
+        self.assertEqual(sum(int(row["word_count"]) for row in saved_edges), self.runtime.word_count)
+        first_edge_words = json.loads(saved_edges[0]["words"])
+        first_edge_word_ids = json.loads(saved_edges[0]["word_ids"])
+        self.assertEqual(
+            first_edge_words,
+            [self.runtime.word_readings[word_id] for word_id in first_edge_word_ids],
+        )
 
 
 if __name__ == "__main__":

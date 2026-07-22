@@ -15,7 +15,7 @@ JMdict由来の情報保持型マスター辞書から、再現可能な名詞�
 - 近似AI状態: `src/agents.py`の`GameState(current_char, used_ids)`
 - AI対AI: `src/match.py`の`simulate_match`
 - 人間対AI: `src/human_cli.py`
-- 完全解析: `src/exact_solver.py`の`ShiritoriSolver(current_char, used_mask)`
+- 完全解析: `src/exact_solver.py`の辺使用回数を符号化した`ShiritoriSolver(required_char_id, edge_usage_code)`
 - 実験入口: `src/experiments_exact.py`、`src/experiments_approx.py`
 - 既存統計: `src/dictionary_stats.py`
 - テスト: `tests/test_normalize.py`、`test_dataset.py`、`test_master_dictionary.py`、`test_solver.py`、`test_agents_match.py`
@@ -63,11 +63,12 @@ JMdict由来の情報保持型マスター辞書から、再現可能な名詞�
 
 - AI対AI用`AIEdgeState`: `required_char_id`、辺数、active mask、辺履歴だけを持つ。
 - `apply_edge`/`undo_edge`を定数時間にする。
-- 表示時に辺履歴をバケット順の異なる具体語へ決定的に割り当てる。
+- AI対AIでは辺履歴を具体語へ変換せず、辺IDと辺数だけを記録する。
 - 人間対AI用`HumanRuntimeState`: `used_word_ids`、`bucket_cursors`、具体語履歴を追加する。
 - 人間入力は共通正規化を使い、失敗理由を返す。
-- 既存AIアダプタは辺履歴を具体word ID集合へ決定的に復元し、既存`GameState`と`WordGraph`を渡す。AI実装は変更しない。
-- 旧`simulate_match`と旧`human_cli`経路は削除しない。
+- Random、Greedy、Minimax、AlphaBeta、MonteCarloは後続作業で辺ネイティブ化し、単語を持たない`EdgeDictionary`を渡す。
+- 人間対AIだけはAIが辺を確定した後に未使用の具体語を割り当てる。
+- 旧`simulate_match`と旧word方式AI APIは比較用に削除しない。
 
 ### 第五段階: 辞書分析
 

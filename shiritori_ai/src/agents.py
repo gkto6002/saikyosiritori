@@ -6,9 +6,12 @@ import math
 import random
 import time
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from game import WordGraph
+
+if TYPE_CHECKING:
+    from runtime_state import AIEdgeState
 
 
 LOSS_SCORE = -1_000_000.0
@@ -31,6 +34,16 @@ class MoveDecision:
     extra: dict[str, Any] = field(default_factory=dict)
 
 
+@dataclass(frozen=True)
+class EdgeMoveDecision:
+    start_id: int | None
+    end_id: int | None
+    elapsed_time_sec: float
+    timed_out: bool
+    score: float
+    extra: dict[str, Any] = field(default_factory=dict)
+
+
 class BaseAgent:
     name = "base"
 
@@ -39,6 +52,9 @@ class BaseAgent:
         self.rng = random.Random(random_seed)
 
     def choose_move(self, graph: WordGraph, state: GameState) -> MoveDecision:
+        raise NotImplementedError
+
+    def choose_edge(self, state: AIEdgeState) -> EdgeMoveDecision:
         raise NotImplementedError
 
     def legal_moves(self, graph: WordGraph, state: GameState) -> list[int]:
@@ -151,6 +167,100 @@ def evaluate_position(graph: WordGraph, state: GameState, deadline: float | None
     return best_greedy + safe_count * 6.0 + evaluated_count * 2.0 - danger_count * 4.0
 
 
+def edge_is_terminal(state: AIEdgeState, end_id: int) -> bool:
+    return state.edge_dictionary.char_to_id.get("ん") == end_id
+
+
+def weighted_edge_choice(
+    state: AIEdgeState,
+    edges: list[tuple[int, int]],
+    rng: random.Random,
+) -> tuple[int, int]:
+    weights = [
+        state.edge_counts[state.edge_dictionary.edge_index(start_id, end_id)]
+        for start_id, end_id in edges
+    ]
+    return rng.choices(edges, weights=weights, k=1)[0]
+
+
+def edge_greedy_score(state: AIEdgeState, start_id: int, end_id: int) -> float:
+    if edge_is_terminal(state, end_id):
+        return LOSS_SCORE
+
+    state.apply_edge(start_id, end_id)
+    try:
+        opponent_reply_count = state.legal_word_count()
+        if opponent_reply_count == 0:
+            return WIN_SCORE
+        n_id = state.edge_dictionary.char_to_id.get("ん")
+        opponent_danger_count = (
+            0
+            if n_id is None
+            else state.edge_counts[state.edge_dictionary.edge_index(end_id, n_id)]
+        )
+        opponent_safe_count = opponent_reply_count - opponent_danger_count
+        remaining_from_end_char = opponent_reply_count
+        return (
+            -12.0 * opponent_reply_count
+            -8.0 * opponent_safe_count
+            -3.0 * remaining_from_end_char
+            +2.5 * opponent_danger_count
+        )
+    finally:
+        state.undo_edge()
+
+
+def greedy_ordered_edges_until_deadline(
+    state: AIEdgeState,
+    edges: list[tuple[int, int]],
+    deadline: float,
+    limit: int | None = None,
+) -> tuple[list[tuple[int, int]], bool]:
+    scored: list[tuple[float, int, int]] = []
+    timed_out = False
+    for start_id, end_id in edges:
+        if time.perf_counter() >= deadline:
+            timed_out = True
+            break
+        scored.append((edge_greedy_score(state, start_id, end_id), start_id, end_id))
+    scored.sort(key=lambda item: (-item[0], item[1], item[2]))
+    ordered = [(start_id, end_id) for _score, start_id, end_id in scored]
+    if limit is not None:
+        ordered = ordered[:limit]
+    return ordered, timed_out or time.perf_counter() >= deadline
+
+
+def evaluate_edge_position(state: AIEdgeState, deadline: float | None = None) -> float:
+    edges = state.available_edges()
+    if not edges:
+        return LOSS_SCORE
+
+    best_greedy = LOSS_SCORE
+    safe_count = 0
+    danger_count = 0
+    evaluated_count = 0
+    timed_out = False
+    for start_id, end_id in edges:
+        if deadline is not None and time.perf_counter() >= deadline:
+            timed_out = True
+            break
+        multiplicity = state.edge_counts[
+            state.edge_dictionary.edge_index(start_id, end_id)
+        ]
+        evaluated_count += multiplicity
+        if edge_is_terminal(state, end_id):
+            danger_count += multiplicity
+            continue
+        safe_count += multiplicity
+        best_greedy = max(best_greedy, edge_greedy_score(state, start_id, end_id))
+
+    if safe_count == 0:
+        if timed_out and evaluated_count:
+            return 0.0
+        return LOSS_SCORE / 2
+    return best_greedy + safe_count * 6.0 + evaluated_count * 2.0 - danger_count * 4.0
+
+
 class RandomAgent(BaseAgent):
     name = "random"
 
@@ -168,6 +278,22 @@ class RandomAgent(BaseAgent):
             elapsed_time_sec=time.perf_counter() - started,
             timed_out=False,
             score=0.0,
+        )
+
+    def choose_edge(self, state: AIEdgeState) -> EdgeMoveDecision:
+        started = time.perf_counter()
+        edges = state.available_edges()
+        if not edges:
+            return EdgeMoveDecision(None, None, time.perf_counter() - started, False, LOSS_SCORE)
+        safe_edges = [edge for edge in edges if not edge_is_terminal(state, edge[1])]
+        start_id, end_id = weighted_edge_choice(state, safe_edges or edges, self.rng)
+        return EdgeMoveDecision(
+            start_id,
+            end_id,
+            time.perf_counter() - started,
+            False,
+            0.0,
+            {"move_unit": "edge_type"},
         )
 
 
@@ -206,6 +332,40 @@ class GreedyAgent(BaseAgent):
             timed_out=timed_out or time.perf_counter() >= deadline,
             score=best_score,
             extra={"evaluated_moves": evaluated},
+        )
+
+    def choose_edge(self, state: AIEdgeState) -> EdgeMoveDecision:
+        started = time.perf_counter()
+        deadline = self._deadline()
+        edges = state.available_edges()
+        if not edges:
+            return EdgeMoveDecision(None, None, time.perf_counter() - started, False, LOSS_SCORE)
+
+        best_edge = edges[0]
+        best_score = -math.inf
+        evaluated = 0
+        timed_out = False
+        for start_id, end_id in edges:
+            if time.perf_counter() >= deadline:
+                timed_out = True
+                break
+            score = edge_greedy_score(state, start_id, end_id)
+            evaluated += 1
+            if score > best_score:
+                best_score = score
+                best_edge = (start_id, end_id)
+
+        if best_score == -math.inf:
+            best_score = 0.0
+            safe_edges = [edge for edge in edges if not edge_is_terminal(state, edge[1])]
+            best_edge = weighted_edge_choice(state, safe_edges or edges, self.rng)
+        return EdgeMoveDecision(
+            best_edge[0],
+            best_edge[1],
+            time.perf_counter() - started,
+            timed_out or time.perf_counter() >= deadline,
+            best_score,
+            {"evaluated_moves": evaluated, "move_unit": "edge_type"},
         )
 
 
@@ -320,6 +480,105 @@ class MinimaxAgent(BaseAgent):
             score=best_score,
             extra=self._search_extra(evaluated, effective_depth),
         )
+
+    def choose_edge(self, state: AIEdgeState) -> EdgeMoveDecision:
+        started = time.perf_counter()
+        deadline = self._deadline()
+        effective_depth = self._effective_depth()
+        edges = state.available_edges()
+        if not edges:
+            return EdgeMoveDecision(None, None, time.perf_counter() - started, False, LOSS_SCORE)
+
+        ordered, ordering_timed_out = greedy_ordered_edges_until_deadline(
+            state,
+            edges,
+            deadline,
+            limit=self.branch_limit,
+        )
+        if not ordered:
+            fallback = weighted_edge_choice(state, edges, self.rng)
+            self._record_depth_result(True)
+            return EdgeMoveDecision(
+                fallback[0],
+                fallback[1],
+                time.perf_counter() - started,
+                True,
+                edge_greedy_score(state, *fallback),
+                self._search_extra(0, effective_depth, move_unit="edge_type"),
+            )
+
+        best_edge = ordered[0]
+        best_score = LOSS_SCORE
+        evaluated = 0
+        timed_out = ordering_timed_out
+        for start_id, end_id in ordered:
+            if time.perf_counter() >= deadline:
+                timed_out = True
+                break
+            score = self._score_edge(state, start_id, end_id, effective_depth, deadline)
+            evaluated += 1
+            if score > best_score:
+                best_score = score
+                best_edge = (start_id, end_id)
+
+        final_timed_out = timed_out or time.perf_counter() >= deadline
+        self._record_depth_result(final_timed_out)
+        return EdgeMoveDecision(
+            best_edge[0],
+            best_edge[1],
+            time.perf_counter() - started,
+            final_timed_out,
+            best_score,
+            self._search_extra(evaluated, effective_depth, move_unit="edge_type"),
+        )
+
+    def _score_edge(
+        self,
+        state: AIEdgeState,
+        start_id: int,
+        end_id: int,
+        depth: int,
+        deadline: float,
+    ) -> float:
+        if edge_is_terminal(state, end_id):
+            return LOSS_SCORE
+        state.apply_edge(start_id, end_id)
+        try:
+            return -self._edge_negamax(state, depth - 1, deadline)
+        finally:
+            state.undo_edge()
+
+    def _edge_negamax(self, state: AIEdgeState, depth: int, deadline: float) -> float:
+        if time.perf_counter() >= deadline:
+            return 0.0
+        edges = state.available_edges()
+        if not edges:
+            return LOSS_SCORE
+        if depth <= 0:
+            return evaluate_edge_position(state, deadline)
+
+        ordered, _timed_out = greedy_ordered_edges_until_deadline(
+            state,
+            edges,
+            deadline,
+            limit=self.branch_limit,
+        )
+        if not ordered:
+            return evaluate_edge_position(state, deadline)
+        best = LOSS_SCORE
+        for start_id, end_id in ordered:
+            if edge_is_terminal(state, end_id):
+                score = LOSS_SCORE
+            else:
+                state.apply_edge(start_id, end_id)
+                try:
+                    score = -self._edge_negamax(state, depth - 1, deadline)
+                finally:
+                    state.undo_edge()
+            best = max(best, score)
+            if best >= WIN_SCORE:
+                break
+        return best
 
     def _score_move(
         self,
@@ -442,6 +701,156 @@ class AlphaBetaAgent(MinimaxAgent):
             score=best_score,
             extra=self._search_extra(evaluated, effective_depth, pruned_count=pruned_count),
         )
+
+    def choose_edge(self, state: AIEdgeState) -> EdgeMoveDecision:
+        started = time.perf_counter()
+        deadline = self._deadline()
+        effective_depth = self._effective_depth()
+        edges = state.available_edges()
+        if not edges:
+            return EdgeMoveDecision(None, None, time.perf_counter() - started, False, LOSS_SCORE)
+
+        ordered, ordering_timed_out = greedy_ordered_edges_until_deadline(
+            state,
+            edges,
+            deadline,
+            limit=self.branch_limit,
+        )
+        if not ordered:
+            fallback = weighted_edge_choice(state, edges, self.rng)
+            self._record_depth_result(True)
+            return EdgeMoveDecision(
+                fallback[0],
+                fallback[1],
+                time.perf_counter() - started,
+                True,
+                edge_greedy_score(state, *fallback),
+                self._search_extra(
+                    0,
+                    effective_depth,
+                    pruned_count=0,
+                    move_unit="edge_type",
+                ),
+            )
+
+        best_edge = ordered[0]
+        best_score = LOSS_SCORE
+        alpha = LOSS_SCORE
+        evaluated = 0
+        pruned_count = 0
+        timed_out = ordering_timed_out
+        for start_id, end_id in ordered:
+            if time.perf_counter() >= deadline:
+                timed_out = True
+                break
+            score, pruned = self._score_edge_alpha_beta(
+                state,
+                start_id,
+                end_id,
+                effective_depth,
+                deadline,
+                alpha,
+            )
+            pruned_count += pruned
+            evaluated += 1
+            if score > best_score:
+                best_score = score
+                best_edge = (start_id, end_id)
+            alpha = max(alpha, best_score)
+
+        final_timed_out = timed_out or time.perf_counter() >= deadline
+        self._record_depth_result(final_timed_out)
+        return EdgeMoveDecision(
+            best_edge[0],
+            best_edge[1],
+            time.perf_counter() - started,
+            final_timed_out,
+            best_score,
+            self._search_extra(
+                evaluated,
+                effective_depth,
+                pruned_count=pruned_count,
+                move_unit="edge_type",
+            ),
+        )
+
+    def _score_edge_alpha_beta(
+        self,
+        state: AIEdgeState,
+        start_id: int,
+        end_id: int,
+        depth: int,
+        deadline: float,
+        alpha: float,
+    ) -> tuple[float, int]:
+        if edge_is_terminal(state, end_id):
+            return LOSS_SCORE, 0
+        pruned_count_ref = [0]
+        state.apply_edge(start_id, end_id)
+        try:
+            score = -self._edge_negamax_alpha_beta(
+                state,
+                depth - 1,
+                -WIN_SCORE,
+                -alpha,
+                deadline,
+                pruned_count_ref,
+            )
+        finally:
+            state.undo_edge()
+        return score, pruned_count_ref[0]
+
+    def _edge_negamax_alpha_beta(
+        self,
+        state: AIEdgeState,
+        depth: int,
+        alpha: float,
+        beta: float,
+        deadline: float,
+        pruned_count_ref: list[int],
+    ) -> float:
+        if time.perf_counter() >= deadline:
+            return 0.0
+        edges = state.available_edges()
+        if not edges:
+            return LOSS_SCORE
+        if depth <= 0:
+            return evaluate_edge_position(state, deadline)
+
+        ordered, _timed_out = greedy_ordered_edges_until_deadline(
+            state,
+            edges,
+            deadline,
+            limit=self.branch_limit,
+        )
+        if not ordered:
+            return evaluate_edge_position(state, deadline)
+
+        best = LOSS_SCORE
+        for start_id, end_id in ordered:
+            if time.perf_counter() >= deadline:
+                return best if best != LOSS_SCORE else 0.0
+            if edge_is_terminal(state, end_id):
+                score = LOSS_SCORE
+            else:
+                state.apply_edge(start_id, end_id)
+                try:
+                    score = -self._edge_negamax_alpha_beta(
+                        state,
+                        depth - 1,
+                        -beta,
+                        -alpha,
+                        deadline,
+                        pruned_count_ref,
+                    )
+                finally:
+                    state.undo_edge()
+            best = max(best, score)
+            alpha = max(alpha, score)
+            if alpha >= beta:
+                pruned_count_ref[0] += 1
+                break
+        return best
 
     def _score_move_alpha_beta(
         self,
@@ -639,6 +1048,115 @@ class MonteCarloAgent(BaseAgent):
         else:
             side_to_move_win_rate = 0.5 + max(-0.4, min(0.4, position_score / 200.0))
         return 1.0 - side_to_move_win_rate if player_to_move == 1 else side_to_move_win_rate
+
+    def choose_edge(self, state: AIEdgeState) -> EdgeMoveDecision:
+        started = time.perf_counter()
+        deadline = self._deadline()
+        edges = state.available_edges()
+        if not edges:
+            return EdgeMoveDecision(None, None, time.perf_counter() - started, False, LOSS_SCORE)
+
+        candidates, ordering_timed_out = greedy_ordered_edges_until_deadline(
+            state,
+            edges,
+            deadline,
+            limit=self.candidate_limit,
+        )
+        common_extra = {
+            "candidate_limit": self.candidate_limit,
+            "playouts_per_move": self.playouts_per_move,
+            "max_playout_moves": self.max_playout_moves,
+            "max_playout_policy": "mobility_tiebreak",
+            "move_unit": "edge_type",
+        }
+        if not candidates:
+            fallback = weighted_edge_choice(state, edges, self.rng)
+            return EdgeMoveDecision(
+                fallback[0],
+                fallback[1],
+                time.perf_counter() - started,
+                True,
+                edge_greedy_score(state, *fallback),
+                {**common_extra, "evaluated_playouts": 0},
+            )
+
+        best_edge = candidates[0]
+        best_score = -math.inf
+        evaluated_playouts = 0
+        timed_out = ordering_timed_out
+        for start_id, end_id in candidates:
+            wins = 0.0
+            playouts = 0
+            for _index in range(self.playouts_per_move):
+                if time.perf_counter() >= deadline:
+                    timed_out = True
+                    break
+                wins += self._edge_playout_after_move(state, start_id, end_id)
+                playouts += 1
+                evaluated_playouts += 1
+            if playouts:
+                score = wins / playouts
+                if score > best_score:
+                    best_score = score
+                    best_edge = (start_id, end_id)
+            if timed_out:
+                break
+
+        if best_score == -math.inf:
+            best_score = edge_greedy_score(state, *best_edge)
+        return EdgeMoveDecision(
+            best_edge[0],
+            best_edge[1],
+            time.perf_counter() - started,
+            timed_out or time.perf_counter() >= deadline,
+            best_score,
+            {**common_extra, "evaluated_playouts": evaluated_playouts},
+        )
+
+    def _edge_playout_after_move(
+        self,
+        state: AIEdgeState,
+        start_id: int,
+        end_id: int,
+    ) -> float:
+        if edge_is_terminal(state, end_id):
+            return 0.0
+
+        initial_history_length = len(state.edge_history)
+        state.apply_edge(start_id, end_id)
+        player_to_move = 1
+        try:
+            for _turn in range(self.max_playout_moves):
+                edges = state.available_edges()
+                if not edges:
+                    return 1.0 if player_to_move == 1 else 0.0
+                safe_edges = [
+                    edge for edge in edges if not edge_is_terminal(state, edge[1])
+                ]
+                move = weighted_edge_choice(state, safe_edges or edges, self.rng)
+                state.apply_edge(*move)
+                if edge_is_terminal(state, move[1]):
+                    return 1.0 if player_to_move == 1 else 0.0
+                player_to_move = 1 - player_to_move
+
+            position_score = evaluate_edge_position(state)
+            if position_score >= WIN_SCORE / 2:
+                side_to_move_win_rate = 0.95
+            elif position_score <= LOSS_SCORE / 2:
+                side_to_move_win_rate = 0.05
+            else:
+                side_to_move_win_rate = 0.5 + max(
+                    -0.4,
+                    min(0.4, position_score / 200.0),
+                )
+            return (
+                1.0 - side_to_move_win_rate
+                if player_to_move == 1
+                else side_to_move_win_rate
+            )
+        finally:
+            while len(state.edge_history) > initial_history_length:
+                state.undo_edge()
 
 
 def build_agent(

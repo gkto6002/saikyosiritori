@@ -30,10 +30,14 @@ from experiments_approx import (  # noqa: E402
     summarize_first_player_by_size,
     summarize_top_end_chars,
 )
-from dictionary_stats import dictionary_char_total_rows  # noqa: E402
+from dictionary_stats import (  # noqa: E402
+    dictionary_char_total_rows,
+    edge_dictionary_char_total_rows,
+)
 from game import WordGraph, normalize_game_char  # noqa: E402
 from human_cli import parse_args as parse_human_args  # noqa: E402
 from match import simulate_match  # noqa: E402
+from runtime_dictionary import RuntimeDictionary  # noqa: E402
 from visualize import build_pairwise_agent_result_rows, summarize_agents_from_matches  # noqa: E402
 
 
@@ -52,6 +56,12 @@ class AgentsMatchTest(unittest.TestCase):
         self.assertEqual(o_row["start_count"], 2)
         self.assertEqual(o_row["end_count"], 1)
         self.assertEqual(o_row["total_count"], 3)
+        edge_rows = edge_dictionary_char_total_rows(
+            RuntimeDictionary.from_readings(graph.words).to_edge_dictionary(),
+            dict_size=3,
+            random_seed=0,
+        )
+        self.assertEqual(edge_rows, char_rows)
 
     def test_equivalent_kana_are_same_transition_character(self) -> None:
         graph = WordGraph.from_words(["らゔ", "ぶた", "ゔあいおりん"])
@@ -129,6 +139,20 @@ class AgentsMatchTest(unittest.TestCase):
             self.assertEqual(parse_human_args().time_limit_sec, 2.0)
         with patch.object(sys, "argv", ["experiments_approx.py", "--records", "dummy.csv"]):
             self.assertEqual(parse_approx_args().time_limit_sec, 4.0)
+        with patch.object(sys, "argv", ["human_cli.py", "--runtime", "dictionary.json"]):
+            self.assertEqual(parse_human_args().runtime, "dictionary.json")
+        with patch.object(
+            sys,
+            "argv",
+            ["experiments_approx.py", "--runtime-dir", "data/dictionaries"],
+        ):
+            self.assertEqual(parse_approx_args().runtime_dir, "data/dictionaries")
+        with patch.object(
+            sys,
+            "argv",
+            ["experiments_approx.py", "--runtime", "D10000.runtime.json"],
+        ):
+            self.assertEqual(parse_approx_args().runtime, ["D10000.runtime.json"])
 
     def test_alpha_beta_depth_can_be_configured_independently(self) -> None:
         agent = build_agent("alpha_beta", minimax_depth=3, alpha_beta_depth=2)

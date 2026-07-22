@@ -1,11 +1,11 @@
-"""Memoized complete solver for small finite-dictionary shiritori."""
+"""Memoized edge-only complete solver for finite-dictionary shiritori."""
 
 from __future__ import annotations
 
 import time
 from dataclasses import dataclass
 
-from game import WordGraph
+from runtime_dictionary import EdgeDictionary
 
 
 class AnalysisLimitExceeded(RuntimeError):
@@ -18,10 +18,12 @@ class AnalysisLimitExceeded(RuntimeError):
 
 @dataclass(frozen=True)
 class FirstMoveResult:
-    word: str
-    word_id: int
+    edge_index: int
+    start_id: int
+    end_id: int
     start_char: str
     end_char: str
+    edge_count: int
     is_winning: bool
     opponent_reply_count: int
     searched_state_count_after_move: int
@@ -32,26 +34,63 @@ class FirstMoveResult:
 
 
 class ShiritoriSolver:
-    """Solve positions represented by (current_char, used_mask)."""
+    """Solve positions represented by (required_char_id, edge_usage_code)."""
 
     def __init__(
         self,
-        graph: WordGraph,
+        edge_dictionary: EdgeDictionary,
         max_states: int | None = None,
         timeout_sec: float | None = None,
     ) -> None:
-        self.graph = graph
+        self.edge_dictionary = edge_dictionary
         self.max_states = max_states
         self.timeout_sec = timeout_sec
-        self.memo: dict[tuple[str, int], bool] = {}
-        self.best_move: dict[tuple[str, int], int | None] = {}
+        self.memo: dict[tuple[int, int], bool] = {}
+        self.best_edge: dict[tuple[int, int], int | None] = {}
         self.searched_state_count = 0
+        self.last_first_move_results: list[FirstMoveResult] = []
         self._started_at: float | None = None
+
+        edge_indices: list[int] = []
+        edge_start_ids: list[int] = []
+        edge_end_ids: list[int] = []
+        capacities: list[int] = []
+        edges_by_start: list[list[int]] = [
+            [] for _ in range(edge_dictionary.char_count)
+        ]
+        for start_id in range(edge_dictionary.char_count):
+            for end_id in range(edge_dictionary.char_count):
+                edge_index = edge_dictionary.edge_index(start_id, end_id)
+                capacity = edge_dictionary.initial_edge_counts[edge_index]
+                if capacity <= 0:
+                    continue
+                compact_edge_id = len(edge_indices)
+                edge_indices.append(edge_index)
+                edge_start_ids.append(start_id)
+                edge_end_ids.append(end_id)
+                capacities.append(capacity)
+                edges_by_start[start_id].append(compact_edge_id)
+
+        multipliers: list[int] = []
+        multiplier = 1
+        for capacity in capacities:
+            multipliers.append(multiplier)
+            multiplier *= capacity + 1
+
+        self.edge_indices = tuple(edge_indices)
+        self.edge_start_ids = tuple(edge_start_ids)
+        self.edge_end_ids = tuple(edge_end_ids)
+        self.edge_capacities = tuple(capacities)
+        self.edge_usage_multipliers = tuple(multipliers)
+        self.edges_by_start = tuple(tuple(bucket) for bucket in edges_by_start)
+        self.edge_type_count = len(edge_indices)
+        self.terminal_char_id = edge_dictionary.char_to_id.get("ん")
 
     def reset_memo(self) -> None:
         self.memo.clear()
-        self.best_move.clear()
+        self.best_edge.clear()
         self.searched_state_count = 0
+        self.last_first_move_results = []
         self._started_at = None
 
     def count_states(self) -> int:
@@ -69,86 +108,123 @@ class ShiritoriSolver:
             if elapsed >= self.timeout_sec:
                 raise AnalysisLimitExceeded(f"timeout exceeded: {self.timeout_sec} sec")
 
-    def solve(self, current_char: str, used_mask: int) -> bool:
+    def _used_count(self, compact_edge_id: int, edge_usage_code: int) -> int:
+        multiplier = self.edge_usage_multipliers[compact_edge_id]
+        radix = self.edge_capacities[compact_edge_id] + 1
+        return (edge_usage_code // multiplier) % radix
+
+    def remaining_edge_count(self, compact_edge_id: int, edge_usage_code: int) -> int:
+        return self.edge_capacities[compact_edge_id] - self._used_count(
+            compact_edge_id,
+            edge_usage_code,
+        )
+
+    def count_available_edge_instances(
+        self,
+        required_char_id: int,
+        edge_usage_code: int,
+    ) -> int:
+        return sum(
+            self.remaining_edge_count(compact_edge_id, edge_usage_code)
+            for compact_edge_id in self.edges_by_start[required_char_id]
+        )
+
+    def solve(self, required_char_id: int, edge_usage_code: int = 0) -> bool:
         """Return True if the player to move is winning from this position."""
 
-        state = (current_char, used_mask)
+        state = (required_char_id, edge_usage_code)
         if state in self.memo:
             return self.memo[state]
 
         self._check_limits()
         self.searched_state_count += 1
 
-        available_moves = self.graph.available_word_ids_mask(current_char, used_mask)
-        if not available_moves:
-            self.memo[state] = False
-            self.best_move[state] = None
-            return False
-
-        for word_id in available_moves:
-            end_char = self.graph.end_chars[word_id]
-            if end_char == "ん":
+        for compact_edge_id in self.edges_by_start[required_char_id]:
+            if self.remaining_edge_count(compact_edge_id, edge_usage_code) <= 0:
                 continue
-
-            next_mask = used_mask | (1 << word_id)
-            opponent_is_winning = self.solve(end_char, next_mask)
+            end_id = self.edge_end_ids[compact_edge_id]
+            if end_id == self.terminal_char_id:
+                continue
+            next_code = edge_usage_code + self.edge_usage_multipliers[compact_edge_id]
+            opponent_is_winning = self.solve(end_id, next_code)
             if not opponent_is_winning:
                 self.memo[state] = True
-                self.best_move[state] = word_id
+                self.best_edge[state] = self.edge_indices[compact_edge_id]
                 return True
 
         self.memo[state] = False
-        self.best_move[state] = None
+        self.best_edge[state] = None
         return False
 
-    def get_best_move_index(self, current_char: str, used_mask: int) -> int | None:
-        state = (current_char, used_mask)
+    def get_best_edge_index(
+        self,
+        required_char_id: int,
+        edge_usage_code: int = 0,
+    ) -> int | None:
+        state = (required_char_id, edge_usage_code)
         if state not in self.memo:
-            self.solve(current_char, used_mask)
-        return self.best_move.get(state)
+            self.solve(required_char_id, edge_usage_code)
+        return self.best_edge.get(state)
 
-    def get_best_move(self, current_char: str, used_mask: int) -> str | None:
-        word_id = self.get_best_move_index(current_char, used_mask)
-        if word_id is None:
+    def get_best_edge(
+        self,
+        required_char_id: int,
+        edge_usage_code: int = 0,
+    ) -> tuple[int, int] | None:
+        edge_index = self.get_best_edge_index(required_char_id, edge_usage_code)
+        if edge_index is None:
             return None
-        return self.graph.words[word_id]
+        return divmod(edge_index, self.edge_dictionary.char_count)
 
-    def analyze_first_moves(self, reset_between_moves: bool = False) -> list[FirstMoveResult]:
-        """Analyze every word as a fixed first move."""
+    def analyze_first_moves(
+        self,
+        reset_between_moves: bool = False,
+        stop_on_first_win: bool = True,
+    ) -> list[FirstMoveResult]:
+        """Analyze first edges, stopping as soon as one winning edge is found."""
 
         results: list[FirstMoveResult] = []
-        for word_id, word in enumerate(self.graph.words):
+        self.last_first_move_results = results
+        for compact_edge_id, edge_index in enumerate(self.edge_indices):
             if reset_between_moves:
                 self.reset_memo()
+                self.last_first_move_results = results
 
             before_count = self.searched_state_count
-            start_char = self.graph.start_chars[word_id]
-            end_char = self.graph.end_chars[word_id]
-            used_mask = 1 << word_id
+            start_id = self.edge_start_ids[compact_edge_id]
+            end_id = self.edge_end_ids[compact_edge_id]
+            edge_usage_code = self.edge_usage_multipliers[compact_edge_id]
 
-            if end_char == "ん":
+            if end_id == self.terminal_char_id:
                 is_winning = False
                 opponent_reply_count = 0
             else:
-                opponent_is_winning = self.solve(end_char, used_mask)
+                opponent_is_winning = self.solve(end_id, edge_usage_code)
                 is_winning = not opponent_is_winning
-                opponent_reply_count = self.graph.count_available_words_mask(end_char, used_mask)
+                opponent_reply_count = self.count_available_edge_instances(
+                    end_id,
+                    edge_usage_code,
+                )
 
             if reset_between_moves:
                 searched_after_move = self.searched_state_count
             else:
                 searched_after_move = self.searched_state_count - before_count
 
-            results.append(
-                FirstMoveResult(
-                    word=word,
-                    word_id=word_id,
-                    start_char=start_char,
-                    end_char=end_char,
-                    is_winning=is_winning,
-                    opponent_reply_count=opponent_reply_count,
-                    searched_state_count_after_move=searched_after_move,
-                )
+            result = FirstMoveResult(
+                edge_index=edge_index,
+                start_id=start_id,
+                end_id=end_id,
+                start_char=self.edge_dictionary.id_to_char[start_id],
+                end_char=self.edge_dictionary.id_to_char[end_id],
+                edge_count=self.edge_capacities[compact_edge_id],
+                is_winning=is_winning,
+                opponent_reply_count=opponent_reply_count,
+                searched_state_count_after_move=searched_after_move,
             )
+            results.append(result)
+
+            if stop_on_first_win and result.is_winning:
+                break
 
         return results

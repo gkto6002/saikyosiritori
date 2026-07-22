@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Iterable
 
 from normalize import NORMALIZATION_VERSION
+from runtime_dictionary import RuntimeDictionary
 
 
 FORMAT_VERSION = "experiment_dictionary_v1"
@@ -39,6 +40,9 @@ class ExperimentDictionaryArtifact:
     details_path: Path
     metadata_path: Path
     statistics_path: Path
+    runtime_path: Path
+    words_csv_path: Path
+    edges_csv_path: Path
     requested_size: int
     actual_size: int
     candidate_count: int
@@ -238,10 +242,29 @@ def write_experiment_dictionary(
     details_path = output / f"{dictionary_name}.jsonl"
     metadata_path = output / f"{dictionary_name}.metadata.json"
     statistics_path = output / f"{dictionary_name}.stats.json"
+    runtime_path = output / f"{dictionary_name}.runtime.json"
+    words_csv_path = output / f"{dictionary_name}.words.csv"
+    edges_csv_path = output / f"{dictionary_name}.edges.csv"
 
     _atomic_write_text("".join(f"{record['normalized_reading']}\n" for record in details), text_path)
     _write_jsonl(details, details_path)
+    runtime = RuntimeDictionary.from_detail_records(
+        details,
+        dictionary_hash=_sha256(details_path),
+        normalization_version=NORMALIZATION_VERSION,
+    )
+    runtime.save(runtime_path)
+    runtime.export_review_csvs(words_csv_path, edges_csv_path)
     statistics = experiment_statistics(details, candidate_count=candidate_count)
+    statistics.update(
+        {
+            "runtime_char_count": runtime.char_count,
+            "runtime_total_edge_count": sum(runtime.initial_edge_counts),
+            "runtime_distinct_edge_type_count": sum(
+                count > 0 for count in runtime.initial_edge_counts
+            ),
+        }
+    )
     _write_json(statistics, statistics_path)
     metadata = {
         "dictionary_name": dictionary_name,
@@ -262,12 +285,18 @@ def write_experiment_dictionary(
         "candidate_word_count": candidate_count,
         "dictionary_sha256": _sha256(text_path),
         "details_sha256": _sha256(details_path),
+        "runtime_dictionary_sha256": _sha256(runtime_path),
+        "words_csv_sha256": _sha256(words_csv_path),
+        "edges_csv_sha256": _sha256(edges_csv_path),
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "format_version": FORMAT_VERSION,
         "normalization_version": NORMALIZATION_VERSION,
         "text_file_name": text_path.name,
         "details_file_name": details_path.name,
         "statistics_file_name": statistics_path.name,
+        "runtime_file_name": runtime_path.name,
+        "words_csv_file_name": words_csv_path.name,
+        "edges_csv_file_name": edges_csv_path.name,
     }
     _write_json(metadata, metadata_path)
     return ExperimentDictionaryArtifact(
@@ -276,6 +305,9 @@ def write_experiment_dictionary(
         details_path=details_path,
         metadata_path=metadata_path,
         statistics_path=statistics_path,
+        runtime_path=runtime_path,
+        words_csv_path=words_csv_path,
+        edges_csv_path=edges_csv_path,
         requested_size=size,
         actual_size=len(details),
         candidate_count=candidate_count,
@@ -359,6 +391,9 @@ def main() -> None:
             f"dictionary={artifact.dictionary_name} requested={artifact.requested_size} "
             f"actual={artifact.actual_size} candidates={artifact.candidate_count}"
         )
+        print(f"  words={artifact.words_csv_path}")
+        print(f"  edges={artifact.edges_csv_path}")
+        print(f"  runtime={artifact.runtime_path}")
 
 
 if __name__ == "__main__":

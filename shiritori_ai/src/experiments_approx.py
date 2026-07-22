@@ -12,9 +12,9 @@ from pathlib import Path
 
 from agents import build_agent
 from dataset import ReadingRecord, parse_jmdict, read_csv_records, select_records, write_json, write_records_csv
-from dictionary_stats import DICTIONARY_CHAR_TOTAL_FIELDS, dictionary_char_total_rows
-from game import WordGraph
-from match import MatchResult, append_jsonl, simulate_match
+from dictionary_stats import DICTIONARY_CHAR_TOTAL_FIELDS, edge_dictionary_char_total_rows
+from match import MatchResult, append_jsonl, simulate_runtime_match
+from runtime_dictionary import RuntimeDictionary
 
 
 MATCH_FIELDS = [
@@ -70,6 +70,11 @@ MATCH_FLOW_FIELDS = [
     "player",
     "agent",
     "required_start_char",
+    "edge_index",
+    "start_id",
+    "end_id",
+    "edge_count_before",
+    "edge_count_after",
     "previous_word",
     "word",
     "start_char",
@@ -281,7 +286,9 @@ def build_match_flow_rows(
     chain: list[str] = []
     matchup = f"{result.first_agent} vs {result.second_agent}"
     for turn in result.history:
-        chain.append(str(turn["word"]))
+        word = str(turn.get("word", ""))
+        edge_label = f"{turn['start_char']}→{turn['end_char']}"
+        chain.append(word or edge_label)
         rows.append(
             {
                 "matchup": matchup,
@@ -296,8 +303,13 @@ def build_match_flow_rows(
                 "player": turn["player"],
                 "agent": turn["agent"],
                 "required_start_char": turn.get("required_start_char", ""),
+                "edge_index": turn.get("edge_index", ""),
+                "start_id": turn.get("start_id", ""),
+                "end_id": turn.get("end_id", ""),
+                "edge_count_before": turn.get("edge_count_before", ""),
+                "edge_count_after": turn.get("edge_count_after", ""),
                 "previous_word": turn.get("previous_word", ""),
-                "word": turn["word"],
+                "word": word,
                 "start_char": turn["start_char"],
                 "end_char": turn["end_char"],
                 "next_required_start_char": turn.get("next_required_start_char", ""),
@@ -321,7 +333,18 @@ def build_match_flow_json_row(
     dict_size: int,
     random_seed: int,
 ) -> dict[str, object]:
-    words = [str(turn["word"]) for turn in result.history]
+    words = [str(turn["word"]) for turn in result.history if turn.get("word")]
+    edges = [
+        {
+            "edge_index": turn.get("edge_index"),
+            "start_id": turn.get("start_id"),
+            "end_id": turn.get("end_id"),
+            "start_char": turn.get("start_char"),
+            "end_char": turn.get("end_char"),
+        }
+        for turn in result.history
+    ]
+    edge_labels = [f"{edge['start_char']}→{edge['end_char']}" for edge in edges]
     return {
         "matchup": f"{result.first_agent} vs {result.second_agent}",
         "first_agent": result.first_agent,
@@ -334,7 +357,8 @@ def build_match_flow_json_row(
         "turn_count": result.turn_count,
         "used_word_count": result.used_word_count,
         "word_chain": words,
-        "flow_text": " -> ".join(words),
+        "edge_chain": edges,
+        "flow_text": " -> ".join(words or edge_labels),
         "turns": result.history,
     }
 
@@ -460,6 +484,15 @@ def parse_args() -> argparse.Namespace:
     source_group = parser.add_mutually_exclusive_group(required=True)
     source_group.add_argument("--jmdict")
     source_group.add_argument("--records")
+    source_group.add_argument(
+        "--runtime",
+        nargs="+",
+        help="Explicit RuntimeDictionary JSON files (recommended)",
+    )
+    source_group.add_argument(
+        "--runtime-dir",
+        help="Directory containing D{size}_L{min}-{max}_seed{seed}.runtime.json",
+    )
     parser.add_argument("--sizes", nargs="+", type=int, default=[1000, 3000, 5000, 10000])
     parser.add_argument("--seeds", nargs="+", type=int, default=[0])
     parser.add_argument("--agents", nargs="+", default=["random", "greedy", "minimax", "monte_carlo", "alpha_beta"])
@@ -485,12 +518,23 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     output_dir = Path(args.output_dir)
-    dataset_dir = Path(args.dataset_dir) if args.dataset_dir else None
+    dataset_dir = (
+        Path(args.dataset_dir)
+        if args.dataset_dir and not args.runtime and not args.runtime_dir
+        else None
+    )
     output_dir.mkdir(parents=True, exist_ok=True)
     if dataset_dir is not None:
         dataset_dir.mkdir(parents=True, exist_ok=True)
 
-    records, source_metadata = load_records(args)
+    if args.runtime or args.runtime_dir:
+        records: list[ReadingRecord] | None = None
+        source_metadata: dict[str, object] = {
+            "source": list(args.runtime) if args.runtime else args.runtime_dir,
+            "mode": "runtime_dictionary",
+        }
+    else:
+        records, source_metadata = load_records(args)
     match_rows: list[dict[str, object]] = []
     flow_rows: list[dict[str, object]] = []
     flow_json_rows: list[dict[str, object]] = []
@@ -499,63 +543,124 @@ def main() -> None:
     if jsonl_path.exists():
         jsonl_path.unlink()
 
-    for dict_size in args.sizes:
-        max_moves = args.max_moves if args.max_moves is not None else min(dict_size, 3000)
-        for random_seed in args.seeds:
-            selected = select_records(records, dict_size, random_seed, pool_multiplier=args.pool_multiplier)
-            if dataset_dir is not None:
-                write_records_csv(selected, dataset_dir / f"D{dict_size}_seed{random_seed}.csv")
-            graph = WordGraph.from_words([record.reading for record in selected])
-            dictionary_char_rows.extend(dictionary_char_total_rows(graph, dict_size, random_seed))
+    runtime_jobs: list[tuple[int, int, RuntimeDictionary]] = []
+    if args.runtime:
+        for runtime_name in args.runtime:
+            runtime_path = Path(runtime_name)
+            runtime = RuntimeDictionary.load(runtime_path)
+            metadata_path = runtime_path.with_name(
+                runtime_path.name.removesuffix(".runtime.json") + ".metadata.json"
+            )
+            metadata = (
+                json.loads(metadata_path.read_text(encoding="utf-8"))
+                if metadata_path.is_file()
+                else {}
+            )
+            runtime_jobs.append(
+                (
+                    int(metadata.get("actual_word_count", runtime.word_count)),
+                    int(metadata.get("seed", 0)),
+                    runtime,
+                )
+            )
+    else:
+        for dict_size in args.sizes:
+            for random_seed in args.seeds:
+                if args.runtime_dir:
+                    runtime_path = Path(args.runtime_dir) / (
+                        f"D{dict_size}_L{args.min_length}-{args.max_length}_seed{random_seed}.runtime.json"
+                    )
+                    runtime = RuntimeDictionary.load(runtime_path)
+                else:
+                    assert records is not None
+                    selected = select_records(
+                        records,
+                        dict_size,
+                        random_seed,
+                        pool_multiplier=args.pool_multiplier,
+                    )
+                    if dataset_dir is not None:
+                        write_records_csv(
+                            selected,
+                            dataset_dir / f"D{dict_size}_seed{random_seed}.csv",
+                        )
+                    runtime = RuntimeDictionary.from_readings(
+                        record.reading for record in selected
+                    )
+                runtime_jobs.append((dict_size, random_seed, runtime))
 
-            for first_name, second_name in itertools.product(args.agents, repeat=2):
-                if first_name == second_name:
-                    continue
-                matchup_repetitions = repetitions_for_matchup(first_name, second_name, args.repetitions)
-                for repetition in range(matchup_repetitions):
-                    match_id = f"D{dict_size}_seed{random_seed}_{first_name}_vs_{second_name}_{repetition}"
-                    first_agent = build_agent(
-                        first_name,
-                        time_limit_sec=args.time_limit_sec,
-                        random_seed=random_seed * 100_000 + repetition * 100 + 1,
-                        minimax_depth=args.minimax_depth,
-                        alpha_beta_depth=args.alpha_beta_depth,
-                        branch_limit=args.branch_limit,
-                        monte_carlo_candidates=args.monte_carlo_candidates,
-                        monte_carlo_playouts=args.monte_carlo_playouts,
-                        monte_carlo_max_moves=args.monte_carlo_max_moves,
-                    )
-                    second_agent = build_agent(
-                        second_name,
-                        time_limit_sec=args.time_limit_sec,
-                        random_seed=random_seed * 100_000 + repetition * 100 + 2,
-                        minimax_depth=args.minimax_depth,
-                        alpha_beta_depth=args.alpha_beta_depth,
-                        branch_limit=args.branch_limit,
-                        monte_carlo_candidates=args.monte_carlo_candidates,
-                        monte_carlo_playouts=args.monte_carlo_playouts,
-                        monte_carlo_max_moves=args.monte_carlo_max_moves,
-                    )
-                    result = simulate_match(
-                        graph=graph,
-                        first_agent=first_agent,
-                        second_agent=second_agent,
-                        max_moves=max_moves,
-                        max_match_time_sec=args.max_match_time_sec,
-                        match_id=match_id,
-                    )
-                    row = result_to_row(match_id, dict_size, random_seed, result)
-                    match_rows.append(row)
-                    flow_rows.extend(build_match_flow_rows(result, match_id, dict_size, random_seed))
-                    flow_json_rows.append(build_match_flow_json_row(result, match_id, dict_size, random_seed))
-                    append_jsonl(
-                        [{"match_id": match_id, "history": result.history, "loss_reason": result.loss_reason}],
-                        jsonl_path,
-                    )
-                    print(
-                        f"{match_id}: winner={result.winner} turns={result.turn_count} "
-                        f"reason={result.loss_reason}"
-                    )
+    for dict_size, random_seed, runtime in runtime_jobs:
+        max_moves = args.max_moves if args.max_moves is not None else min(dict_size, 3000)
+        dictionary_char_rows.extend(
+            edge_dictionary_char_total_rows(
+                runtime.to_edge_dictionary(),
+                dict_size,
+                random_seed,
+            )
+        )
+
+        for first_name, second_name in itertools.product(args.agents, repeat=2):
+            if first_name == second_name:
+                continue
+            matchup_repetitions = repetitions_for_matchup(
+                first_name,
+                second_name,
+                args.repetitions,
+            )
+            for repetition in range(matchup_repetitions):
+                match_id = f"D{dict_size}_seed{random_seed}_{first_name}_vs_{second_name}_{repetition}"
+                first_agent = build_agent(
+                    first_name,
+                    time_limit_sec=args.time_limit_sec,
+                    random_seed=random_seed * 100_000 + repetition * 100 + 1,
+                    minimax_depth=args.minimax_depth,
+                    alpha_beta_depth=args.alpha_beta_depth,
+                    branch_limit=args.branch_limit,
+                    monte_carlo_candidates=args.monte_carlo_candidates,
+                    monte_carlo_playouts=args.monte_carlo_playouts,
+                    monte_carlo_max_moves=args.monte_carlo_max_moves,
+                )
+                second_agent = build_agent(
+                    second_name,
+                    time_limit_sec=args.time_limit_sec,
+                    random_seed=random_seed * 100_000 + repetition * 100 + 2,
+                    minimax_depth=args.minimax_depth,
+                    alpha_beta_depth=args.alpha_beta_depth,
+                    branch_limit=args.branch_limit,
+                    monte_carlo_candidates=args.monte_carlo_candidates,
+                    monte_carlo_playouts=args.monte_carlo_playouts,
+                    monte_carlo_max_moves=args.monte_carlo_max_moves,
+                )
+                result = simulate_runtime_match(
+                    runtime=runtime.to_edge_dictionary(),
+                    first_agent=first_agent,
+                    second_agent=second_agent,
+                    max_moves=max_moves,
+                    max_match_time_sec=args.max_match_time_sec,
+                    match_id=match_id,
+                )
+                row = result_to_row(match_id, dict_size, random_seed, result)
+                match_rows.append(row)
+                flow_rows.extend(
+                    build_match_flow_rows(result, match_id, dict_size, random_seed)
+                )
+                flow_json_rows.append(
+                    build_match_flow_json_row(result, match_id, dict_size, random_seed)
+                )
+                append_jsonl(
+                    [
+                        {
+                            "match_id": match_id,
+                            "history": result.history,
+                            "loss_reason": result.loss_reason,
+                        }
+                    ],
+                    jsonl_path,
+                )
+                print(
+                    f"{match_id}: winner={result.winner} turns={result.turn_count} "
+                    f"reason={result.loss_reason}"
+                )
 
     summary_rows = summarize_agents(match_rows)
     end_char_rows = summarize_agent_end_chars(flow_rows)
@@ -575,13 +680,15 @@ def main() -> None:
     write_json(
         {
             "source": source_metadata,
-            "sizes": args.sizes,
-            "seeds": args.seeds,
+            "sizes": sorted({dict_size for dict_size, _seed, _runtime in runtime_jobs}),
+            "seeds": sorted({seed for _size, seed, _runtime in runtime_jobs}),
             "agents": args.agents,
             "include_self_matches": False,
             "repetitions": args.repetitions,
             "repetition_policy": "repeat only matchups containing stochastic agents",
             "stochastic_agents": sorted(STOCHASTIC_AGENTS),
+            "game_state_mode": "edge_only",
+            "move_unit": "directed_edge_type_with_multiplicity",
             "analysis_repetition_weighting": "average repeated matchups to one matchup unit",
             "time_limit_sec": args.time_limit_sec,
             "max_moves": args.max_moves,

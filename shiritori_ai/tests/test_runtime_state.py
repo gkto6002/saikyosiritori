@@ -8,13 +8,18 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-from agents import GreedyAgent, RandomAgent  # noqa: E402
+from agents import (  # noqa: E402
+    AlphaBetaAgent,
+    GreedyAgent,
+    MinimaxAgent,
+    MonteCarloAgent,
+    RandomAgent,
+)
 from match import simulate_runtime_match  # noqa: E402
 from runtime_dictionary import RuntimeDictionary  # noqa: E402
 from runtime_state import (  # noqa: E402
     AIEdgeState,
     HumanRuntimeState,
-    RuntimeAgentAdapter,
 )
 
 
@@ -63,17 +68,12 @@ class AIEdgeStateTest(unittest.TestCase):
         self.assertEqual(state.edge_counts[edge_index], 1)
         self.assertTrue(state.active_end_masks[self.i_id] & (1 << self.i_id))
 
-    def test_display_assigns_distinct_words_without_mutating_state(self) -> None:
+    def test_ai_state_contains_no_word_data(self) -> None:
         state = AIEdgeState.initial(self.runtime)
-        state.apply_edge(self.i_id, self.i_id)
-        state.apply_edge(self.i_id, self.i_id)
-        before_counts = list(state.edge_counts)
-        before_masks = list(state.active_end_masks)
-        assigned = state.materialized_word_ids()
-        self.assertEqual(assigned, [0, 1])
-        self.assertEqual(len(set(assigned)), 2)
-        self.assertEqual(state.edge_counts, before_counts)
-        self.assertEqual(state.active_end_masks, before_masks)
+        self.assertFalse(hasattr(state, "runtime"))
+        self.assertFalse(hasattr(state.edge_dictionary, "word_readings"))
+        self.assertFalse(hasattr(state.edge_dictionary, "word_to_id"))
+        self.assertFalse(hasattr(state.edge_dictionary, "bucket_word_ids"))
 
     def test_counts_and_available_end_ids(self) -> None:
         state = AIEdgeState.initial(self.runtime)
@@ -116,31 +116,71 @@ class HumanRuntimeStateTest(unittest.TestCase):
         self.assertEqual(state.used_word_ids, {0, 1, 2})
         state.assert_consistent()
 
-
-class RuntimeAdapterTest(unittest.TestCase):
-    def test_existing_agent_returns_a_legal_edge(self) -> None:
-        runtime = make_runtime(["あい", "いあ", "いん"])
-        state = AIEdgeState.initial(runtime)
-        adapter = RuntimeAgentAdapter(runtime)
-        decision = adapter.choose_edge(GreedyAgent(time_limit_sec=1.0), state)
+    def test_edge_search_state_is_isolated_and_ai_move_becomes_one_word(self) -> None:
+        state = HumanRuntimeState.initial(self.runtime)
+        search_state = state.edge_search_state()
+        decision = GreedyAgent(time_limit_sec=1.0).choose_edge(search_state)
         self.assertIsNotNone(decision.start_id)
         self.assertIsNotNone(decision.end_id)
+        self.assertEqual(state.used_word_ids, set())
         assert decision.start_id is not None and decision.end_id is not None
-        state.apply_edge(decision.start_id, decision.end_id)
-        self.assertEqual(len(state.edge_history), 1)
+        word_id = state.choose_ai_word(decision.start_id, decision.end_id)
+        self.assertIn(word_id, state.used_word_ids)
+        self.assertEqual(state.word_history, [word_id])
+        state.assert_consistent()
 
-    def test_runtime_match_uses_distinct_display_words(self) -> None:
+
+class EdgeAgentIntegrationTest(unittest.TestCase):
+    def test_every_agent_returns_a_legal_edge_without_mutating_state(self) -> None:
+        runtime = make_runtime(["あい", "いあ", "いん"])
+        agents = [
+            RandomAgent(time_limit_sec=1.0),
+            GreedyAgent(time_limit_sec=1.0),
+            MinimaxAgent(time_limit_sec=1.0, depth=2, branch_limit=5),
+            AlphaBetaAgent(time_limit_sec=1.0, depth=2, branch_limit=5),
+            MonteCarloAgent(
+                time_limit_sec=1.0,
+                candidate_limit=5,
+                playouts_per_move=2,
+                max_playout_moves=10,
+            ),
+        ]
+        for agent in agents:
+            with self.subTest(agent=agent.name):
+                state = AIEdgeState.initial(runtime)
+                before_counts = list(state.edge_counts)
+                before_masks = list(state.active_end_masks)
+                decision = agent.choose_edge(state)
+                self.assertIsNotNone(decision.start_id)
+                self.assertIsNotNone(decision.end_id)
+                assert decision.start_id is not None and decision.end_id is not None
+                self.assertGreater(
+                    state.edge_counts[
+                        state.edge_dictionary.edge_index(
+                            decision.start_id,
+                            decision.end_id,
+                        )
+                    ],
+                    0,
+                )
+                self.assertEqual(state.edge_counts, before_counts)
+                self.assertEqual(state.active_end_masks, before_masks)
+                self.assertEqual(state.edge_history, [])
+
+    def test_runtime_match_history_contains_edges_and_no_words(self) -> None:
         runtime = make_runtime(["あい", "いあ", "いん"])
         result = simulate_runtime_match(
-            runtime,
+            runtime.to_edge_dictionary(),
             RandomAgent(random_seed=0),
             RandomAgent(random_seed=1),
             max_moves=10,
             max_match_time_sec=5.0,
         )
-        words = [row["word"] for row in result.history]
-        self.assertEqual(len(words), len(set(words)))
-        self.assertEqual(result.used_word_count, len(words))
+        self.assertTrue(result.history)
+        self.assertTrue(all("edge_index" in row for row in result.history))
+        self.assertTrue(all("word" not in row for row in result.history))
+        self.assertTrue(all("word_id" not in row for row in result.history))
+        self.assertEqual(result.used_word_count, len(result.history))
 
 
 if __name__ == "__main__":

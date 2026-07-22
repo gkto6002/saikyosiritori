@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import json
 import sys
 import tempfile
@@ -18,6 +19,7 @@ from experiment_dictionary import (  # noqa: E402
     select_ranked_records,
 )
 from game import WordGraph  # noqa: E402
+from runtime_dictionary import RuntimeDictionary  # noqa: E402
 
 
 def record(
@@ -127,9 +129,43 @@ class ExperimentDictionaryTest(unittest.TestCase):
 
             self.assertEqual(first[0].text_path.read_bytes(), second[0].text_path.read_bytes())
             self.assertEqual(first[0].details_path.read_bytes(), second[0].details_path.read_bytes())
+            self.assertEqual(first[0].runtime_path.read_bytes(), second[0].runtime_path.read_bytes())
+            self.assertEqual(first[0].words_csv_path.read_bytes(), second[0].words_csv_path.read_bytes())
+            self.assertEqual(first[0].edges_csv_path.read_bytes(), second[0].edges_csv_path.read_bytes())
             small_words = first[0].text_path.read_text(encoding="utf-8").splitlines()
             large_words = first[1].text_path.read_text(encoding="utf-8").splitlines()
             self.assertEqual(small_words, large_words[:3])
+
+    def test_runtime_and_review_views_are_generated_with_dictionary(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            master_path = root / "master.jsonl"
+            master_path.write_text(
+                "".join(json.dumps(item, ensure_ascii=False) + "\n" for item in self.master),
+                encoding="utf-8",
+            )
+            artifact = build_experiment_dictionaries(
+                master_path, root / "output", [6], [5], seed=0
+            )[0]
+
+            runtime = RuntimeDictionary.load(artifact.runtime_path)
+            with artifact.words_csv_path.open(encoding="utf-8", newline="") as source:
+                word_rows = list(csv.DictReader(source))
+            with artifact.edges_csv_path.open(encoding="utf-8", newline="") as source:
+                edge_rows = list(csv.DictReader(source))
+            metadata = json.loads(artifact.metadata_path.read_text(encoding="utf-8"))
+            statistics = json.loads(artifact.statistics_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(runtime.word_count, artifact.actual_size)
+        self.assertEqual(len(word_rows), runtime.word_count)
+        self.assertEqual(sum(int(row["word_count"]) for row in edge_rows), runtime.word_count)
+        self.assertEqual(metadata["runtime_file_name"], artifact.runtime_path.name)
+        self.assertEqual(metadata["words_csv_file_name"], artifact.words_csv_path.name)
+        self.assertEqual(metadata["edges_csv_file_name"], artifact.edges_csv_path.name)
+        self.assertEqual(
+            statistics["runtime_distinct_edge_type_count"],
+            len(edge_rows),
+        )
 
 
 if __name__ == "__main__":

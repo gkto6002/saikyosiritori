@@ -968,8 +968,8 @@ def main() -> None:
         exact_summary,
         "winning_first_move_count_mean",
         "winning_first_move_count_stdev",
-        "Mean count of winning opening moves",
-        "Winning opening move count by dictionary size",
+        "Mean multiplicity of first found winning edge",
+        "First found winning edge multiplicity by dictionary size",
         fig_dir / "exact_winning_first_moves_by_dict_size.png",
     )
     save_exact_win_rate(

@@ -12,16 +12,15 @@ from pathlib import Path
 
 from dataset import (
     ReadingRecord,
-    distribution_json,
     parse_jmdict,
     read_csv_records,
     select_records,
     write_json,
     write_records_csv,
 )
-from dictionary_stats import DICTIONARY_CHAR_TOTAL_FIELDS, dictionary_char_total_rows
+from dictionary_stats import DICTIONARY_CHAR_TOTAL_FIELDS, edge_dictionary_char_total_rows
 from exact_solver import AnalysisLimitExceeded, FirstMoveResult, ShiritoriSolver
-from game import WordGraph
+from runtime_dictionary import EdgeDictionary, RuntimeDictionary
 
 
 DEFAULT_SIZE_START = 100
@@ -33,6 +32,8 @@ EXACT_RUN_FIELDS = [
     "random_seed",
     "searched_state_count",
     "memo_size",
+    "edge_type_count",
+    "state_encoding",
     "elapsed_time_sec",
     "timed_out",
     "limit_reason",
@@ -40,6 +41,13 @@ EXACT_RUN_FIELDS = [
     "winning_first_move_count",
     "losing_first_move_count",
     "n_ending_count",
+    "decision_status",
+    "analyzed_first_edge_type_count",
+    "first_move_scan_complete",
+    "first_winning_edge_index",
+    "first_winning_start_char",
+    "first_winning_end_char",
+    "first_winning_edge_count",
     "start_distribution",
     "end_distribution",
 ]
@@ -60,9 +68,12 @@ EXACT_SUMMARY_FIELDS = [
 FIRST_MOVE_FIELDS = [
     "dict_size",
     "random_seed",
-    "word",
+    "edge_index",
+    "start_id",
+    "end_id",
     "start_char",
     "end_char",
+    "edge_count",
     "result",
     "opponent_reply_count",
     "searched_state_count_after_move",
@@ -108,16 +119,24 @@ def first_move_rows(
         {
             "dict_size": dict_size,
             "random_seed": random_seed,
-            "word": result.word,
+            "edge_index": result.edge_index,
+            "start_id": result.start_id,
+            "end_id": result.end_id,
             "start_char": result.start_char,
             "end_char": result.end_char,
+            "edge_count": result.edge_count,
             "result": result.result,
             "opponent_reply_count": result.opponent_reply_count,
             "searched_state_count_after_move": result.searched_state_count_after_move,
         }
         for result in sorted(
             results,
-            key=lambda item: (not item.is_winning, item.opponent_reply_count, item.word),
+            key=lambda item: (
+                not item.is_winning,
+                item.opponent_reply_count,
+                item.start_id,
+                item.end_id,
+            ),
         )
     ]
 
@@ -125,29 +144,158 @@ def first_move_rows(
 def char_stats_rows(
     dict_size: int,
     random_seed: int,
-    graph: WordGraph,
+    edge_dictionary: EdgeDictionary,
     first_moves: list[FirstMoveResult],
 ) -> list[dict[str, object]]:
-    chars = sorted(set(graph.start_chars) | set(graph.end_chars))
+    dictionary_rows = edge_dictionary_char_total_rows(
+        edge_dictionary,
+        dict_size,
+        random_seed,
+    )
     rows: list[dict[str, object]] = []
-    for char in chars:
-        total_to_char = sum(1 for result in first_moves if result.end_char == char)
+    for dictionary_row in dictionary_rows:
+        char = str(dictionary_row["char"])
+        total_to_char = sum(
+            result.edge_count for result in first_moves if result.end_char == char
+        )
         wins_to_char = sum(
-            1 for result in first_moves if result.end_char == char and result.is_winning
+            result.edge_count
+            for result in first_moves
+            if result.end_char == char and result.is_winning
         )
         rows.append(
             {
                 "dict_size": dict_size,
                 "random_seed": random_seed,
                 "char": char,
-                "start_count": graph.start_chars.count(char),
-                "end_count": graph.end_chars.count(char),
+                "start_count": dictionary_row["start_count"],
+                "end_count": dictionary_row["end_count"],
                 "win_move_count_to_char": wins_to_char,
                 "total_move_count_to_char": total_to_char,
                 "win_rate_to_char": f"{wins_to_char / total_to_char:.6f}" if total_to_char else "0.000000",
             }
         )
     return rows
+
+
+def run_edge_exact(
+    edge_dictionary: EdgeDictionary,
+    dict_size: int,
+    random_seed: int,
+    max_states: int | None,
+    timeout_sec: float | None,
+) -> tuple[dict[str, object], list[dict[str, object]], list[dict[str, object]], list[dict[str, object]]]:
+    solver = ShiritoriSolver(
+        edge_dictionary,
+        max_states=max_states,
+        timeout_sec=timeout_sec,
+    )
+    started = time.perf_counter()
+    timed_out = False
+    limit_reason = ""
+    first_results: list[FirstMoveResult] = []
+
+    try:
+        first_results = solver.analyze_first_moves(
+            reset_between_moves=False,
+            stop_on_first_win=True,
+        )
+    except AnalysisLimitExceeded as exc:
+        timed_out = True
+        limit_reason = exc.reason
+        first_results = list(solver.last_first_move_results)
+
+    elapsed = time.perf_counter() - started
+    winning_result = next((result for result in first_results if result.is_winning), None)
+    first_move_scan_complete = (
+        not timed_out and len(first_results) == solver.edge_type_count
+    )
+    if timed_out:
+        winning_count: object = ""
+        losing_count: object = ""
+        first_player_win: object = ""
+        decision_status = "timeout"
+    elif winning_result is not None:
+        # Every concrete word represented by the same edge has the same game effect.
+        winning_count = winning_result.edge_count
+        losing_count = sum(
+            result.edge_count for result in first_results if not result.is_winning
+        )
+        first_player_win = True
+        decision_status = "win_found"
+    else:
+        winning_count = 0
+        losing_count = edge_dictionary.edge_instance_count
+        first_player_win = False
+        decision_status = "loss_proven"
+
+    dictionary_rows = edge_dictionary_char_total_rows(
+        edge_dictionary,
+        dict_size,
+        random_seed,
+    )
+    run_row = {
+        "dict_size": dict_size,
+        "random_seed": random_seed,
+        "searched_state_count": solver.count_states(),
+        "memo_size": len(solver.memo),
+        "edge_type_count": solver.edge_type_count,
+        "state_encoding": "mixed_radix_edge_usage_v1",
+        "elapsed_time_sec": f"{elapsed:.6f}",
+        "timed_out": timed_out,
+        "limit_reason": limit_reason,
+        "is_first_player_win": first_player_win,
+        "winning_first_move_count": winning_count,
+        "losing_first_move_count": losing_count,
+        "n_ending_count": (
+            sum(
+                edge_dictionary.edge_count(start_id, edge_dictionary.char_to_id["ん"])
+                for start_id in range(edge_dictionary.char_count)
+            )
+            if "ん" in edge_dictionary.char_to_id
+            else 0
+        ),
+        "decision_status": decision_status,
+        "analyzed_first_edge_type_count": len(first_results),
+        "first_move_scan_complete": first_move_scan_complete,
+        "first_winning_edge_index": (
+            winning_result.edge_index if winning_result is not None else ""
+        ),
+        "first_winning_start_char": (
+            winning_result.start_char if winning_result is not None else ""
+        ),
+        "first_winning_end_char": (
+            winning_result.end_char if winning_result is not None else ""
+        ),
+        "first_winning_edge_count": (
+            winning_result.edge_count if winning_result is not None else ""
+        ),
+        "start_distribution": json.dumps(
+            {
+                str(row["char"]): int(row["start_count"])
+                for row in dictionary_rows
+                if int(row["start_count"])
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+        ),
+        "end_distribution": json.dumps(
+            {
+                str(row["char"]): int(row["end_count"])
+                for row in dictionary_rows
+                if int(row["end_count"])
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+        ),
+    }
+
+    return (
+        run_row,
+        first_move_rows(dict_size, random_seed, first_results),
+        char_stats_rows(dict_size, random_seed, edge_dictionary, first_results),
+        dictionary_rows,
+    )
 
 
 def run_one_exact(
@@ -162,51 +310,13 @@ def run_one_exact(
     selected = select_records(records, dict_size, random_seed, pool_multiplier=pool_multiplier)
     if dataset_dir is not None:
         write_records_csv(selected, dataset_dir / f"D{dict_size}_seed{random_seed}.csv")
-
-    graph = WordGraph.from_words([record.reading for record in selected])
-    solver = ShiritoriSolver(graph, max_states=max_states, timeout_sec=timeout_sec)
-    started = time.perf_counter()
-    timed_out = False
-    limit_reason = ""
-    first_results: list[FirstMoveResult] = []
-
-    try:
-        first_results = solver.analyze_first_moves(reset_between_moves=False)
-    except AnalysisLimitExceeded as exc:
-        timed_out = True
-        limit_reason = exc.reason
-
-    elapsed = time.perf_counter() - started
-    if first_results and not timed_out:
-        winning_count: object = sum(1 for result in first_results if result.is_winning)
-        losing_count: object = len(first_results) - int(winning_count)
-        first_player_win: object = int(winning_count) > 0
-    else:
-        winning_count = ""
-        losing_count = ""
-        first_player_win = ""
-
-    run_row = {
-        "dict_size": dict_size,
-        "random_seed": random_seed,
-        "searched_state_count": solver.count_states(),
-        "memo_size": len(solver.memo),
-        "elapsed_time_sec": f"{elapsed:.6f}",
-        "timed_out": timed_out,
-        "limit_reason": limit_reason,
-        "is_first_player_win": first_player_win,
-        "winning_first_move_count": winning_count,
-        "losing_first_move_count": losing_count,
-        "n_ending_count": graph.n_ending_word_count(),
-        "start_distribution": distribution_json(graph.words, 0),
-        "end_distribution": distribution_json(graph.words, -1),
-    }
-
-    return (
-        run_row,
-        first_move_rows(dict_size, random_seed, first_results),
-        char_stats_rows(dict_size, random_seed, graph, first_results),
-        dictionary_char_total_rows(graph, dict_size, random_seed),
+    runtime = RuntimeDictionary.from_readings(record.reading for record in selected)
+    return run_edge_exact(
+        runtime.to_edge_dictionary(),
+        dict_size=dict_size,
+        random_seed=random_seed,
+        max_states=max_states,
+        timeout_sec=timeout_sec,
     )
 
 
@@ -267,6 +377,19 @@ def parse_args() -> argparse.Namespace:
     source_group = parser.add_mutually_exclusive_group(required=True)
     source_group.add_argument("--jmdict")
     source_group.add_argument("--records")
+    source_group.add_argument(
+        "--runtime",
+        nargs="+",
+        help="Explicit RuntimeDictionary JSON files; dictionary conditions are not repeated",
+    )
+    source_group.add_argument(
+        "--runtime-prefix",
+        nargs="+",
+        help=(
+            "Largest RuntimeDictionary JSON file for each seed. Analyze ranked "
+            "prefixes from --size-start, increasing by --size-step until timeout."
+        ),
+    )
     parser.add_argument(
         "--sizes",
         nargs="+",
@@ -370,24 +493,194 @@ def run_size_exact(
     return size_run_rows, size_first_move_rows, size_char_stats_rows, size_dictionary_char_rows
 
 
+def load_runtime_with_metadata(
+    runtime_name: str | Path,
+) -> tuple[Path, RuntimeDictionary, dict[str, object]]:
+    runtime_path = Path(runtime_name)
+    runtime = RuntimeDictionary.load(runtime_path)
+    metadata_path = runtime_path.with_name(
+        runtime_path.name.removesuffix(".runtime.json") + ".metadata.json"
+    )
+    metadata = (
+        json.loads(metadata_path.read_text(encoding="utf-8"))
+        if metadata_path.is_file()
+        else {}
+    )
+    return runtime_path, runtime, metadata
+
+
+def run_runtime_prefix_size(
+    runtime_sources: list[tuple[Path, RuntimeDictionary, dict[str, object]]],
+    dict_size: int,
+    max_states: int | None,
+    timeout_sec: float | None,
+) -> tuple[
+    list[dict[str, object]],
+    list[dict[str, object]],
+    list[dict[str, object]],
+    list[dict[str, object]],
+]:
+    size_run_rows: list[dict[str, object]] = []
+    size_first_move_rows: list[dict[str, object]] = []
+    size_char_stats_rows: list[dict[str, object]] = []
+    size_dictionary_char_rows: list[dict[str, object]] = []
+
+    for runtime_path, runtime, metadata in runtime_sources:
+        if dict_size > runtime.word_count:
+            raise ValueError(
+                f"D{dict_size} exceeds {runtime_path} word_count={runtime.word_count}"
+            )
+        random_seed = int(metadata.get("seed", 0))
+        run_row, move_rows, stats_rows, dictionary_rows = run_edge_exact(
+            runtime.to_edge_dictionary(word_count=dict_size),
+            dict_size=dict_size,
+            random_seed=random_seed,
+            max_states=max_states,
+            timeout_sec=timeout_sec,
+        )
+        size_run_rows.append(run_row)
+        size_first_move_rows.extend(move_rows)
+        size_char_stats_rows.extend(stats_rows)
+        size_dictionary_char_rows.extend(dictionary_rows)
+        print(
+            f"D{dict_size}_seed{random_seed} ({runtime_path.name} prefix): "
+            f"states={run_row['searched_state_count']} "
+            f"status={run_row['decision_status']}"
+        )
+
+    return (
+        size_run_rows,
+        size_first_move_rows,
+        size_char_stats_rows,
+        size_dictionary_char_rows,
+    )
+
+
 def main() -> None:
     args = parse_args()
     output_dir = Path(args.output_dir)
-    dataset_dir = Path(args.dataset_dir) if args.dataset_dir else None
+    uses_runtime = bool(args.runtime or args.runtime_prefix)
+    dataset_dir = Path(args.dataset_dir) if args.dataset_dir and not uses_runtime else None
     if dataset_dir is not None:
         dataset_dir.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    records, source_metadata = load_records(args)
+    runtime_prefix_sources: list[
+        tuple[Path, RuntimeDictionary, dict[str, object]]
+    ] = []
+    if args.runtime:
+        records: list[ReadingRecord] | None = None
+        source_metadata: dict[str, object] = {
+            "source": list(args.runtime),
+            "mode": "runtime_dictionary",
+        }
+    elif args.runtime_prefix:
+        records = None
+        runtime_prefix_sources = [
+            load_runtime_with_metadata(runtime_name)
+            for runtime_name in args.runtime_prefix
+        ]
+        source_metadata = {
+            "source": list(args.runtime_prefix),
+            "mode": "runtime_dictionary_ranked_prefix",
+        }
+    else:
+        records, source_metadata = load_records(args)
     max_states = args.max_states if args.max_states and args.max_states > 0 else None
     run_rows: list[dict[str, object]] = []
     all_first_move_rows: list[dict[str, object]] = []
     all_char_stats_rows: list[dict[str, object]] = []
     all_dictionary_char_rows: list[dict[str, object]] = []
-    stop_reason = "fixed_sizes_completed" if args.sizes is not None else ""
-    size_mode = "fixed" if args.sizes is not None else "until_all_seeds_timeout"
+    if args.runtime:
+        stop_reason = "runtime_files_completed"
+        size_mode = "runtime_files"
+    elif args.runtime_prefix:
+        stop_reason = "fixed_sizes_completed" if args.sizes is not None else ""
+        size_mode = (
+            "runtime_prefix_fixed"
+            if args.sizes is not None
+            else "runtime_prefix_until_all_seeds_timeout"
+        )
+    else:
+        stop_reason = "fixed_sizes_completed" if args.sizes is not None else ""
+        size_mode = "fixed" if args.sizes is not None else "until_all_seeds_timeout"
 
-    if args.sizes is not None:
+    if args.runtime:
+        for runtime_name in args.runtime:
+            runtime_path, runtime, metadata = load_runtime_with_metadata(runtime_name)
+            dict_size = int(metadata.get("actual_word_count", runtime.word_count))
+            random_seed = int(metadata.get("seed", 0))
+            run_row, move_rows, stats_rows, dictionary_rows = run_edge_exact(
+                runtime.to_edge_dictionary(),
+                dict_size=dict_size,
+                random_seed=random_seed,
+                max_states=max_states,
+                timeout_sec=args.timeout_sec,
+            )
+            run_rows.append(run_row)
+            all_first_move_rows.extend(move_rows)
+            all_char_stats_rows.extend(stats_rows)
+            all_dictionary_char_rows.extend(dictionary_rows)
+            print(
+                f"{runtime_path.name}: states={run_row['searched_state_count']} "
+                f"status={run_row['decision_status']}"
+            )
+    elif args.runtime_prefix:
+        available_size = min(runtime.word_count for _, runtime, _ in runtime_prefix_sources)
+        sizes_to_run = args.sizes
+        if sizes_to_run is not None:
+            if any(dict_size > available_size for dict_size in sizes_to_run):
+                raise ValueError(
+                    f"requested size exceeds smallest runtime word_count={available_size}"
+                )
+            runtime_prefix_sizes = sizes_to_run
+        else:
+            if args.size_start > available_size:
+                raise ValueError(
+                    f"--size-start={args.size_start} exceeds smallest runtime "
+                    f"word_count={available_size}"
+                )
+            upper_bound = min(
+                available_size,
+                args.max_size if args.max_size is not None else available_size,
+            )
+            runtime_prefix_sizes = range(
+                args.size_start,
+                upper_bound + 1,
+                args.size_step,
+            )
+
+        for dict_size in runtime_prefix_sizes:
+            size_rows, move_rows, stats_rows, dictionary_rows = run_runtime_prefix_size(
+                runtime_sources=runtime_prefix_sources,
+                dict_size=dict_size,
+                max_states=max_states,
+                timeout_sec=args.timeout_sec,
+            )
+            run_rows.extend(size_rows)
+            all_first_move_rows.extend(move_rows)
+            all_char_stats_rows.extend(stats_rows)
+            all_dictionary_char_rows.extend(dictionary_rows)
+
+            if args.sizes is None and all_seed_runs_timed_out(
+                size_rows,
+                len(runtime_prefix_sources),
+            ):
+                stop_reason = "all_seeds_timed_out"
+                print(
+                    f"stop: all {len(runtime_prefix_sources)} runtime prefixes "
+                    f"timed out at D{dict_size}"
+                )
+                break
+        else:
+            if args.sizes is None:
+                stop_reason = (
+                    "max_size_reached"
+                    if args.max_size is not None and args.max_size <= available_size
+                    else "available_runtime_prefix_exhausted"
+                )
+    elif args.sizes is not None:
+        assert records is not None
         sizes_to_run = args.sizes
         for dict_size in sizes_to_run:
             size_rows, move_rows, stats_rows, dictionary_rows = run_size_exact(
@@ -404,6 +697,7 @@ def main() -> None:
             all_char_stats_rows.extend(stats_rows)
             all_dictionary_char_rows.extend(dictionary_rows)
     else:
+        assert records is not None
         dict_size = args.size_start
         while True:
             if dict_size > len(records):
@@ -453,11 +747,14 @@ def main() -> None:
             "size_step": args.size_step,
             "max_size": args.max_size,
             "stop_reason": stop_reason,
-            "seeds": args.seeds,
-            "seed_count": len(args.seeds),
+            "seeds": sorted({int(row["random_seed"]) for row in run_rows}),
+            "seed_count": len({int(row["random_seed"]) for row in run_rows}),
             "max_states": max_states,
             "timeout_sec": args.timeout_sec,
             "pool_multiplier": args.pool_multiplier,
+            "state_encoding": "mixed_radix_edge_usage_v1",
+            "move_unit": "edge_type_with_multiplicity",
+            "first_move_policy": "stop_on_first_winning_edge",
         },
         output_dir / "exact_config.json",
     )

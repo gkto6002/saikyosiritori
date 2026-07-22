@@ -94,3 +94,13 @@
 
 - 詳細JSONLの`word_id`と順序をRuntimeDictionaryで変更しない。
 - D10000、L2-12、seed0を実データRuntimeDictionaryと性能測定の基準にする。
+
+## 後続改善: Runtime同時生成と確認用ビュー
+
+実験辞書と辺データの対応を生成時点で固定するため、`src/experiment_dictionary.py`は各辞書について従来のTXT・詳細JSONL・metadata・statsに加え、次を同時生成するよう変更した。
+
+- `.runtime.json`: 詳細JSONLと同じword IDを持つRuntimeDictionary
+- `.words.csv`: 一語一行で、読み、長さ、start/end文字・ID、所属辺語数を確認するビュー
+- `.edges.csv`: 非空のstart/end辺ごとに、辺数、word ID一覧、単語一覧を確認するビュー
+
+metadataには三ファイルの名前とSHA256を、statsには文字数、総辺数、異なる辺種類数を保存する。これにより、実験辞書生成後に別コマンドでRuntime変換する必要はなくなった。単独のRuntime変換コマンドは既存手順との互換性と再構築用途のため残した。

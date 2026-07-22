@@ -109,3 +109,9 @@ D10000、1,000反復の参考値:
 - 状態は`initial_edge_counts`と`initial_active_end_masks`をlistコピーして開始する。
 - apply/undoは一辺だけ更新し、配列全体をコピーしない。
 - 具体語表示はCSRバケットから決定的に割り当てる。
+
+## 後続改善: 単語・辺の確認用CSV
+
+`RuntimeDictionary`へ安定順の`word_view_rows`、`edge_view_rows`、`export_review_csvs`を追加した。単語ビューは全word IDを一行ずつ、辺ビューは非空のstart/end組だけを文字ID順で出力する。辺ビュー内の`word_ids`と`words`は対応関係を失わないJSON配列である。
+
+実験辞書生成処理が詳細JSONLからRuntimeDictionaryを直ちに構築し、Runtime JSONと両CSVを同時保存する。テストでは、単語CSV行数、辺CSVの`word_count`合計、Runtimeの`word_count`が一致し、同じ入力からCSVとRuntime JSONが同一バイト列になることを確認した。

@@ -108,4 +108,10 @@ D10000、1,000反復の参考値:
 ## 次の段階への引き継ぎ事項
 
 - 第五段階はRuntimeDictionaryの初期辺数だけを分析し、可変対局状態や勝率と分離する。
+
+## 後続改善: 全AIの辺ネイティブ化
+
+後続のエージェント高速化作業でRandom、Greedy、Minimax、AlphaBeta、MonteCarloへ`choose_edge`を実装した。AI対AIでは単語フィールドを持たない`EdgeDictionary`だけを渡し、旧`RuntimeAgentAdapter`と辺履歴の単語materializationを削除した。`simulate_runtime_match`の履歴も辺ID・辺数だけとなり、具体語は保存しない。
+
+人間対AIは`HumanRuntimeState`を標準経路へ接続した。AI思考中は辺状態のコピーだけを使い、確定した辺を`choose_ai_word`で未使用の具体語へ変換してから表示する。詳細は`docs/agent_optimization/edge_native_agents_report.md`を参照する。
 - グラフ指標は文字IDグラフ上で計算する。
