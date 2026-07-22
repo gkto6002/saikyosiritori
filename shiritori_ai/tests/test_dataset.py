@@ -9,7 +9,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-from dataset import ReadingRecord, parse_jmdict, priority_rank, select_records  # noqa: E402
+from dataset import ReadingRecord, parse_jmdict, priority_rank, read_csv_records, select_records  # noqa: E402
 
 
 class DatasetTest(unittest.TestCase):
@@ -52,6 +52,18 @@ class DatasetTest(unittest.TestCase):
         self.assertNotIn("abc", by_reading)
         self.assertEqual(stats.raw_reading_count, 4)
         self.assertEqual(stats.final_unique_count, 2)
+
+    def test_read_csv_records_normalizes_equivalent_kana(self) -> None:
+        csv_text = """reading,start_char,end_char,priority_rank,priority_label,priority_tags
+らゔ,ら,ゔ,0,high,news1
+ゔあいおりん,ゔ,ん,0,high,gai1
+"""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            path = Path(tmp_dir) / "records.csv"
+            path.write_text(csv_text, encoding="utf-8")
+            records = read_csv_records(path)
+
+        self.assertEqual([record.reading for record in records], ["らぶ", "ぶあいおりん"])
 
     def test_select_records_is_seed_reproducible(self) -> None:
         xml = """<?xml version="1.0" encoding="UTF-8"?><JMdict>

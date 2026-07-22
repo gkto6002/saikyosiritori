@@ -6,7 +6,6 @@ import argparse
 import csv
 import itertools
 import json
-import statistics
 from collections import defaultdict
 from dataclasses import asdict
 from pathlib import Path
@@ -55,6 +54,7 @@ AGENT_SUMMARY_FIELDS = [
     "average_time_per_move_sec",
     "max_time_sec",
     "timeout_count",
+    "timeout_count_per_match",
 ]
 
 MATCH_FLOW_FIELDS = [
@@ -117,6 +117,7 @@ TOP_END_CHAR_FIELDS = [
 ]
 
 AI_MATCH_TIME_LIMIT_SEC = 4.0
+STOCHASTIC_AGENTS = {"random", "monte_carlo"}
 
 
 def is_self_match(row: dict[str, object]) -> bool:
@@ -125,6 +126,52 @@ def is_self_match(row: dict[str, object]) -> bool:
 
 def rows_without_self_matches(rows: list[dict[str, object]]) -> list[dict[str, object]]:
     return [row for row in rows if not is_self_match(row)]
+
+
+def matchup_has_stochastic_agent(first_agent: str, second_agent: str) -> bool:
+    return first_agent in STOCHASTIC_AGENTS or second_agent in STOCHASTIC_AGENTS
+
+
+def repetitions_for_matchup(first_agent: str, second_agent: str, requested_repetitions: int) -> int:
+    if matchup_has_stochastic_agent(first_agent, second_agent):
+        return max(1, requested_repetitions)
+    return 1
+
+
+def matchup_key(row: dict[str, object]) -> tuple[int, int, str, str]:
+    return (
+        int(row["dict_size"]),
+        int(row.get("random_seed", 0) or 0),
+        str(row["first_agent"]),
+        str(row["second_agent"]),
+    )
+
+
+def matchup_repetition_counts(rows: list[dict[str, object]]) -> dict[tuple[int, int, str, str], int]:
+    counts: dict[tuple[int, int, str, str], int] = defaultdict(int)
+    for row in rows:
+        if not is_self_match(row):
+            counts[matchup_key(row)] += 1
+    return counts
+
+
+def row_weight(row: dict[str, object], repetition_counts: dict[tuple[int, int, str, str], int]) -> float:
+    return 1.0 / max(1, repetition_counts.get(matchup_key(row), 1))
+
+
+def flow_repetition_counts(flow_rows: list[dict[str, object]]) -> dict[tuple[int, int, str, str], int]:
+    match_ids_by_key: dict[tuple[int, int, str, str], set[str]] = defaultdict(set)
+    for row in flow_rows:
+        key = matchup_key(row)
+        match_ids_by_key[key].add(str(row.get("match_id", "")))
+    return {key: len(match_ids) for key, match_ids in match_ids_by_key.items()}
+
+
+def count_value(value: float) -> int | str:
+    rounded = round(value)
+    if abs(value - rounded) < 1e-9:
+        return int(rounded)
+    return f"{value:.6f}"
 
 
 def agent_move_count(row: dict[str, object], side: str) -> int:
@@ -157,63 +204,68 @@ def result_to_row(match_id: str, dict_size: int, random_seed: int, result: Match
 
 
 def summarize_agents(rows: list[dict[str, object]]) -> list[dict[str, object]]:
+    repetition_counts = matchup_repetition_counts(rows)
     buckets: dict[tuple[str, int], list[dict[str, object]]] = defaultdict(list)
     for row in rows_without_self_matches(rows):
         dict_size = int(row["dict_size"])
-        buckets[(str(row["first_agent"]), dict_size)].append({**row, "side": "first"})
-        buckets[(str(row["second_agent"]), dict_size)].append({**row, "side": "second"})
+        weight = row_weight(row, repetition_counts)
+        buckets[(str(row["first_agent"]), dict_size)].append({**row, "side": "first", "weight": weight})
+        buckets[(str(row["second_agent"]), dict_size)].append({**row, "side": "second", "weight": weight})
 
     summaries: list[dict[str, object]] = []
     for (agent_name, dict_size), agent_rows in sorted(buckets.items()):
-        wins = 0
-        losses = 0
-        draws = 0
+        wins = 0.0
+        losses = 0.0
+        draws = 0.0
+        match_count = 0.0
         total_time = 0.0
-        total_moves = 0
+        total_moves = 0.0
         max_time = 0.0
-        timeouts = 0
-        turn_counts = []
-        used_counts = []
+        timeouts = 0.0
+        turn_count_total = 0.0
+        used_count_total = 0.0
 
         for row in agent_rows:
             side = row["side"]
             winner = row["winner"]
+            weight = float(row["weight"])
+            match_count += weight
             if winner == "draw":
-                draws += 1
+                draws += weight
             elif winner == side:
-                wins += 1
+                wins += weight
             else:
-                losses += 1
+                losses += weight
 
             if side == "first":
-                total_time += float(row["first_total_time_sec"])
-                total_moves += agent_move_count(row, "first")
+                total_time += weight * float(row["first_total_time_sec"])
+                total_moves += weight * agent_move_count(row, "first")
                 max_time = max(max_time, float(row["first_max_time_sec"]))
-                timeouts += int(row["first_timeout_count"])
+                timeouts += weight * int(row["first_timeout_count"])
             else:
-                total_time += float(row["second_total_time_sec"])
-                total_moves += agent_move_count(row, "second")
+                total_time += weight * float(row["second_total_time_sec"])
+                total_moves += weight * agent_move_count(row, "second")
                 max_time = max(max_time, float(row["second_max_time_sec"]))
-                timeouts += int(row["second_timeout_count"])
+                timeouts += weight * int(row["second_timeout_count"])
 
-            turn_counts.append(int(row["turn_count"]))
-            used_counts.append(int(row["used_word_count"]))
+            turn_count_total += weight * int(row["turn_count"])
+            used_count_total += weight * int(row["used_word_count"])
 
-        match_count = len(agent_rows)
         summaries.append(
             {
                 "agent_name": agent_name,
                 "dict_size": dict_size,
-                "match_count": match_count,
-                "win_count": wins,
-                "loss_count": losses,
-                "draw_count": draws,
+                "match_count": count_value(match_count),
+                "win_count": count_value(wins),
+                "loss_count": count_value(losses),
+                "draw_count": count_value(draws),
                 "win_rate": f"{wins / match_count:.6f}" if match_count else "0.000000",
-                "average_turn_count": f"{statistics.mean(turn_counts):.6f}" if turn_counts else "0.000000",
-                "average_used_word_count": f"{statistics.mean(used_counts):.6f}" if used_counts else "0.000000",
+                "average_turn_count": f"{turn_count_total / match_count:.6f}" if match_count else "0.000000",
+                "average_used_word_count": f"{used_count_total / match_count:.6f}" if match_count else "0.000000",
                 "average_time_per_move_sec": f"{total_time / total_moves:.6f}" if total_moves else "0.000000",
                 "max_time_sec": f"{max_time:.6f}",
-                "timeout_count": timeouts,
+                "timeout_count": count_value(timeouts),
+                "timeout_count_per_match": f"{timeouts / match_count:.6f}" if match_count else "0.000000",
             }
         )
     return summaries
@@ -288,7 +340,8 @@ def build_match_flow_json_row(
 
 
 def summarize_agent_end_chars(flow_rows: list[dict[str, object]]) -> list[dict[str, object]]:
-    totals: dict[tuple[str, int], int] = defaultdict(int)
+    repetition_counts = flow_repetition_counts(flow_rows)
+    totals: dict[tuple[str, int], float] = defaultdict(float)
     buckets: dict[tuple[str, int, str], dict[str, float]] = defaultdict(
         lambda: {"move_count": 0.0, "timeout_count": 0.0, "elapsed_time_sec": 0.0}
     )
@@ -297,27 +350,28 @@ def summarize_agent_end_chars(flow_rows: list[dict[str, object]]) -> list[dict[s
         agent_name = str(row["agent"])
         dict_size = int(row["dict_size"])
         end_char = str(row["end_char"])
-        totals[(agent_name, dict_size)] += 1
+        weight = row_weight(row, repetition_counts)
+        totals[(agent_name, dict_size)] += weight
         bucket = buckets[(agent_name, dict_size, end_char)]
-        bucket["move_count"] += 1
-        bucket["elapsed_time_sec"] += float(row["elapsed_time_sec"])
+        bucket["move_count"] += weight
+        bucket["elapsed_time_sec"] += weight * float(row["elapsed_time_sec"])
         if str(row["timed_out"]) == "True" or row["timed_out"] is True:
-            bucket["timeout_count"] += 1
+            bucket["timeout_count"] += weight
 
     rows: list[dict[str, object]] = []
     for (agent_name, dict_size, end_char), bucket in sorted(buckets.items()):
-        move_count = int(bucket["move_count"])
+        move_count = bucket["move_count"]
         total = totals[(agent_name, dict_size)]
         rows.append(
             {
                 "agent_name": agent_name,
                 "dict_size": dict_size,
                 "end_char": end_char,
-                "move_count": move_count,
+                "move_count": count_value(move_count),
                 "move_rate": f"{move_count / total:.6f}" if total else "0.000000",
-                "timeout_count": int(bucket["timeout_count"]),
+                "timeout_count": count_value(bucket["timeout_count"]),
                 "average_elapsed_time_sec": f"{bucket['elapsed_time_sec'] / move_count:.6f}" if move_count else "0.000000",
-                "ended_with_n_count": move_count if end_char == "ん" else 0,
+                "ended_with_n_count": count_value(move_count if end_char == "ん" else 0.0),
             }
         )
     return rows
@@ -325,20 +379,21 @@ def summarize_agent_end_chars(flow_rows: list[dict[str, object]]) -> list[dict[s
 
 def summarize_first_player_by_size(rows: list[dict[str, object]]) -> list[dict[str, object]]:
     rows = rows_without_self_matches(rows)
+    repetition_counts = matchup_repetition_counts(rows)
     summaries: list[dict[str, object]] = []
     for dict_size in sorted({int(row["dict_size"]) for row in rows}):
         size_rows = [row for row in rows if int(row["dict_size"]) == dict_size]
-        first_wins = sum(1 for row in size_rows if row["winner"] == "first")
-        second_wins = sum(1 for row in size_rows if row["winner"] == "second")
-        draws = sum(1 for row in size_rows if row["winner"] == "draw")
-        match_count = len(size_rows)
+        first_wins = sum(row_weight(row, repetition_counts) for row in size_rows if row["winner"] == "first")
+        second_wins = sum(row_weight(row, repetition_counts) for row in size_rows if row["winner"] == "second")
+        draws = sum(row_weight(row, repetition_counts) for row in size_rows if row["winner"] == "draw")
+        match_count = sum(row_weight(row, repetition_counts) for row in size_rows)
         summaries.append(
             {
                 "dict_size": dict_size,
-                "match_count": match_count,
-                "first_win_count": first_wins,
-                "second_win_count": second_wins,
-                "draw_count": draws,
+                "match_count": count_value(match_count),
+                "first_win_count": count_value(first_wins),
+                "second_win_count": count_value(second_wins),
+                "draw_count": count_value(draws),
                 "first_win_rate": f"{first_wins / match_count:.6f}" if match_count else "0.000000",
             }
         )
@@ -349,19 +404,21 @@ def summarize_top_end_chars(
     flow_rows: list[dict[str, object]],
     top_n: int,
 ) -> list[dict[str, object]]:
-    totals: dict[int, int] = defaultdict(int)
+    repetition_counts = flow_repetition_counts(flow_rows)
+    totals: dict[int, float] = defaultdict(float)
     buckets: dict[tuple[int, str], dict[str, float]] = defaultdict(
         lambda: {"move_count": 0.0, "ended_with_n_count": 0.0, "elapsed_time_sec": 0.0}
     )
     for row in flow_rows:
         dict_size = int(row["dict_size"])
         end_char = str(row["end_char"])
-        totals[dict_size] += 1
+        weight = row_weight(row, repetition_counts)
+        totals[dict_size] += weight
         bucket = buckets[(dict_size, end_char)]
-        bucket["move_count"] += 1
-        bucket["elapsed_time_sec"] += float(row["elapsed_time_sec"])
+        bucket["move_count"] += weight
+        bucket["elapsed_time_sec"] += weight * float(row["elapsed_time_sec"])
         if end_char == "ん":
-            bucket["ended_with_n_count"] += 1
+            bucket["ended_with_n_count"] += weight
 
     rows: list[dict[str, object]] = []
     for dict_size in sorted(totals):
@@ -372,15 +429,15 @@ def summarize_top_end_chars(
         ]
         candidates.sort(key=lambda item: (-item[1]["move_count"], item[0]))
         for rank, (end_char, bucket) in enumerate(candidates[:top_n], start=1):
-            move_count = int(bucket["move_count"])
+            move_count = bucket["move_count"]
             rows.append(
                 {
                     "dict_size": dict_size,
                     "rank": rank,
                     "end_char": end_char,
-                    "move_count": move_count,
+                    "move_count": count_value(move_count),
                     "move_rate": f"{move_count / totals[dict_size]:.6f}" if totals[dict_size] else "0.000000",
-                    "ended_with_n_count": int(bucket["ended_with_n_count"]),
+                    "ended_with_n_count": count_value(bucket["ended_with_n_count"]),
                     "average_elapsed_time_sec": f"{bucket['elapsed_time_sec'] / move_count:.6f}" if move_count else "0.000000",
                 }
             )
@@ -454,7 +511,8 @@ def main() -> None:
             for first_name, second_name in itertools.product(args.agents, repeat=2):
                 if first_name == second_name:
                     continue
-                for repetition in range(args.repetitions):
+                matchup_repetitions = repetitions_for_matchup(first_name, second_name, args.repetitions)
+                for repetition in range(matchup_repetitions):
                     match_id = f"D{dict_size}_seed{random_seed}_{first_name}_vs_{second_name}_{repetition}"
                     first_agent = build_agent(
                         first_name,
@@ -522,6 +580,9 @@ def main() -> None:
             "agents": args.agents,
             "include_self_matches": False,
             "repetitions": args.repetitions,
+            "repetition_policy": "repeat only matchups containing stochastic agents",
+            "stochastic_agents": sorted(STOCHASTIC_AGENTS),
+            "analysis_repetition_weighting": "average repeated matchups to one matchup unit",
             "time_limit_sec": args.time_limit_sec,
             "max_moves": args.max_moves,
             "default_max_moves_policy": "min(dict_size, 3000)",

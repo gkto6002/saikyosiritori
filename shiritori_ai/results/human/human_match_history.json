@@ -1,89 +1,425 @@
 {
   "winner": "AI",
-  "turn_count": 11,
-  "used_word_count": 11,
-  "loss_reason": "no_legal_move",
-  "ai_total_time_sec": 0.11929304292425513,
-  "ai_average_time_sec": 0.019882173820709188,
-  "ai_max_time_sec": 0.05476016696775332,
+  "turn_count": 59,
+  "used_word_count": 59,
+  "loss_reason": "ended_with_n",
+  "ai_total_time_sec": 0.2059108738321811,
+  "ai_average_time_sec": 0.007100374959730382,
+  "ai_max_time_sec": 0.014190874993801117,
   "history": [
     {
       "turn": 1,
+      "player": "human",
+      "word": "いぬ",
+      "start_char": "い",
+      "end_char": "ぬ"
+    },
+    {
+      "turn": 2,
       "player": "ai",
-      "word": "いきかえる",
+      "word": "ぬるぬる",
+      "start_char": "ぬ",
+      "end_char": "る"
+    },
+    {
+      "turn": 3,
+      "player": "human",
+      "word": "るり",
+      "start_char": "る",
+      "end_char": "り"
+    },
+    {
+      "turn": 4,
+      "player": "ai",
+      "word": "りぞおとほてる",
+      "start_char": "り",
+      "end_char": "る"
+    },
+    {
+      "turn": 5,
+      "player": "human",
+      "word": "るうきい",
+      "start_char": "る",
+      "end_char": "い"
+    },
+    {
+      "turn": 6,
+      "player": "ai",
+      "word": "いとめる",
       "start_char": "い",
       "end_char": "る"
     },
     {
-      "turn": 2,
+      "turn": 7,
+      "player": "human",
+      "word": "るうと",
+      "start_char": "る",
+      "end_char": "と"
+    },
+    {
+      "turn": 8,
+      "player": "ai",
+      "word": "とりあえず",
+      "start_char": "と",
+      "end_char": "ず"
+    },
+    {
+      "turn": 9,
+      "player": "human",
+      "word": "ずれる",
+      "start_char": "ず",
+      "end_char": "る"
+    },
+    {
+      "turn": 10,
+      "player": "ai",
+      "word": "るうず",
+      "start_char": "る",
+      "end_char": "ず"
+    },
+    {
+      "turn": 11,
+      "player": "human",
+      "word": "ずいじ",
+      "start_char": "ず",
+      "end_char": "じ"
+    },
+    {
+      "turn": 12,
+      "player": "ai",
+      "word": "じようず",
+      "start_char": "じ",
+      "end_char": "ず"
+    },
+    {
+      "turn": 13,
+      "player": "human",
+      "word": "ずらり",
+      "start_char": "ず",
+      "end_char": "り"
+    },
+    {
+      "turn": 14,
+      "player": "ai",
+      "word": "りばいばる",
+      "start_char": "り",
+      "end_char": "る"
+    },
+    {
+      "turn": 15,
+      "player": "human",
+      "word": "るうぷ",
+      "start_char": "る",
+      "end_char": "ぷ"
+    },
+    {
+      "turn": 16,
+      "player": "ai",
+      "word": "ぷろふいいる",
+      "start_char": "ぷ",
+      "end_char": "る"
+    },
+    {
+      "turn": 17,
+      "player": "human",
+      "word": "るいすい",
+      "start_char": "る",
+      "end_char": "い"
+    },
+    {
+      "turn": 18,
+      "player": "ai",
+      "word": "いたわる",
+      "start_char": "い",
+      "end_char": "る"
+    },
+    {
+      "turn": 19,
+      "player": "human",
+      "word": "るぽ",
+      "start_char": "る",
+      "end_char": "ぽ"
+    },
+    {
+      "turn": 20,
+      "player": "ai",
+      "word": "ぽおたぶる",
+      "start_char": "ぽ",
+      "end_char": "る"
+    },
+    {
+      "turn": 21,
+      "player": "human",
+      "word": "るああ",
+      "start_char": "る",
+      "end_char": "あ"
+    },
+    {
+      "turn": 22,
+      "player": "ai",
+      "word": "あいぬ",
+      "start_char": "あ",
+      "end_char": "ぬ"
+    },
+    {
+      "turn": 23,
+      "player": "human",
+      "word": "ぬかす",
+      "start_char": "ぬ",
+      "end_char": "す"
+    },
+    {
+      "turn": 24,
+      "player": "ai",
+      "word": "すむうず",
+      "start_char": "す",
+      "end_char": "ず"
+    },
+    {
+      "turn": 25,
+      "player": "human",
+      "word": "ずうむれんず",
+      "start_char": "ず",
+      "end_char": "ず"
+    },
+    {
+      "turn": 26,
+      "player": "ai",
+      "word": "ずがら",
+      "start_char": "ず",
+      "end_char": "ら"
+    },
+    {
+      "turn": 27,
+      "player": "human",
+      "word": "らいにち",
+      "start_char": "ら",
+      "end_char": "ち"
+    },
+    {
+      "turn": 28,
+      "player": "ai",
+      "word": "ちる",
+      "start_char": "ち",
+      "end_char": "る"
+    },
+    {
+      "turn": 29,
+      "player": "human",
+      "word": "るび",
+      "start_char": "る",
+      "end_char": "び"
+    },
+    {
+      "turn": 30,
+      "player": "ai",
+      "word": "びいる",
+      "start_char": "び",
+      "end_char": "る"
+    },
+    {
+      "turn": 31,
+      "player": "human",
+      "word": "るい",
+      "start_char": "る",
+      "end_char": "い"
+    },
+    {
+      "turn": 32,
+      "player": "ai",
+      "word": "いためる",
+      "start_char": "い",
+      "end_char": "る"
+    },
+    {
+      "turn": 33,
+      "player": "human",
+      "word": "るつく",
+      "start_char": "る",
+      "end_char": "く"
+    },
+    {
+      "turn": 34,
+      "player": "ai",
+      "word": "くろぎぬ",
+      "start_char": "く",
+      "end_char": "ぬ"
+    },
+    {
+      "turn": 35,
+      "player": "human",
+      "word": "ぬめり",
+      "start_char": "ぬ",
+      "end_char": "り"
+    },
+    {
+      "turn": 36,
+      "player": "ai",
+      "word": "りいる",
+      "start_char": "り",
+      "end_char": "る"
+    },
+    {
+      "turn": 37,
+      "player": "human",
+      "word": "るつくす",
+      "start_char": "る",
+      "end_char": "す"
+    },
+    {
+      "turn": 38,
+      "player": "ai",
+      "word": "する",
+      "start_char": "す",
+      "end_char": "る"
+    },
+    {
+      "turn": 39,
+      "player": "human",
+      "word": "るうぶる",
+      "start_char": "る",
+      "end_char": "る"
+    },
+    {
+      "turn": 40,
+      "player": "ai",
+      "word": "るみのおる",
+      "start_char": "る",
+      "end_char": "る"
+    },
+    {
+      "turn": 41,
+      "player": "human",
+      "word": "るす",
+      "start_char": "る",
+      "end_char": "す"
+    },
+    {
+      "turn": 42,
+      "player": "ai",
+      "word": "すとおる",
+      "start_char": "す",
+      "end_char": "る"
+    },
+    {
+      "turn": 43,
+      "player": "human",
+      "word": "るねつさんす",
+      "start_char": "る",
+      "end_char": "す"
+    },
+    {
+      "turn": 44,
+      "player": "ai",
+      "word": "すちいる",
+      "start_char": "す",
+      "end_char": "る"
+    },
+    {
+      "turn": 45,
+      "player": "human",
+      "word": "るうれつと",
+      "start_char": "る",
+      "end_char": "と"
+    },
+    {
+      "turn": 46,
+      "player": "ai",
+      "word": "とどめる",
+      "start_char": "と",
+      "end_char": "る"
+    },
+    {
+      "turn": 47,
+      "player": "human",
+      "word": "るう",
+      "start_char": "る",
+      "end_char": "う"
+    },
+    {
+      "turn": 48,
+      "player": "ai",
+      "word": "うまる",
+      "start_char": "う",
+      "end_char": "る"
+    },
+    {
+      "turn": 49,
       "player": "human",
       "word": "るびい",
       "start_char": "る",
       "end_char": "い"
     },
     {
-      "turn": 3,
+      "turn": 50,
       "player": "ai",
-      "word": "いちがつ",
+      "word": "いただける",
       "start_char": "い",
-      "end_char": "つ"
-    },
-    {
-      "turn": 4,
-      "player": "human",
-      "word": "つうる",
-      "start_char": "つ",
       "end_char": "る"
     },
     {
-      "turn": 5,
+      "turn": 51,
+      "player": "human",
+      "word": "るぽるたあじゆ",
+      "start_char": "る",
+      "end_char": "ゆ"
+    },
+    {
+      "turn": 52,
       "player": "ai",
+      "word": "ゆきすぎる",
+      "start_char": "ゆ",
+      "end_char": "る"
+    },
+    {
+      "turn": 53,
+      "player": "human",
+      "word": "るいけい",
+      "start_char": "る",
+      "end_char": "い"
+    },
+    {
+      "turn": 54,
+      "player": "ai",
+      "word": "いからせる",
+      "start_char": "い",
+      "end_char": "る"
+    },
+    {
+      "turn": 55,
+      "player": "human",
       "word": "るんげ",
       "start_char": "る",
       "end_char": "げ"
     },
     {
-      "turn": 6,
-      "player": "human",
-      "word": "げつない",
+      "turn": 56,
+      "player": "ai",
+      "word": "げる",
       "start_char": "げ",
-      "end_char": "い"
-    },
-    {
-      "turn": 7,
-      "player": "ai",
-      "word": "いいようがない",
-      "start_char": "い",
-      "end_char": "い"
-    },
-    {
-      "turn": 8,
-      "player": "human",
-      "word": "いらつしやい",
-      "start_char": "い",
-      "end_char": "い"
-    },
-    {
-      "turn": 9,
-      "player": "ai",
-      "word": "いやおい",
-      "start_char": "い",
-      "end_char": "い"
-    },
-    {
-      "turn": 10,
-      "player": "human",
-      "word": "いづこ",
-      "start_char": "い",
-      "end_char": "こ"
-    },
-    {
-      "turn": 11,
-      "player": "ai",
-      "word": "こいる",
-      "start_char": "こ",
       "end_char": "る"
+    },
+    {
+      "turn": 57,
+      "player": "human",
+      "word": "るうじゆ",
+      "start_char": "る",
+      "end_char": "ゆ"
+    },
+    {
+      "turn": 58,
+      "player": "ai",
+      "word": "ゆるめる",
+      "start_char": "ゆ",
+      "end_char": "る"
+    },
+    {
+      "turn": 59,
+      "player": "human",
+      "word": "るうていん",
+      "start_char": "る",
+      "end_char": "ん"
     }
   ],
-  "saved_at": 1783353554.220575
+  "saved_at": 1783996021.3510652
 }

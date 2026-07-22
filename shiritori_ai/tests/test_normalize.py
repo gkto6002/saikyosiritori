@@ -8,7 +8,12 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-from normalize import normalize_reading, normalize_readings  # noqa: E402
+from normalize import (  # noqa: E402
+    NORMALIZATION_VERSION,
+    normalize_reading,
+    normalize_reading_with_reason,
+    normalize_readings,
+)
 
 
 class NormalizeReadingTest(unittest.TestCase):
@@ -21,6 +26,11 @@ class NormalizeReadingTest(unittest.TestCase):
 
     def test_small_tsu_is_expanded(self) -> None:
         self.assertEqual(normalize_reading("がっこう"), "がつこう")
+
+    def test_equivalent_kana_are_canonicalized(self) -> None:
+        self.assertEqual(normalize_reading("ゐゑぢづゔ"), "いえじずぶ")
+        self.assertEqual(normalize_reading("ヴァイオリン"), "ぶあいおりん")
+        self.assertEqual(normalize_reading("らゔ"), "らぶ")
 
     def test_long_vowel_mark_uses_previous_vowel(self) -> None:
         self.assertEqual(normalize_reading("コーヒー"), "こおひい")
@@ -39,6 +49,18 @@ class NormalizeReadingTest(unittest.TestCase):
         self.assertIsNone(normalize_reading("abc"))
         self.assertIsNone(normalize_reading("ゲーム2"))
         self.assertIsNone(normalize_reading("あ"))
+
+    def test_failure_reason_and_version_are_available(self) -> None:
+        self.assertEqual(NORMALIZATION_VERSION, "legacy_v1")
+        self.assertEqual(
+            normalize_reading_with_reason("abc").failure_reason,
+            "contains_non_hiragana",
+        )
+        self.assertEqual(normalize_reading_with_reason("あ").failure_reason, "too_short")
+        self.assertEqual(normalize_reading_with_reason("ーる").failure_reason, "unresolvable_long_vowel")
+        success = normalize_reading_with_reason("ミカン")
+        self.assertEqual(success.normalized, "みかん")
+        self.assertIsNone(success.failure_reason)
 
 
 if __name__ == "__main__":

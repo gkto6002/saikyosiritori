@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE JMdict [
+<!ELEMENT JMdict (entry*)>
+<!ENTITY n "noun (common) (futsuumeishi)">
+<!ENTITY pn "pronoun">
+<!ENTITY v1 "Ichidan verb">
+<!ENTITY adj-na "adjectival nouns or quasi-adjectives (keiyodoshi)">
+<!ENTITY arch "archaic">
+<!ENTITY obs "obsolete term">
+<!ENTITY rare "rare term">
+<!ENTITY comp "computing">
+<!ENTITY ksb "Kansai-ben">
+<!ENTITY iK "word containing irregular kanji usage">
+<!ENTITY gikun "gikun (meaning as reading) or jukujikun (special kanji reading)">
+]>
+<JMdict>
+  <entry>
+    <ent_seq>100</ent_seq>
+    <k_ele><keb>指導者</keb><ke_inf>&iK;</ke_inf><ke_pri>news1</ke_pri></k_ele>
+    <r_ele><reb>リーダー</reb><re_inf>&gikun;</re_inf><re_pri>nf08</re_pri></r_ele>
+    <sense><pos>&n;</pos><gloss>leader</gloss></sense>
+  </entry>
+  <entry>
+    <ent_seq>101</ent_seq>
+    <r_ele><reb>りいだあ</reb><re_nokanji/><re_pri>nf11</re_pri></r_ele>
+    <sense><pos>&n;</pos><gloss>leader in kana</gloss></sense>
+  </entry>
+  <entry>
+    <ent_seq>102</ent_seq>
+    <r_ele><reb>ゲーム</reb></r_ele>
+    <sense><pos>&n;</pos><field>&comp;</field><gloss>game</gloss></sense>
+  </entry>
+  <entry>
+    <ent_seq>103</ent_seq>
+    <r_ele><reb>きゃく</reb></r_ele>
+    <sense><pos>&n;</pos><gloss>guest</gloss></sense>
+  </entry>
+  <entry>
+    <ent_seq>104</ent_seq>
+    <r_ele><reb>ゐゑぢづゔ</reb></r_ele>
+    <sense><pos>&v1;</pos><misc>&obs;</misc><misc>&rare;</misc><dial>&ksb;</dial><gloss>variant test</gloss></sense>
+  </entry>
+  <entry>
+    <ent_seq>105</ent_seq>
+    <r_ele><reb>abc</reb></r_ele>
+    <sense><pos>&n;</pos><gloss>invalid</gloss></sense>
+  </entry>
+  <entry>
+    <ent_seq>106</ent_seq>
+    <r_ele><reb>みかん</reb></r_ele>
+    <sense><pos>&n;</pos><gloss>mandarin orange</gloss></sense>
+  </entry>
+  <entry>
+    <ent_seq>107</ent_seq>
+    <k_ele><keb>今日</keb><ke_pri>ichi2</ke_pri></k_ele>
+    <k_ele><keb>今朝</keb><ke_pri>spec2</ke_pri></k_ele>
+    <r_ele><reb>きょう</reb><re_restr>今日</re_restr></r_ele>
+    <r_ele><reb>けさ</reb><re_restr>今朝</re_restr></r_ele>
+    <sense>
+      <stagk>今日</stagk><stagr>きょう</stagr><pos>&n;</pos><misc>&arch;</misc>
+      <gloss>today</gloss><s_inf>restricted old usage</s_inf>
+    </sense>
+    <sense><stagr>きょう</stagr><gloss>this day</gloss></sense>
+    <sense><stagk>今朝</stagk><stagr>けさ</stagr><pos>&adj-na;</pos><gloss>this morning</gloss></sense>
+  </entry>
+  <entry>
+    <ent_seq>108</ent_seq>
+    <k_ele><keb>東京</keb><ke_pri>gai1</ke_pri></k_ele>
+    <r_ele><reb>とうきょう</reb><re_nokanji/><re_pri>news2</re_pri></r_ele>
+    <sense><pos>&pn;</pos><gloss>Tokyo</gloss></sense>
+  </entry>
+</JMdict>

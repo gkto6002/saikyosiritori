@@ -10,6 +10,7 @@
     "alpha_beta"
   ],
   "alpha_beta_depth": 4,
+  "analysis_repetition_weighting": "average repeated matchups to one matchup unit",
   "branch_limit": 20,
   "default_max_moves_policy": "min(dict_size, 3000)",
   "include_self_matches": false,
@@ -20,9 +21,12 @@
   "monte_carlo_max_moves": 200,
   "monte_carlo_playouts": 10,
   "pool_multiplier": 1,
-  "repetitions": 1,
+  "repetition_policy": "repeat only matchups containing stochastic agents",
+  "repetitions": 5,
   "seeds": [
-    0
+    0,
+    1,
+    2
   ],
   "sizes": [
     1000,
@@ -34,6 +38,10 @@
     "mode": "records_csv",
     "source": "data/generated/jmdict_records.csv"
   },
+  "stochastic_agents": [
+    "monte_carlo",
+    "random"
+  ],
   "time_limit_sec": 2.0,
   "top_end_chars": 20
 }

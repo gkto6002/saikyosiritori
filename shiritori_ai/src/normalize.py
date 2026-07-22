@@ -3,7 +3,23 @@
 from __future__ import annotations
 
 import unicodedata
+from dataclasses import dataclass
 from typing import Iterable
+
+
+NORMALIZATION_VERSION = "legacy_v1"
+
+
+@dataclass(frozen=True)
+class NormalizationResult:
+    """Result of normalizing a reading, including a machine-readable failure reason."""
+
+    normalized: str | None
+    failure_reason: str | None
+
+    @property
+    def succeeded(self) -> bool:
+        return self.normalized is not None
 
 
 SMALL_KANA_MAP = {
@@ -19,6 +35,15 @@ SMALL_KANA_MAP = {
     "ゎ": "わ",
     "ゕ": "か",
     "ゖ": "け",
+}
+
+
+EQUIVALENT_KANA_MAP = {
+    "ゐ": "い",
+    "ゑ": "え",
+    "ぢ": "じ",
+    "づ": "ず",
+    "ゔ": "ぶ",
 }
 
 
@@ -46,34 +71,37 @@ def katakana_to_hiragana_char(char: str) -> str:
     return char
 
 
+def normalize_equivalent_kana_char(char: str) -> str:
+    """Canonicalize kana variants that should be treated as the same reading."""
+
+    return EQUIVALENT_KANA_MAP.get(char, char)
+
+
 def is_hiragana_text(text: str) -> bool:
     """Return True when text consists only of ordinary hiragana code points."""
 
     return bool(text) and all("\u3041" <= char <= "\u3096" for char in text)
 
 
-def normalize_reading(reading: str) -> str | None:
-    """Normalize one reading.
-
-    Returns None when the reading contains unsupported characters, an
-    unresolvable long vowel mark, or fewer than two kana after normalization.
-    """
+def normalize_reading_with_reason(reading: str) -> NormalizationResult:
+    """Normalize one reading and retain a reason when normalization fails."""
 
     text = unicodedata.normalize("NFKC", reading.strip())
     if not text:
-        return None
+        return NormalizationResult(None, "empty")
 
     normalized: list[str] = []
     for raw_char in text:
         char = katakana_to_hiragana_char(raw_char)
         char = SMALL_KANA_MAP.get(char, char)
+        char = normalize_equivalent_kana_char(char)
 
         if char == "ー":
             if not normalized:
-                return None
+                return NormalizationResult(None, "unresolvable_long_vowel")
             vowel = VOWEL_BY_CHAR.get(normalized[-1])
             if vowel is None:
-                return None
+                return NormalizationResult(None, "unresolvable_long_vowel")
             normalized.append(vowel)
             continue
 
@@ -81,10 +109,20 @@ def normalize_reading(reading: str) -> str | None:
 
     result = "".join(normalized)
     if len(result) < 2:
-        return None
+        return NormalizationResult(None, "too_short")
     if not is_hiragana_text(result):
-        return None
-    return result
+        return NormalizationResult(None, "contains_non_hiragana")
+    return NormalizationResult(result, None)
+
+
+def normalize_reading(reading: str) -> str | None:
+    """Normalize one reading while preserving the original optional-string API.
+
+    Returns None when the reading contains unsupported characters, an
+    unresolvable long vowel mark, or fewer than two kana after normalization.
+    """
+
+    return normalize_reading_with_reason(reading).normalized
 
 
 def normalize_readings(readings: Iterable[str]) -> list[str]:

@@ -23,6 +23,7 @@ from experiments_approx import (  # noqa: E402
     AI_MATCH_TIME_LIMIT_SEC,
     build_match_flow_rows,
     parse_args as parse_approx_args,
+    repetitions_for_matchup,
     rows_without_self_matches,
     summarize_agent_end_chars,
     summarize_agents,
@@ -30,10 +31,10 @@ from experiments_approx import (  # noqa: E402
     summarize_top_end_chars,
 )
 from dictionary_stats import dictionary_char_total_rows  # noqa: E402
-from game import WordGraph  # noqa: E402
+from game import WordGraph, normalize_game_char  # noqa: E402
 from human_cli import parse_args as parse_human_args  # noqa: E402
 from match import simulate_match  # noqa: E402
-from visualize import summarize_agents_from_matches  # noqa: E402
+from visualize import build_pairwise_agent_result_rows, summarize_agents_from_matches  # noqa: E402
 
 
 class AgentsMatchTest(unittest.TestCase):
@@ -51,6 +52,22 @@ class AgentsMatchTest(unittest.TestCase):
         self.assertEqual(o_row["start_count"], 2)
         self.assertEqual(o_row["end_count"], 1)
         self.assertEqual(o_row["total_count"], 3)
+
+    def test_equivalent_kana_are_same_transition_character(self) -> None:
+        graph = WordGraph.from_words(["らゔ", "ぶた", "ゔあいおりん"])
+        self.assertEqual(graph.end_chars[0], "ぶ")
+        self.assertEqual(graph.start_chars[1], "ぶ")
+        self.assertEqual(graph.start_chars[2], "ぶ")
+        self.assertEqual(
+            [graph.words[word_id] for word_id in graph.available_word_ids_set("ゔ", {0})],
+            ["ぶた", "ゔあいおりん"],
+        )
+
+        self.assertEqual(normalize_game_char("ゐ"), "い")
+        self.assertEqual(normalize_game_char("ゑ"), "え")
+        self.assertEqual(normalize_game_char("ぢ"), "じ")
+        self.assertEqual(normalize_game_char("づ"), "ず")
+        self.assertEqual(normalize_game_char("ゔ"), "ぶ")
 
     def test_approximate_agents_can_finish_match_and_record_timing(self) -> None:
         graph = WordGraph.from_words(["あい", "いぬ", "ぬの", "のり", "りんご", "ごん"])
@@ -212,6 +229,133 @@ class AgentsMatchTest(unittest.TestCase):
         self.assertEqual(greedy_row["match_count"], 1)
         self.assertEqual(greedy_row["win_count"], 1)
 
+    def test_repetitions_only_apply_to_stochastic_matchups(self) -> None:
+        self.assertEqual(repetitions_for_matchup("greedy", "minimax", 5), 1)
+        self.assertEqual(repetitions_for_matchup("minimax", "alpha_beta", 5), 1)
+        self.assertEqual(repetitions_for_matchup("random", "greedy", 5), 5)
+        self.assertEqual(repetitions_for_matchup("greedy", "monte_carlo", 5), 5)
+        self.assertEqual(repetitions_for_matchup("random", "monte_carlo", 0), 1)
+
+    def test_repeated_stochastic_matchups_are_weighted_as_one_analysis_unit(self) -> None:
+        rows = [
+            {
+                "dict_size": 3,
+                "random_seed": 0,
+                "first_agent": "greedy",
+                "second_agent": "minimax",
+                "winner": "first",
+                "turn_count": 2,
+                "used_word_count": 2,
+                "first_total_time_sec": 1.0,
+                "second_total_time_sec": 1.0,
+                "first_avg_time_sec": 1.0,
+                "second_avg_time_sec": 1.0,
+                "first_max_time_sec": 1.0,
+                "second_max_time_sec": 1.0,
+                "first_timeout_count": 0,
+                "second_timeout_count": 0,
+            },
+            *[
+                {
+                    "dict_size": 3,
+                    "random_seed": 0,
+                    "first_agent": "random",
+                    "second_agent": "greedy",
+                    "winner": "first",
+                    "turn_count": 2,
+                    "used_word_count": 2,
+                    "first_total_time_sec": 0.1,
+                    "second_total_time_sec": 1.0,
+                    "first_avg_time_sec": 0.1,
+                    "second_avg_time_sec": 1.0,
+                    "first_max_time_sec": 0.1,
+                    "second_max_time_sec": 1.0,
+                    "first_timeout_count": 0,
+                    "second_timeout_count": 0,
+                }
+                for _repetition in range(3)
+            ],
+        ]
+
+        summary_rows = summarize_agents(rows)
+        greedy_row = next(row for row in summary_rows if row["agent_name"] == "greedy")
+        self.assertEqual(greedy_row["match_count"], 2)
+        self.assertEqual(greedy_row["win_count"], 1)
+        self.assertEqual(greedy_row["loss_count"], 1)
+        self.assertEqual(greedy_row["win_rate"], "0.500000")
+
+        first_player_rows = summarize_first_player_by_size(rows)
+        self.assertEqual(first_player_rows[0]["match_count"], 2)
+        self.assertEqual(first_player_rows[0]["first_win_count"], 2)
+
+        visualize_rows = summarize_agents_from_matches(
+            [{key: str(value) for key, value in row.items()} for row in rows]
+        )
+        visualize_greedy_row = next(row for row in visualize_rows if row["agent_name"] == "greedy")
+        self.assertEqual(visualize_greedy_row["match_count"], "2")
+        self.assertEqual(visualize_greedy_row["win_count"], "1")
+        self.assertEqual(visualize_greedy_row["loss_count"], "1")
+        self.assertEqual(visualize_greedy_row["win_rate"], "0.500000")
+
+    def test_pairwise_agent_result_rows_show_first_player_win_rate_by_matchup(self) -> None:
+        rows = [
+            *[
+                {
+                    "dict_size": "10000",
+                    "random_seed": "0",
+                    "first_agent": "random",
+                    "second_agent": "greedy",
+                    "winner": "first",
+                    "turn_count": "2",
+                    "used_word_count": "2",
+                    "first_total_time_sec": "0.1",
+                    "second_total_time_sec": "1.0",
+                    "first_avg_time_sec": "0.1",
+                    "second_avg_time_sec": "1.0",
+                    "first_max_time_sec": "0.1",
+                    "second_max_time_sec": "1.0",
+                    "first_timeout_count": "0",
+                    "second_timeout_count": "0",
+                }
+                for _repetition in range(3)
+            ],
+            {
+                "dict_size": "10000",
+                "random_seed": "0",
+                "first_agent": "greedy",
+                "second_agent": "random",
+                "winner": "second",
+                "turn_count": "2",
+                "used_word_count": "2",
+                "first_total_time_sec": "1.0",
+                "second_total_time_sec": "0.1",
+                "first_avg_time_sec": "1.0",
+                "second_avg_time_sec": "0.1",
+                "first_max_time_sec": "1.0",
+                "second_max_time_sec": "0.1",
+                "first_timeout_count": "0",
+                "second_timeout_count": "0",
+            },
+        ]
+
+        pairwise_rows = build_pairwise_agent_result_rows(rows, dict_size=10000)
+        random_first_vs_greedy_second = next(
+            row for row in pairwise_rows
+            if row["first_agent"] == "random" and row["second_agent"] == "greedy"
+        )
+        greedy_first_vs_random_second = next(
+            row for row in pairwise_rows
+            if row["first_agent"] == "greedy" and row["second_agent"] == "random"
+        )
+        self.assertEqual(random_first_vs_greedy_second["match_count"], "1")
+        self.assertEqual(random_first_vs_greedy_second["first_win_count"], "1")
+        self.assertEqual(random_first_vs_greedy_second["second_win_count"], "0")
+        self.assertEqual(random_first_vs_greedy_second["first_win_rate"], "1.000000")
+        self.assertEqual(greedy_first_vs_random_second["match_count"], "1")
+        self.assertEqual(greedy_first_vs_random_second["first_win_count"], "0")
+        self.assertEqual(greedy_first_vs_random_second["second_win_count"], "1")
+        self.assertEqual(greedy_first_vs_random_second["first_win_rate"], "0.000000")
+
     def test_agent_summary_counts_timed_invalid_decision_as_move(self) -> None:
         rows = [
             {
@@ -236,11 +380,13 @@ class AgentsMatchTest(unittest.TestCase):
         bad_ai_row = next(row for row in summary_rows if row["agent_name"] == "bad_ai")
         self.assertEqual(bad_ai_row["average_time_per_move_sec"], "2.000000")
         self.assertEqual(bad_ai_row["timeout_count"], 1)
+        self.assertEqual(bad_ai_row["timeout_count_per_match"], "1.000000")
 
         visualize_rows = summarize_agents_from_matches([{key: str(value) for key, value in rows[0].items()}])
         visualize_bad_ai_row = next(row for row in visualize_rows if row["agent_name"] == "bad_ai")
         self.assertEqual(visualize_bad_ai_row["average_time_per_move_sec"], "2.000000")
         self.assertEqual(visualize_bad_ai_row["timeout_count"], "1")
+        self.assertEqual(visualize_bad_ai_row["timeout_count_per_match"], "1.000000")
 
 
 if __name__ == "__main__":

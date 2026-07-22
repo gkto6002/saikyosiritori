@@ -367,6 +367,15 @@ def parse_args() -> argparse.Namespace:
     extract_parser.add_argument("--metadata-output")
     extract_parser.add_argument("--min-length", type=int, default=DEFAULT_MIN_LENGTH)
     extract_parser.add_argument("--max-length", type=int, default=DEFAULT_MAX_LENGTH)
+
+    master_parser = subparsers.add_parser(
+        "build-master",
+        help="Build the stage-one information-preserving JMdict master dictionary.",
+    )
+    master_parser.add_argument("--input", required=True, help="JMdict XML or .gz input path")
+    master_parser.add_argument("--output", required=True, help="Master dictionary JSONL output path")
+    master_parser.add_argument("--metadata-output", help="Metadata JSON output path")
+    master_parser.add_argument("--statistics-output", help="Statistics JSON output path")
     return parser.parse_args()
 
 
@@ -376,6 +385,11 @@ def main() -> None:
         output = download_jmdict(args.url, args.output)
         print(f"downloaded={output}")
         return
+
+    if args.command == "build-master":
+        from master_dictionary import run_cli
+
+        raise SystemExit(run_cli(args))
 
     if args.command == "extract-all":
         records, stats = parse_jmdict(

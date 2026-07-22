@@ -9,6 +9,8 @@ from pathlib import Path
 
 from agents import BaseAgent, GameState
 from game import WordGraph
+from runtime_dictionary import RuntimeDictionary
+from runtime_state import AIEdgeState, RuntimeAgentAdapter
 
 
 @dataclass
@@ -154,6 +156,114 @@ def simulate_match(
         winner=winner,
         turn_count=len(history),
         used_word_count=len(used_ids),
+        loss_reason=loss_reason,
+        first_total_time_sec=timings[0].total_time_sec,
+        second_total_time_sec=timings[1].total_time_sec,
+        first_avg_time_sec=timings[0].average_time_sec,
+        second_avg_time_sec=timings[1].average_time_sec,
+        first_max_time_sec=timings[0].max_time_sec,
+        second_max_time_sec=timings[1].max_time_sec,
+        first_timeout_count=timings[0].timeout_count,
+        second_timeout_count=timings[1].timeout_count,
+        max_moves=max_moves,
+        max_match_time_sec=max_match_time_sec,
+        match_elapsed_time_sec=match_elapsed,
+        history=history,
+    )
+
+
+def simulate_runtime_match(
+    runtime: RuntimeDictionary,
+    first_agent: BaseAgent,
+    second_agent: BaseAgent,
+    max_moves: int,
+    max_match_time_sec: float,
+    match_id: str = "",
+) -> MatchResult:
+    """Run unchanged agents against an edge-count state, materializing words for output."""
+
+    agents = [first_agent, second_agent]
+    timings = [PlayerTiming(), PlayerTiming()]
+    state = AIEdgeState.initial(runtime)
+    adapter = RuntimeAgentAdapter(runtime)
+    decision_rows: list[dict[str, object]] = []
+    started = time.perf_counter()
+    winner = "draw"
+    loss_reason = "max_moves_reached"
+
+    for turn_index in range(max_moves):
+        if time.perf_counter() - started >= max_match_time_sec:
+            loss_reason = "match_timeout"
+            break
+        player_index = turn_index % 2
+        if state.legal_word_count() == 0:
+            winner = "second" if player_index == 0 else "first"
+            loss_reason = "no_legal_move"
+            break
+
+        agent = agents[player_index]
+        edge_decision = adapter.choose_edge(agent, state)
+        decision = edge_decision.move_decision
+        timings[player_index].add(decision.elapsed_time_sec, decision.timed_out)
+        if edge_decision.start_id is None or edge_decision.end_id is None:
+            winner = "second" if player_index == 0 else "first"
+            loss_reason = "invalid_ai_move"
+            break
+        required_start = (
+            "ANY"
+            if state.required_char_id is None
+            else runtime.id_to_char[state.required_char_id]
+        )
+        state.apply_edge(edge_decision.start_id, edge_decision.end_id)
+        decision_rows.append(
+            {
+                "match_id": match_id,
+                "turn": turn_index + 1,
+                "player": "first" if player_index == 0 else "second",
+                "agent": agent.name,
+                "required_start_char": required_start,
+                "start_id": edge_decision.start_id,
+                "end_id": edge_decision.end_id,
+                "elapsed_time_sec": round(decision.elapsed_time_sec, 6),
+                "timed_out": decision.timed_out,
+                "score": decision.score,
+                "decision_extra": decision.extra,
+            }
+        )
+        if runtime.id_to_char[edge_decision.end_id] == "ん":
+            winner = "second" if player_index == 0 else "first"
+            loss_reason = "ended_with_n"
+            break
+    else:
+        winner = "draw"
+
+    word_ids = state.materialized_word_ids()
+    history: list[dict[str, object]] = []
+    previous_word = ""
+    for row, word_id in zip(decision_rows, word_ids):
+        word = runtime.word_readings[word_id]
+        end_id = int(row["end_id"])
+        history.append(
+            {
+                **row,
+                "previous_word": previous_word,
+                "word_id": word_id,
+                "word": word,
+                "start_char": runtime.id_to_char[int(row["start_id"])],
+                "end_char": runtime.id_to_char[end_id],
+                "next_required_start_char": "" if runtime.id_to_char[end_id] == "ん" else runtime.id_to_char[end_id],
+            }
+        )
+        previous_word = word
+
+    match_elapsed = time.perf_counter() - started
+    return MatchResult(
+        dict_size=runtime.word_count,
+        first_agent=first_agent.name,
+        second_agent=second_agent.name,
+        winner=winner,
+        turn_count=len(history),
+        used_word_count=len(history),
         loss_reason=loss_reason,
         first_total_time_sec=timings[0].total_time_sec,
         second_total_time_sec=timings[1].total_time_sec,

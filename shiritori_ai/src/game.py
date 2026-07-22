@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
+from normalize import normalize_equivalent_kana_char
+
 
 @dataclass(frozen=True)
 class WordGraph:
@@ -37,6 +39,10 @@ class WordGraph:
     @classmethod
     def from_csv(cls, path: str | Path) -> "WordGraph":
         return cls.from_words(load_words_from_csv(path))
+
+    @classmethod
+    def from_text(cls, path: str | Path) -> "WordGraph":
+        return cls.from_words(load_words_from_text(path))
 
     def subset(self, size: int) -> "WordGraph":
         if size < 0:
@@ -94,6 +100,7 @@ def _distribution(chars: Iterable[str]) -> dict[str, int]:
 def normalize_game_char(char: str) -> str:
     """Canonicalize equivalent kana for shiritori graph transitions."""
 
+    char = normalize_equivalent_kana_char(char)
     return "お" if char == "を" else char
 
 
@@ -107,3 +114,10 @@ def load_words_from_csv(path: str | Path) -> list[str]:
         if "reading" not in reader.fieldnames:
             raise ValueError(f"CSV must contain a reading column: {path}")
         return [row["reading"] for row in reader if row.get("reading")]
+
+
+def load_words_from_text(path: str | Path) -> list[str]:
+    """Load a UTF-8 dictionary containing one normalized reading per line."""
+
+    with Path(path).open("r", encoding="utf-8") as text_file:
+        return [line.strip() for line in text_file if line.strip()]

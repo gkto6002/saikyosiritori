@@ -39,14 +39,14 @@ python src/dataset.py build \
 
 ## 小規模完全解析
 
-標準では小さすぎるDを外し、`D100, D150, D200, D250, D300` を `seed 0..4` で解析します。完全解析の標準タイムアウトは `120` 秒です。`--max-states` は未指定なら無制限で、基本的にタイムアウトまで探索します。
+標準では `D100` から始め、`50` ずつ辞書サイズを増やしながら `seed 0..2` で解析します。ある辞書サイズで3つのseedすべてがタイムアウトしたらそこで停止します。完全解析の標準タイムアウトは `120` 秒です。`--max-states` は未指定なら無制限で、基本的にタイムアウトまで探索します。
 
 ```bash
 python src/experiments_exact.py \
-  --jmdict data/raw/JMdict_e.gz \
-  --sizes 100 150 200 250 300 \
-  --seeds 0 1 2 3 4
+  --jmdict data/raw/JMdict_e.gz
 ```
+
+開始サイズや刻み幅を変える場合は `--size-start`、`--size-step`、`--seed-count` を使います。`--sizes` と `--seeds` を明示した場合は、従来どおり指定したサイズとseedだけを固定実行します。
 
 主な出力:
 
@@ -62,12 +62,15 @@ python src/experiments_exact.py \
 
 ```bash
 python src/experiments_approx.py \
-  --jmdict data/raw/JMdict_e.gz \
+  --records data/generated/jmdict_records.csv \
   --sizes 1000 3000 5000 10000 \
-  --repetitions 1 \
+  --seeds 0 1 2 \
+  --repetitions 3 \
   --time-limit-sec 4.0 \
   --max-match-time-sec 960
 ```
+
+`--repetitions` は `random` または `monte_carlo` を含む対戦だけに適用します。`greedy`、`minimax`、`alpha_beta` だけの決定的な対戦は同じ辞書上で繰り返しても同じフローになるため、1回だけ実行します。集計では同じ `(D, seed, first_agent, second_agent)` の反復を1つの対戦単位に平均化し、反復したAIだけが勝率や先手勝率で重くならないようにします。
 
 主な出力:
 
@@ -97,13 +100,15 @@ python src/visualize.py
 - `results/figures/exact_time_by_dict_size.png`
 - `results/figures/exact_winning_first_moves_by_dict_size.png`
 - `results/figures/exact_first_player_win_rate_by_dict_size.png`
-- `results/figures/approx_agent_win_rate.png`
-- `results/figures/approx_agent_avg_time.png`
-- `results/figures/approx_agent_timeout_count.png`
-- `results/figures/approx_first_player_win_rate_by_dict_size.png`
+- `results/figures/exact_completion_by_dict_size.png`
+- `results/figures/approx_agent_win_rate_including_random.png`: randomを含む対戦でのAI別勝率
+- `results/figures/approx_agent_win_rate_excluding_random.png`: randomを除く対戦でのAI別勝率
+- `results/figures/approx_first_player_win_rate_including_random.png`: randomを含む対戦での先手勝率
+- `results/figures/approx_first_player_win_rate_excluding_random.png`: randomを除く対戦での先手勝率
+- `results/figures/approx_d10000_pairwise_agent_results.png`: `D10000` の先手AI対後手AIの先手勝率行列
+- `results/figures/approx_agent_avg_time_per_move.png`
+- `results/figures/approx_agent_timeouts_per_match.png`
 - `results/figures/approx_top_end_chars.png`
-- `results/figures/approx_agent_win_rate_random_comparison.png`: randomを含む場合/除く場合のAI別勝率
-- `results/figures/approx_first_player_win_rate_random_comparison.png`: randomを含む場合/除く場合の先手勝率
 
 ## 人間対AI
 
