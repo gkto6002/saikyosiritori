@@ -51,7 +51,7 @@ class EvaluationConfig:
     survival_safe_edge_type_weight: float = 8.0
     survival_safe_end_type_weight: float = 6.0
     survival_average_weight: float = 0.15
-    normal_survival_weight: float = 0.15
+    normal_survival_weight: float = 0.0
     caution_survival_weight: float = 0.35
     danger_survival_weight: float = 0.8
     critical_survival_weight: float = 1.5
@@ -107,6 +107,7 @@ class SearchStats:
     beam_pruned_move_count: int = 0
     null_window_search_count: int = 0
     research_count: int = 0
+    root_alpha_updates: int = 0
     ordering_time_sec: float = 0.0
     evaluation_time_sec: float = 0.0
     search_time_sec: float = 0.0
@@ -133,6 +134,7 @@ class SearchStats:
             "null_window_searches": self.null_window_search_count,
             "research_count": self.research_count,
             "research_rate": research_rate,
+            "root_alpha_updates": self.root_alpha_updates,
             "ordering_time_sec": self.ordering_time_sec,
             "evaluation_time_sec": self.evaluation_time_sec,
             "search_time_sec": self.search_time_sec,
@@ -336,6 +338,35 @@ def _survival_value(
     )
 
 
+def _simple_edge_survival_value(
+    state: AIEdgeState,
+    config: EvaluationConfig,
+) -> float:
+    """Cheap candidate-dependent survival over opponent destination types."""
+
+    if state.required_char_id is None:
+        return 0.0
+    mask = state.safe_destination_masks[state.required_char_id]
+    values: list[float] = []
+    while mask:
+        bit = mask & -mask
+        destination_id = bit.bit_length() - 1
+        values.append(
+            config.survival_safe_word_weight
+            * state.remaining_safe_word_counts[destination_id]
+            + config.survival_safe_edge_type_weight
+            * state.active_safe_edge_type_counts[destination_id]
+            + config.survival_safe_end_type_weight
+            * state.safe_destination_masks[destination_id].bit_count()
+        )
+        mask ^= bit
+    if not values:
+        return 0.0
+    return min(values) + config.survival_average_weight * (
+        sum(values) / len(values)
+    )
+
+
 def _combine_survival_samples(
     samples: Iterable[tuple[float, int]],
     config: EvaluationConfig,
@@ -487,7 +518,7 @@ def _evaluate_edge_candidate_with_metrics(
         if risk_level is RiskLevel.CAUTION:
             if stats is not None:
                 stats.simple_survival_evaluations += 1
-            survival_score = _survival_value(own_metrics, config)
+            survival_score = _simple_edge_survival_value(state, config)
             return CandidateEvaluation(
                 attack_score + survival_weight * survival_score,
                 attack_score,
@@ -528,6 +559,48 @@ def _evaluate_edge_candidate_with_metrics(
         )
     finally:
         state.undo_edge()
+
+
+def edge_candidate_analysis(
+    state: AIEdgeState,
+    start_id: int,
+    end_id: int,
+    config: EvaluationConfig = DEFAULT_EVALUATION_CONFIG,
+) -> dict[str, object]:
+    """Return stable analysis fields for the selected root edge."""
+
+    own_metrics = edge_position_metrics(state)
+    risk_level = risk_level_for_metrics(own_metrics, config)
+    evaluation = evaluate_edge_candidate(
+        state,
+        start_id,
+        end_id,
+        config=config,
+    )
+    if state.edge_dictionary.char_to_id.get("ん") == end_id:
+        opponent_metrics = PositionMetrics(0, 0, 0, 0, 0, 0, 0)
+    else:
+        state.apply_edge(start_id, end_id)
+        try:
+            opponent_metrics = edge_position_metrics(state)
+        finally:
+            state.undo_edge()
+    return {
+        "risk_level": risk_level.value,
+        "attack_score": evaluation.attack_score,
+        "survival_score": evaluation.survival_score,
+        "survival_weight": evaluation.survival_weight,
+        "total_score": evaluation.total_score,
+        "opponent_legal_word_count": opponent_metrics.legal_word_count,
+        "opponent_safe_word_count": opponent_metrics.safe_word_count,
+        "opponent_active_edge_type_count": opponent_metrics.edge_type_count,
+        "opponent_safe_edge_type_count": opponent_metrics.safe_edge_type_count,
+        "opponent_destination_count": opponent_metrics.end_type_count,
+        "opponent_safe_destination_count": opponent_metrics.safe_end_type_count,
+        "own_safe_word_count": own_metrics.safe_word_count,
+        "own_safe_edge_type_count": own_metrics.safe_edge_type_count,
+        "own_safe_destination_count": own_metrics.safe_end_type_count,
+    }
 
 
 def evaluate_word_position(

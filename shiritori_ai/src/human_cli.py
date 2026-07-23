@@ -70,6 +70,7 @@ def parse_args() -> argparse.Namespace:
             "monte_carlo",
             "alpha_beta",
             "beam_negamax",
+            "pvs",
             "aggressive_pvs",
         ],
         default="greedy",

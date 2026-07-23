@@ -159,7 +159,8 @@ score = attack_score + survival_weight * survival_score
 - `minimax`: 標準深度3、候補上限12。
 - `alpha_beta`: 標準深度3、候補上限12でalpha-beta枝刈りを行います。
 - `beam_negamax`: 標準深度4。深さごとに`12,8,4,2`辺へ候補を制限するNegamaxで、alpha-beta枝刈りは行いません。
-- `aggressive_pvs`: 標準深度3、候補上限12。最初の候補を通常窓、2本目以降をnull windowで探索し、必要な場合だけ通常窓で再探索するPVSです。
+- `pvs`: 標準深度3、候補上限12。AlphaBetaと同じ候補集合・評価・順序を使い、最初の候補を通常窓、2本目以降を浮動小数点用null windowで探索し、必要な場合だけ通常窓で再探索します。
+- `aggressive_pvs`: 既存コマンドを壊さないために残した`pvs`の後方互換名です。
 
 4つの探索系AIは、1手中の反復深化を行いません。現在の`current_depth`を1回探索します。ハードタイムアウトまたは制限時間の90%以上を使うと次手の深度を1下げ、50%以下で5回連続完了すると1戻します。80%以上90%未満では回復回数を増やしません。再帰中の時間切れは`SearchTimeout`で上位へ伝播し、`apply_edge`後は`finally`で必ず`undo_edge`します。
 
@@ -173,7 +174,7 @@ python src/experiments_approx.py \
   --max-match-time-sec 960
 ```
 
-`--branch-limit`はMinimax、AlphaBeta、AggressivePVSへ適用され、標準は12です。候補全体を軽量評価した後、上位候補だけを探索するため、即時勝利辺は上限外へ落ちません。MonteCarloは候補を1本ずつラウンドロビンで試行し、候補間の試行数差を原則1以内に保ちます。
+`--branch-limit`はMinimax、AlphaBeta、PVSへ適用され、標準は12です。候補全体を軽量評価した後、上位候補だけを探索するため、即時勝利辺は上限外へ落ちません。MonteCarloは候補を1本ずつラウンドロビンで試行し、候補間の試行数差を原則1以内に保ちます。
 
 固定局面の一手性能は`benchmarks/edge_search_benchmark.py`で計測できます。D20000・3 seedでの高速化前後の結果と対局スモークは`docs/agent_optimization/edge_native_search_performance_report.md`に記録しています。
 
@@ -192,6 +193,18 @@ python src/experiments_approx.py \
 打ち切り理由は `no_legal_move`、`ended_with_n`、`max_moves_reached`、`match_timeout` などで記録します。AIの1手制限超過は、各AIの `timeout_count` に記録します。
 
 各手の`decision_extra`に、`nodes_searched`、`leaf_evaluations`、`completed_root_moves`、`effective_depth`、`next_depth`、`timed_out`を保存します。AlphaBeta/PVSは`cutoff_count`と`pruned_move_count`、BeamNegamaxは`beam_pruned_move_count`、PVSはnull windowと再探索回数も記録します。
+
+### 既存探索AIの改善実験
+
+固定局面、同一深度比較、設定探索、Beam参照手保持率、最終対局、集計と図の作成は一つのランナーから再実行できます。`--quick`は配線確認、`--full`は本実験です。`--stage`には`positions`、`benchmark`、`equal-depth`、`tuning`、`beam-retention`、`final`、`report`を指定できます。中間結果のmanifestにはコミットID、設定ハッシュ、未コミット変更を含むソースfingerprintを保存します。
+
+```bash
+.venv/bin/python src/run_existing_agent_improvement.py --quick
+.venv/bin/python src/run_existing_agent_improvement.py --full
+.venv/bin/python src/run_existing_agent_improvement.py --full --stage report
+```
+
+本実験のレポートは`docs/agent_improvement/existing_agent_improvement_report.md`、機械可読な集計は`results/existing_agent_improvement/analysis`、図は`results/existing_agent_improvement/figures`にあります。
 
 ## 図の作成
 

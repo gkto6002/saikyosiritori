@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import sys
 import time
 import unittest
@@ -16,6 +17,7 @@ from agents import (  # noqa: E402
     BeamNegamaxAgent,
     MinimaxAgent,
     MonteCarloAgent,
+    PVSAgent,
     SearchStats,
     SearchTimeout,
     build_agent,
@@ -277,7 +279,6 @@ class SearchAgentTest(unittest.TestCase):
         required = {
             "ordering_time_sec",
             "evaluation_time_sec",
-            "search_time_sec",
             "total_search_time_sec",
             "nodes_searched",
             "leaf_evaluations",
@@ -288,6 +289,22 @@ class SearchAgentTest(unittest.TestCase):
             "effective_depth",
             "next_depth",
             "timed_out",
+            "risk_level",
+            "attack_score",
+            "survival_score",
+            "survival_weight",
+            "total_score",
+            "opponent_legal_word_count",
+            "opponent_safe_word_count",
+            "opponent_active_edge_type_count",
+            "opponent_safe_edge_type_count",
+            "opponent_destination_count",
+            "opponent_safe_destination_count",
+            "own_safe_word_count",
+            "own_safe_edge_type_count",
+            "own_safe_destination_count",
+            "root_candidate_count",
+            "searched_root_candidate_count",
         }
         self.assertTrue(required.issubset(decision.extra))
         self.assertGreaterEqual(decision.extra["ordering_time_sec"], 0.0)
@@ -346,7 +363,7 @@ class SearchAgentTest(unittest.TestCase):
         state = GameState(None)
         attack = evaluate_word_candidate(graph, state, words.index("かあ"))
         survival = evaluate_word_candidate(graph, state, words.index("うか"))
-        self.assertEqual(attack.survival_weight, 0.15)
+        self.assertEqual(attack.survival_weight, 0.0)
         self.assertGreater(attack.attack_score, survival.attack_score)
         self.assertLess(attack.survival_score, survival.survival_score)
         self.assertGreater(attack.total_score, survival.total_score)
@@ -374,6 +391,50 @@ class SearchAgentTest(unittest.TestCase):
         self.assertGreater(stronger_attack.attack_score, weaker_attack.attack_score)
         self.assertGreater(stronger_attack.total_score, weaker_attack.total_score)
 
+    def test_alpha_beta_root_alpha_preserves_result_and_reduces_nodes(self) -> None:
+        runtime = self.runtime(["いう", "えあ", "あえ", "うえ", "うう", "あい"])
+        legacy = AlphaBetaAgent(
+            time_limit_sec=10.0,
+            depth=4,
+            branch_limit=None,
+            adaptive_depth=False,
+            share_root_alpha=False,
+        ).choose_edge(AIEdgeState.initial(runtime))
+        shared = AlphaBetaAgent(
+            time_limit_sec=10.0,
+            depth=4,
+            branch_limit=None,
+            adaptive_depth=False,
+            share_root_alpha=True,
+        ).choose_edge(AIEdgeState.initial(runtime))
+        self.assertEqual((shared.start_id, shared.end_id), (legacy.start_id, legacy.end_id))
+        self.assertEqual(shared.score, legacy.score)
+        self.assertLessEqual(shared.extra["nodes_searched"], legacy.extra["nodes_searched"])
+        self.assertGreater(shared.extra["root_alpha_updates"], 0)
+
+    def test_caution_survival_is_candidate_dependent(self) -> None:
+        runtime = self.runtime(
+            [
+                "あい", "あかい", "あう", "あかう",
+                "あえ", "あかえ", "あお", "あかお",
+                "いか", "いき", "うさ", "うし",
+                "かた", "かな", "かま", "きた", "きな", "きま",
+                "さた", "した",
+            ]
+        )
+        state = AIEdgeState.initial(runtime)
+        state.required_char_id = runtime.char_to_id["あ"]
+        safer = evaluate_edge_candidate(
+            state, runtime.char_to_id["あ"], runtime.char_to_id["い"]
+        )
+        weaker = evaluate_edge_candidate(
+            state, runtime.char_to_id["あ"], runtime.char_to_id["う"]
+        )
+        self.assertEqual(safer.attack_score, weaker.attack_score)
+        self.assertGreater(safer.survival_score, weaker.survival_score)
+        self.assertGreater(safer.total_score, weaker.total_score)
+        state.assert_aggregates_consistent()
+
     def test_one_safe_edge_type_is_critical_even_with_many_words(self) -> None:
         runtime = self.runtime(["あい", "あかい", "あさい", "あたい"])
         state = AIEdgeState.initial(runtime)
@@ -398,7 +459,25 @@ class SearchAgentTest(unittest.TestCase):
 
     def test_new_agents_are_available_from_factory(self) -> None:
         self.assertIsInstance(build_agent("beam_negamax"), BeamNegamaxAgent)
+        self.assertIsInstance(build_agent("pvs"), PVSAgent)
         self.assertIsInstance(build_agent("aggressive_pvs"), AggressivePVSAgent)
+
+    def test_pvs_uses_fair_ordering_and_float_null_window(self) -> None:
+        runtime = self.runtime(["あい", "あう", "あえ", "いあ", "うあ", "えあ"])
+        state = AIEdgeState.initial(runtime)
+        edges = state.available_edges()
+        deadline = time.perf_counter() + 10.0
+        alpha_beta = AlphaBetaAgent(depth=2, adaptive_depth=False)
+        pvs = PVSAgent(depth=2, adaptive_depth=False)
+        alpha_order, _, _ = alpha_beta._ordered_edges(
+            state, edges, deadline, False, SearchStats(), 0
+        )
+        pvs_order, _, _ = pvs._ordered_edges(
+            state, edges, deadline, False, SearchStats(), 0
+        )
+        self.assertEqual(alpha_order, pvs_order)
+        alpha = 12.25
+        self.assertEqual(pvs._null_window_upper(alpha), math.nextafter(alpha, math.inf))
 
     def test_new_agents_and_search_options_are_available_in_clis(self) -> None:
         with patch.object(

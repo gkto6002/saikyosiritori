@@ -1,0 +1,16 @@
+{
+  "commit_id": "1b4c28318343c046a50fd9d77d4ed7af6cea83aa",
+  "config": {
+    "commit_id": "1b4c28318343c046a50fd9d77d4ed7af6cea83aa",
+    "quick": false,
+    "runtimes": [
+      "/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D20000_L2-12_seed0.runtime.json",
+      "/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D20000_L2-12_seed1.runtime.json",
+      "/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D20000_L2-12_seed2.runtime.json"
+    ],
+    "source_fingerprint": "80721518bd376abdeb31b4530ddea3f9cc04cb026e04554061fb8b44abbaf046",
+    "stage": "report"
+  },
+  "config_hash": "84f3b2b321c50a998da86a7460f148981eeda1d82234ff14fa90b39e1aa9e719",
+  "source_fingerprint": "80721518bd376abdeb31b4530ddea3f9cc04cb026e04554061fb8b44abbaf046"
+}

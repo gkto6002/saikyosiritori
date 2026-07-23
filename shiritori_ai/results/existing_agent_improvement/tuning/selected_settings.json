@@ -1,0 +1,52 @@
+{
+  "alpha_beta": {
+    "agent": "alpha_beta",
+    "branch_limit": 8,
+    "config_id": "alpha_beta_d5_b8",
+    "depth": 5,
+    "mean_completed_root_moves": 6.666666666666667,
+    "mean_effective_depth": 5.0,
+    "mean_nodes": 687.0833333333334,
+    "mean_time_sec": 0.07193244588755382,
+    "median_time_sec": 0.07822243752889335,
+    "p95_time_sec": 0.14396975003182888,
+    "run_count": 60,
+    "stable_position_rate": 1.0,
+    "timeout_rate": 0.0
+  },
+  "beam_negamax": {
+    "agent": "beam_negamax",
+    "beam_widths": [
+      8,
+      6,
+      4,
+      2
+    ],
+    "config_id": "beam_d5_w8-6-4-2",
+    "depth": 5,
+    "mean_completed_root_moves": 6.666666666666667,
+    "mean_effective_depth": 5.0,
+    "mean_nodes": 1048.9166666666667,
+    "mean_time_sec": 0.09159964999028793,
+    "median_time_sec": 0.09612475044559687,
+    "p95_time_sec": 0.1870784170459956,
+    "run_count": 60,
+    "stable_position_rate": 1.0,
+    "timeout_rate": 0.0
+  },
+  "pvs": {
+    "agent": "pvs",
+    "branch_limit": 8,
+    "config_id": "pvs_d5_b8",
+    "depth": 5,
+    "mean_completed_root_moves": 6.666666666666667,
+    "mean_effective_depth": 5.0,
+    "mean_nodes": 737.0833333333334,
+    "mean_time_sec": 0.07356745203142054,
+    "median_time_sec": 0.0808441040571779,
+    "p95_time_sec": 0.1542465410893783,
+    "run_count": 60,
+    "stable_position_rate": 1.0,
+    "timeout_rate": 0.0
+  }
+}

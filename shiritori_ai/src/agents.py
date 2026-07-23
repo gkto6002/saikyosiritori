@@ -21,6 +21,7 @@ from search_common import (
     SearchStats,
     SearchTimeout,
     check_deadline,
+    edge_candidate_analysis,
     evaluate_edge_candidate,
     evaluate_ordering_score,
     evaluate_edge_position as _evaluate_edge_position,
@@ -589,6 +590,9 @@ class MinimaxAgent(SearchAgentBase):
         if not ordered:
             fallback = _safe_edge_fallback(state, edges)
             assert fallback is not None
+            analysis = edge_candidate_analysis(
+                state, fallback[0], fallback[1], self.evaluation_config
+            )
             elapsed = time.perf_counter() - started
             stats.total_search_time_sec = elapsed
             elapsed_ratio = elapsed / self.time_limit_sec if self.time_limit_sec > 0 else math.inf
@@ -606,6 +610,9 @@ class MinimaxAgent(SearchAgentBase):
                     move_unit="edge_type",
                     score_complete=False,
                     elapsed_ratio=elapsed_ratio,
+                    root_candidate_count=len(edges),
+                    searched_root_candidate_count=0,
+                    **analysis,
                 ),
             )
 
@@ -629,6 +636,9 @@ class MinimaxAgent(SearchAgentBase):
         finally:
             stats.search_time_sec += time.perf_counter() - search_started
         final_timed_out = timed_out or time.perf_counter() >= deadline
+        analysis = edge_candidate_analysis(
+            state, best_edge[0], best_edge[1], self.evaluation_config
+        )
         elapsed = time.perf_counter() - started
         stats.total_search_time_sec = elapsed
         elapsed_ratio = elapsed / self.time_limit_sec if self.time_limit_sec > 0 else math.inf
@@ -645,6 +655,9 @@ class MinimaxAgent(SearchAgentBase):
                 timed_out=final_timed_out,
                 move_unit="edge_type",
                 elapsed_ratio=elapsed_ratio,
+                root_candidate_count=len(edges),
+                searched_root_candidate_count=stats.completed_root_moves,
+                **analysis,
             ),
         )
 
@@ -772,7 +785,9 @@ class AlphaBetaAgent(MinimaxAgent):
         min_depth: int = 1,
         depth_recovery_turns: int = 5,
         evaluation_config: EvaluationConfig = DEFAULT_EVALUATION_CONFIG,
+        share_root_alpha: bool = True,
     ) -> None:
+        self.share_root_alpha = share_root_alpha
         super().__init__(
             time_limit_sec,
             random_seed,
@@ -797,16 +812,22 @@ class AlphaBetaAgent(MinimaxAgent):
         next_state = state_after_safe_move(graph, state, word_id)
         if next_state is None:
             return loss_score(0)
-        return -self._negamax_alpha_beta(
+        root_alpha = getattr(stats, "_root_alpha", LOSS_SCORE)
+        alpha = root_alpha if self.share_root_alpha else LOSS_SCORE
+        score = -self._negamax_alpha_beta(
             graph,
             next_state,
             depth - 1,
             1,
             -WIN_SCORE,
-            WIN_SCORE,
+            -alpha,
             deadline,
             stats,
         )
+        if self.share_root_alpha and score > root_alpha:
+            setattr(stats, "_root_alpha", score)
+            stats.root_alpha_updates += 1
+        return score
 
     def _negamax_alpha_beta(
         self,
@@ -870,19 +891,25 @@ class AlphaBetaAgent(MinimaxAgent):
         check_deadline(deadline)
         if edge_is_terminal(state, end_id):
             return loss_score(0)
+        root_alpha = getattr(stats, "_root_alpha", LOSS_SCORE)
+        alpha = root_alpha if self.share_root_alpha else LOSS_SCORE
         state.apply_edge(start_id, end_id)
         try:
-            return -self._edge_negamax_alpha_beta(
+            score = -self._edge_negamax_alpha_beta(
                 state,
                 depth - 1,
                 1,
                 -WIN_SCORE,
-                WIN_SCORE,
+                -alpha,
                 deadline,
                 stats,
             )
         finally:
             state.undo_edge()
+        if self.share_root_alpha and score > root_alpha:
+            setattr(stats, "_root_alpha", score)
+            stats.root_alpha_updates += 1
+        return score
 
     def _edge_negamax_alpha_beta(
         self,
@@ -1087,8 +1114,8 @@ class BeamNegamaxAgent(MinimaxAgent):
         )
 
 
-class AggressivePVSAgent(AlphaBetaAgent):
-    name = "aggressive_pvs"
+class PVSAgent(AlphaBetaAgent):
+    name = "pvs"
 
     def __init__(
         self,
@@ -1100,7 +1127,9 @@ class AggressivePVSAgent(AlphaBetaAgent):
         min_depth: int = 1,
         depth_recovery_turns: int = 5,
         evaluation_config: EvaluationConfig = DEFAULT_EVALUATION_CONFIG,
+        null_window_epsilon: float | None = None,
     ) -> None:
+        self.null_window_epsilon = null_window_epsilon
         super().__init__(
             time_limit_sec,
             random_seed,
@@ -1114,7 +1143,12 @@ class AggressivePVSAgent(AlphaBetaAgent):
 
     @property
     def aggressive_ordering(self) -> bool:
-        return True
+        return False
+
+    def _null_window_upper(self, alpha: float) -> float:
+        if self.null_window_epsilon is not None:
+            return alpha + self.null_window_epsilon
+        return math.nextafter(alpha, math.inf)
 
     def _score_move(
         self,
@@ -1135,9 +1169,10 @@ class AggressivePVSAgent(AlphaBetaAgent):
             setattr(stats, "_root_alpha", score)
             return score
         alpha = getattr(stats, "_root_alpha", LOSS_SCORE)
+        upper = self._null_window_upper(alpha)
         stats.null_window_search_count += 1
         score = -self._pvs_word(
-            graph, next_state, depth - 1, 1, -alpha - 1.0, -alpha, deadline, stats
+            graph, next_state, depth - 1, 1, -upper, -alpha, deadline, stats
         )
         if alpha < score < WIN_SCORE:
             stats.research_count += 1
@@ -1167,9 +1202,10 @@ class AggressivePVSAgent(AlphaBetaAgent):
                 setattr(stats, "_root_alpha", score)
                 return score
             alpha = getattr(stats, "_root_alpha", LOSS_SCORE)
+            upper = self._null_window_upper(alpha)
             stats.null_window_search_count += 1
             score = -self._pvs_edge(
-                state, depth - 1, 1, -alpha - 1.0, -alpha, deadline, stats
+                state, depth - 1, 1, -upper, -alpha, deadline, stats
             )
             if alpha < score < WIN_SCORE:
                 stats.research_count += 1
@@ -1215,9 +1251,10 @@ class AggressivePVSAgent(AlphaBetaAgent):
                     graph, next_state, depth - 1, ply + 1, -beta, -alpha, deadline, stats
                 )
             else:
+                upper = self._null_window_upper(alpha)
                 stats.null_window_search_count += 1
                 score = -self._pvs_word(
-                    graph, next_state, depth - 1, ply + 1, -alpha - 1.0, -alpha, deadline, stats
+                    graph, next_state, depth - 1, ply + 1, -upper, -alpha, deadline, stats
                 )
                 if alpha < score < beta:
                     stats.research_count += 1
@@ -1271,9 +1308,10 @@ class AggressivePVSAgent(AlphaBetaAgent):
                             state, depth - 1, ply + 1, -beta, -alpha, deadline, stats
                         )
                     else:
+                        upper = self._null_window_upper(alpha)
                         stats.null_window_search_count += 1
                         score = -self._pvs_edge(
-                            state, depth - 1, ply + 1, -alpha - 1.0, -alpha, deadline, stats
+                            state, depth - 1, ply + 1, -upper, -alpha, deadline, stats
                         )
                         if alpha < score < beta:
                             stats.research_count += 1
@@ -1289,6 +1327,12 @@ class AggressivePVSAgent(AlphaBetaAgent):
                 stats.pruned_move_count += len(ordered) - index - 1
                 break
         return best
+
+
+class AggressivePVSAgent(PVSAgent):
+    """Backward-compatible CLI/class alias for the now-fair PVS implementation."""
+
+    name = "aggressive_pvs"
 
 
 class MonteCarloAgent(BaseAgent):
@@ -1522,8 +1566,9 @@ def build_agent(
         return BeamNegamaxAgent(
             **search_common, depth=beam_negamax_depth, beam_widths=beam_widths
         )
-    if agent_name == "aggressive_pvs":
-        return AggressivePVSAgent(
+    if agent_name in {"pvs", "aggressive_pvs"}:
+        agent_class = PVSAgent if agent_name == "pvs" else AggressivePVSAgent
+        return agent_class(
             **search_common,
             depth=aggressive_pvs_depth,
             branch_limit=branch_limit,
