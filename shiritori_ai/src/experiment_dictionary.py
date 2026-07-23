@@ -323,25 +323,53 @@ def build_experiment_dictionaries(
     min_length: int = 2,
     allow_smaller: bool = False,
 ) -> list[ExperimentDictionaryArtifact]:
+    return build_experiment_dictionaries_for_seeds(
+        master_path=master_path,
+        output_dir=output_dir,
+        sizes=sizes,
+        max_lengths=max_lengths,
+        seeds=[seed],
+        min_length=min_length,
+        allow_smaller=allow_smaller,
+    )
+
+
+def build_experiment_dictionaries_for_seeds(
+    master_path: str | Path,
+    output_dir: str | Path,
+    sizes: Iterable[int],
+    max_lengths: Iterable[int],
+    seeds: Iterable[int],
+    min_length: int = 2,
+    allow_smaller: bool = False,
+) -> list[ExperimentDictionaryArtifact]:
+    """Build all requested seed variants while loading the master only once."""
+
     master_records = read_jsonl(master_path)
-    ranked_pool = rank_noun_pool(master_records, seed=seed)
     master_sha256 = _sha256(master_path)
     artifacts: list[ExperimentDictionaryArtifact] = []
-    for max_length in max_lengths:
-        for size in sizes:
-            artifacts.append(
-                write_experiment_dictionary(
-                    master_path=master_path,
-                    ranked_pool=ranked_pool,
-                    output_dir=output_dir,
-                    size=size,
-                    min_length=min_length,
-                    max_length=max_length,
-                    seed=seed,
-                    allow_smaller=allow_smaller,
-                    master_sha256=master_sha256,
+    stable_sizes = tuple(sizes)
+    stable_max_lengths = tuple(max_lengths)
+    stable_seeds = tuple(seeds)
+    if not stable_seeds:
+        raise ValueError("at least one seed is required")
+    for seed in stable_seeds:
+        ranked_pool = rank_noun_pool(master_records, seed=seed)
+        for max_length in stable_max_lengths:
+            for size in stable_sizes:
+                artifacts.append(
+                    write_experiment_dictionary(
+                        master_path=master_path,
+                        ranked_pool=ranked_pool,
+                        output_dir=output_dir,
+                        size=size,
+                        min_length=min_length,
+                        max_length=max_length,
+                        seed=seed,
+                        allow_smaller=allow_smaller,
+                        master_sha256=master_sha256,
+                    )
                 )
-            )
     return artifacts
 
 
@@ -362,23 +390,33 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     length_group.add_argument("--max-length", type=int, default=12)
     length_group.add_argument("--max-lengths", type=_parse_int_list)
     parser.add_argument("--min-length", type=int, default=2)
-    parser.add_argument("--seed", type=int, default=0)
+    seed_group = parser.add_mutually_exclusive_group()
+    seed_group.add_argument("--seed", type=int)
+    seed_group.add_argument(
+        "--seeds",
+        type=_parse_int_list,
+        help="Comma-separated seeds, for example 0,1,2",
+    )
     parser.add_argument("--output", required=True, help="Output directory")
     parser.add_argument("--allow-smaller", action="store_true")
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    if args.seed is None and args.seeds is None:
+        args.seed = 0
+    return args
 
 
 def main() -> None:
     args = parse_args()
     sizes = args.sizes if args.sizes is not None else [args.size]
     max_lengths = args.max_lengths if args.max_lengths is not None else [args.max_length]
+    seeds = args.seeds if args.seeds is not None else [args.seed]
     try:
-        artifacts = build_experiment_dictionaries(
+        artifacts = build_experiment_dictionaries_for_seeds(
             master_path=args.master,
             output_dir=args.output,
             sizes=sizes,
             max_lengths=max_lengths,
-            seed=args.seed,
+            seeds=seeds,
             min_length=args.min_length,
             allow_smaller=args.allow_smaller,
         )

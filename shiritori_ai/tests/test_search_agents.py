@@ -27,9 +27,12 @@ from runtime_dictionary import RuntimeDictionary  # noqa: E402
 from runtime_state import AIEdgeState  # noqa: E402
 from search_common import (  # noqa: E402
     GameState,
+    RiskLevel,
     edge_position_metrics,
     evaluate_edge_candidate,
+    evaluate_ordering_score,
     evaluate_word_candidate,
+    risk_level_for_metrics,
     survival_weight_for_metrics,
 )
 
@@ -63,6 +66,12 @@ class SearchAgentTest(unittest.TestCase):
                     list(state.edge_counts),
                     list(state.active_end_masks),
                     list(state.edge_history),
+                    list(state.remaining_word_counts),
+                    list(state.remaining_safe_word_counts),
+                    list(state.active_edge_type_counts),
+                    list(state.active_safe_edge_type_counts),
+                    list(state.destination_masks),
+                    list(state.safe_destination_masks),
                 )
                 agent = agent_class(time_limit_sec=10.0, depth=2)
                 with patch.object(
@@ -80,39 +89,51 @@ class SearchAgentTest(unittest.TestCase):
                         state.edge_counts,
                         state.active_end_masks,
                         state.edge_history,
+                        state.remaining_word_counts,
+                        state.remaining_safe_word_counts,
+                        state.active_edge_type_counts,
+                        state.active_safe_edge_type_counts,
+                        state.destination_masks,
+                        state.safe_destination_masks,
                     ),
                     before,
                 )
+                state.assert_aggregates_consistent()
 
-    def test_all_search_agents_share_adaptive_depth_rules(self) -> None:
+    def test_all_search_agents_share_soft_timeout_depth_rules(self) -> None:
         for agent_class in SEARCH_AGENT_CLASSES:
             with self.subTest(agent=agent_class.__name__):
                 agent = agent_class(
                     depth=3,
                     adaptive_depth=True,
                     min_depth=1,
-                    depth_recovery_turns=3,
+                    depth_recovery_turns=5,
                 )
                 agent._record_depth_result(True)
                 self.assertEqual(agent.current_depth, 2)
-                agent._record_depth_result(False)
-                agent._record_depth_result(False)
+                agent._record_depth_result(False, 0.85)
                 self.assertEqual(agent.current_depth, 2)
-                agent._record_depth_result(False)
+                self.assertEqual(agent._non_timeout_streak, 0)
+                for _ in range(4):
+                    agent._record_depth_result(False, 0.5)
+                self.assertEqual(agent.current_depth, 2)
+                agent._record_depth_result(False, 0.5)
                 self.assertEqual(agent.current_depth, 3)
+                agent._record_depth_result(False, 0.91)
+                self.assertEqual(agent.current_depth, 2)
 
-    def test_minimax_and_alpha_beta_do_not_limit_candidates_by_default(self) -> None:
-        runtime = self.runtime(["あい", "あう", "あえ", "いん", "うん", "えん"])
-        edge_type_count = len(AIEdgeState.initial(runtime).available_edges())
+    def test_search_agents_use_lightweight_default_limits(self) -> None:
         for agent in [
             MinimaxAgent(time_limit_sec=10.0, depth=1, adaptive_depth=False),
             AlphaBetaAgent(time_limit_sec=10.0, depth=1, adaptive_depth=False),
+            AggressivePVSAgent(time_limit_sec=10.0, depth=1, adaptive_depth=False),
         ]:
             with self.subTest(agent=agent.name):
-                self.assertIsNone(agent.branch_limit)
-                decision = agent.choose_edge(AIEdgeState.initial(runtime))
-                self.assertFalse(decision.timed_out)
-                self.assertEqual(decision.extra["completed_root_moves"], edge_type_count)
+                self.assertEqual(agent.branch_limit, 12)
+        self.assertEqual(AlphaBetaAgent().depth, 3)
+        self.assertEqual(AggressivePVSAgent().depth, 3)
+        self.assertEqual(BeamNegamaxAgent().depth, 4)
+        self.assertEqual(BeamNegamaxAgent().beam_widths, (12, 8, 4, 2))
 
     def test_beam_negamax_prunes_by_beam_only(self) -> None:
         runtime = self.runtime(["あい", "あう", "あえ", "いん", "うん", "えん"])
@@ -141,6 +162,17 @@ class SearchAgentTest(unittest.TestCase):
         self.assertEqual(pvs.score, alpha_beta.score)
         self.assertGreater(pvs.extra["null_window_search_count"], 0)
         self.assertGreater(pvs.extra["research_count"], 0)
+        self.assertEqual(
+            pvs.extra["research_rate"],
+            pvs.extra["research_count"] / pvs.extra["null_window_searches"],
+        )
+        self.assertEqual(
+            (
+                runtime.id_to_char[pvs.start_id],
+                runtime.id_to_char[pvs.end_id],
+            ),
+            ("う", "え"),
+        )
 
     def test_immediate_win_is_preferred(self) -> None:
         runtime = self.runtime(["あい", "あう", "うあ"])
@@ -152,6 +184,114 @@ class SearchAgentTest(unittest.TestCase):
         continuing = evaluate_edge_candidate(state, a_id, u_id)
         self.assertTrue(winning.immediate_win)
         self.assertGreater(winning.total_score, continuing.total_score)
+
+        limited = AlphaBetaAgent(
+            time_limit_sec=10.0,
+            depth=1,
+            branch_limit=1,
+            adaptive_depth=False,
+        ).choose_edge(AIEdgeState.initial(runtime))
+        self.assertEqual((limited.start_id, limited.end_id), (a_id, i_id))
+
+    def test_ordering_evaluation_never_runs_survival_search(self) -> None:
+        runtime = self.runtime(["あい", "いう", "うあ"])
+        state = AIEdgeState.initial(runtime)
+        a_id = runtime.char_to_id["あ"]
+        i_id = runtime.char_to_id["い"]
+        with patch(
+            "search_common._combine_survival_samples",
+            side_effect=AssertionError("survival search must not run"),
+        ):
+            evaluation = evaluate_ordering_score(state, a_id, i_id)
+        self.assertFalse(evaluation.immediate_loss)
+        self.assertEqual(evaluation.survival_score, 0.0)
+        state.assert_aggregates_consistent()
+
+    def test_risk_levels_select_normal_simple_and_full_survival(self) -> None:
+        cases = [
+            (
+                "normal",
+                [
+                    "あい", "あかい", "あさい",
+                    "あう", "あかう", "あさう",
+                    "あえ", "あかえ", "あさえ",
+                    "あお", "あかお", "あさお",
+                    "いか",
+                ],
+                RiskLevel.NORMAL,
+                0,
+                0,
+            ),
+            (
+                "caution",
+                ["あい", "あかい", "あう", "あかう", "あえ", "あお", "いか"],
+                RiskLevel.CAUTION,
+                1,
+                0,
+            ),
+            (
+                "danger",
+                ["あい", "あう", "あえ", "あお", "いか"],
+                RiskLevel.DANGER,
+                0,
+                1,
+            ),
+            (
+                "critical",
+                ["あい", "あう", "いか"],
+                RiskLevel.CRITICAL,
+                0,
+                1,
+            ),
+        ]
+        for name, words, expected_risk, simple_count, full_count in cases:
+            with self.subTest(risk=name):
+                runtime = self.runtime(words)
+                state = AIEdgeState.initial(runtime)
+                a_id = runtime.char_to_id["あ"]
+                i_id = runtime.char_to_id["い"]
+                state.required_char_id = a_id
+                metrics = edge_position_metrics(state)
+                self.assertEqual(risk_level_for_metrics(metrics), expected_risk)
+                stats = SearchStats()
+                evaluation = evaluate_edge_candidate(
+                    state,
+                    a_id,
+                    i_id,
+                    stats=stats,
+                )
+                self.assertEqual(stats.simple_survival_evaluations, simple_count)
+                self.assertEqual(stats.full_survival_evaluations, full_count)
+                if expected_risk is RiskLevel.NORMAL:
+                    self.assertEqual(evaluation.survival_weight, 0.0)
+                state.assert_aggregates_consistent()
+
+    def test_search_extra_contains_timing_and_evaluation_counters(self) -> None:
+        runtime = self.runtime(["あい", "あう", "いあ", "うあ"])
+        decision = AlphaBetaAgent(
+            time_limit_sec=10.0,
+            depth=2,
+            branch_limit=12,
+            adaptive_depth=False,
+        ).choose_edge(AIEdgeState.initial(runtime))
+        required = {
+            "ordering_time_sec",
+            "evaluation_time_sec",
+            "search_time_sec",
+            "total_search_time_sec",
+            "nodes_searched",
+            "leaf_evaluations",
+            "ordering_evaluations",
+            "full_survival_evaluations",
+            "simple_survival_evaluations",
+            "completed_root_moves",
+            "effective_depth",
+            "next_depth",
+            "timed_out",
+        }
+        self.assertTrue(required.issubset(decision.extra))
+        self.assertGreaterEqual(decision.extra["ordering_time_sec"], 0.0)
+        self.assertGreaterEqual(decision.extra["evaluation_time_sec"], 0.0)
 
     def test_shorter_win_and_longer_loss_are_preferred(self) -> None:
         win_runtime = self.runtime(["あい", "かく", "くけ", "けこ"])
@@ -278,7 +418,10 @@ class SearchAgentTest(unittest.TestCase):
             approx = parse_approx_args()
         self.assertEqual(approx.agents, ["beam_negamax", "aggressive_pvs"])
         self.assertEqual(approx.beam_widths, (8, 4, 2))
-        self.assertIsNone(approx.branch_limit)
+        self.assertEqual(approx.branch_limit, 12)
+        self.assertEqual(approx.alpha_beta_depth, 3)
+        self.assertEqual(approx.aggressive_pvs_depth, 3)
+        self.assertEqual(approx.depth_recovery_turns, 5)
 
         with patch.object(
             sys,

@@ -79,18 +79,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--show-candidates", action="store_true")
     parser.add_argument("--history-output", default="results/human/human_match_history.json")
     parser.add_argument("--minimax-depth", type=int, default=3)
-    parser.add_argument("--alpha-beta-depth", type=int, default=4)
-    parser.add_argument("--beam-negamax-depth", type=int, default=5)
-    parser.add_argument("--aggressive-pvs-depth", type=int, default=5)
+    parser.add_argument("--alpha-beta-depth", type=int, default=3)
+    parser.add_argument("--beam-negamax-depth", type=int, default=4)
+    parser.add_argument("--aggressive-pvs-depth", type=int, default=3)
     parser.add_argument("--beam-widths", type=parse_beam_widths, default=DEFAULT_BEAM_WIDTHS)
-    parser.add_argument("--branch-limit", type=int, default=None)
+    parser.add_argument("--branch-limit", type=int, default=12)
     parser.add_argument(
         "--adaptive-depth",
         action=argparse.BooleanOptionalAction,
         default=True,
     )
     parser.add_argument("--min-depth", type=int, default=1)
-    parser.add_argument("--depth-recovery-turns", type=int, default=3)
+    parser.add_argument("--depth-recovery-turns", type=int, default=5)
     parser.add_argument("--monte-carlo-candidates", type=int, default=20)
     parser.add_argument("--monte-carlo-playouts", type=int, default=10)
     parser.add_argument("--monte-carlo-max-moves", type=int, default=200)

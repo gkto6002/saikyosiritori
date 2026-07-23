@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import heapq
 import math
 import random
 import time
@@ -21,6 +22,7 @@ from search_common import (
     SearchTimeout,
     check_deadline,
     evaluate_edge_candidate,
+    evaluate_ordering_score,
     evaluate_edge_position as _evaluate_edge_position,
     evaluate_word_candidate,
     evaluate_word_position,
@@ -34,7 +36,7 @@ if TYPE_CHECKING:
 
 
 DEFAULT_TIME_LIMIT_SEC = 2.0
-DEFAULT_BEAM_WIDTHS = (24, 12, 6, 4)
+DEFAULT_BEAM_WIDTHS = (12, 8, 4, 2)
 T = TypeVar("T")
 
 
@@ -217,6 +219,8 @@ def _score_edge_candidates(
     config: EvaluationConfig,
     allow_partial: bool,
     aggressive: bool = False,
+    stats: SearchStats | None = None,
+    candidate_limit: int | None = None,
 ) -> tuple[
     list[tuple[int, int]],
     dict[tuple[int, int], CandidateEvaluation],
@@ -227,18 +231,23 @@ def _score_edge_candidates(
     for edge in edges:
         try:
             check_deadline(deadline)
-            evaluations[edge] = evaluate_edge_candidate(
+            evaluations[edge] = evaluate_ordering_score(
                 state, edge[0], edge[1], deadline, config
             )
+            if stats is not None:
+                stats.ordering_evaluations += 1
         except SearchTimeout:
             if not allow_partial:
                 raise
             timed_out = True
             break
-    ordered = sorted(
-        evaluations,
-        key=lambda edge: _edge_sort_key(edge, evaluations[edge], aggressive),
+    sort_key = lambda edge: _edge_sort_key(  # noqa: E731
+        edge, evaluations[edge], aggressive
     )
+    if candidate_limit is not None and len(evaluations) > candidate_limit:
+        ordered = heapq.nsmallest(candidate_limit, evaluations, key=sort_key)
+    else:
+        ordered = sorted(evaluations, key=sort_key)
     return ordered, evaluations, timed_out
 
 
@@ -444,22 +453,42 @@ class SearchAgentBase(BaseAgent, AdaptiveDepthMixin):
         edges: Sequence[tuple[int, int]],
         deadline: float,
         allow_partial: bool,
+        stats: SearchStats,
+        ply: int,
     ) -> tuple[
         list[tuple[int, int]],
         dict[tuple[int, int], CandidateEvaluation],
         bool,
     ]:
-        ordered, evaluations, timed_out = _score_edge_candidates(
-            state,
-            edges,
-            deadline,
-            self.evaluation_config,
-            allow_partial,
-            self.aggressive_ordering,
-        )
-        if self.branch_limit is not None:
-            ordered = ordered[: self.branch_limit]
+        ordering_started = time.perf_counter()
+        try:
+            ordered, evaluations, timed_out = _score_edge_candidates(
+                state,
+                edges,
+                deadline,
+                self.evaluation_config,
+                allow_partial,
+                self.aggressive_ordering,
+                stats,
+                self._edge_ordering_limit(ply),
+            )
+        finally:
+            stats.ordering_time_sec += time.perf_counter() - ordering_started
+        self._record_edge_ordering_limit(len(edges), len(ordered), ply, stats)
         return ordered, evaluations, timed_out
+
+    def _edge_ordering_limit(self, ply: int) -> int | None:
+        return self.branch_limit
+
+    def _record_edge_ordering_limit(
+        self,
+        candidate_count: int,
+        selected_count: int,
+        ply: int,
+        stats: SearchStats,
+    ) -> None:
+        if self.branch_limit is not None:
+            stats.pruned_move_count += max(0, candidate_count - selected_count)
 
     def _select_root_candidates(
         self,
@@ -477,10 +506,10 @@ class MinimaxAgent(SearchAgentBase):
         time_limit_sec: float = DEFAULT_TIME_LIMIT_SEC,
         random_seed: int = 0,
         depth: int = 3,
-        branch_limit: int | None = None,
+        branch_limit: int | None = 12,
         adaptive_depth: bool = True,
         min_depth: int = 1,
-        depth_recovery_turns: int = 3,
+        depth_recovery_turns: int = 5,
         evaluation_config: EvaluationConfig = DEFAULT_EVALUATION_CONFIG,
     ) -> None:
         super().__init__(
@@ -554,17 +583,20 @@ class MinimaxAgent(SearchAgentBase):
         if not edges:
             return EdgeMoveDecision(None, None, time.perf_counter() - started, False, LOSS_SCORE)
         ordered, pre_scores, ordering_timed_out = self._ordered_edges(
-            state, edges, deadline, allow_partial=True
+            state, edges, deadline, allow_partial=True, stats=stats, ply=0
         )
         ordered = self._select_root_candidates(ordered, stats)
         if not ordered:
             fallback = _safe_edge_fallback(state, edges)
             assert fallback is not None
-            self._record_depth_result(True)
+            elapsed = time.perf_counter() - started
+            stats.total_search_time_sec = elapsed
+            elapsed_ratio = elapsed / self.time_limit_sec if self.time_limit_sec > 0 else math.inf
+            self._record_depth_result(True, elapsed_ratio)
             return EdgeMoveDecision(
                 fallback[0],
                 fallback[1],
-                time.perf_counter() - started,
+                elapsed,
                 True,
                 LOSS_SCORE if edge_is_terminal(state, fallback[1]) else -math.inf,
                 self._search_extra(
@@ -573,30 +605,38 @@ class MinimaxAgent(SearchAgentBase):
                     timed_out=True,
                     move_unit="edge_type",
                     score_complete=False,
+                    elapsed_ratio=elapsed_ratio,
                 ),
             )
 
         best_edge = ordered[0]
         best_score = pre_scores[best_edge].total_score
         timed_out = ordering_timed_out
-        for edge in ordered:
-            try:
-                score = self._score_edge(
-                    state, edge[0], edge[1], effective_depth, deadline, stats
-                )
-            except SearchTimeout:
-                timed_out = True
-                break
-            stats.completed_root_moves += 1
-            if score > best_score or stats.completed_root_moves == 1:
-                best_score = score
-                best_edge = edge
+        search_started = time.perf_counter()
+        try:
+            for edge in ordered:
+                try:
+                    score = self._score_edge(
+                        state, edge[0], edge[1], effective_depth, deadline, stats
+                    )
+                except SearchTimeout:
+                    timed_out = True
+                    break
+                stats.completed_root_moves += 1
+                if score > best_score or stats.completed_root_moves == 1:
+                    best_score = score
+                    best_edge = edge
+        finally:
+            stats.search_time_sec += time.perf_counter() - search_started
         final_timed_out = timed_out or time.perf_counter() >= deadline
-        self._record_depth_result(final_timed_out)
+        elapsed = time.perf_counter() - started
+        stats.total_search_time_sec = elapsed
+        elapsed_ratio = elapsed / self.time_limit_sec if self.time_limit_sec > 0 else math.inf
+        self._record_depth_result(final_timed_out, elapsed_ratio)
         return EdgeMoveDecision(
             best_edge[0],
             best_edge[1],
-            time.perf_counter() - started,
+            elapsed,
             final_timed_out,
             best_score,
             self._search_extra(
@@ -604,6 +644,7 @@ class MinimaxAgent(SearchAgentBase):
                 effective_depth,
                 timed_out=final_timed_out,
                 move_unit="edge_type",
+                elapsed_ratio=elapsed_ratio,
             ),
         )
 
@@ -691,11 +732,15 @@ class MinimaxAgent(SearchAgentBase):
             return loss_score(ply)
         if depth <= 0:
             stats.leaf_evaluations += 1
-            return _evaluate_edge_position(
-                state, deadline, self.evaluation_config, ply=ply
-            )
+            evaluation_started = time.perf_counter()
+            try:
+                return _evaluate_edge_position(
+                    state, deadline, self.evaluation_config, ply=ply, stats=stats
+                )
+            finally:
+                stats.evaluation_time_sec += time.perf_counter() - evaluation_started
         ordered, _scores, _timed_out = self._ordered_edges(
-            state, edges, deadline, allow_partial=False
+            state, edges, deadline, allow_partial=False, stats=stats, ply=ply
         )
         best = LOSS_SCORE
         for start_id, end_id in ordered:
@@ -721,11 +766,11 @@ class AlphaBetaAgent(MinimaxAgent):
         self,
         time_limit_sec: float = DEFAULT_TIME_LIMIT_SEC,
         random_seed: int = 0,
-        depth: int = 4,
-        branch_limit: int | None = None,
+        depth: int = 3,
+        branch_limit: int | None = 12,
         adaptive_depth: bool = True,
         min_depth: int = 1,
-        depth_recovery_turns: int = 3,
+        depth_recovery_turns: int = 5,
         evaluation_config: EvaluationConfig = DEFAULT_EVALUATION_CONFIG,
     ) -> None:
         super().__init__(
@@ -856,11 +901,15 @@ class AlphaBetaAgent(MinimaxAgent):
             return loss_score(ply)
         if depth <= 0:
             stats.leaf_evaluations += 1
-            return _evaluate_edge_position(
-                state, deadline, self.evaluation_config, ply=ply
-            )
+            evaluation_started = time.perf_counter()
+            try:
+                return _evaluate_edge_position(
+                    state, deadline, self.evaluation_config, ply=ply, stats=stats
+                )
+            finally:
+                stats.evaluation_time_sec += time.perf_counter() - evaluation_started
         ordered, _scores, _timed_out = self._ordered_edges(
-            state, edges, deadline, allow_partial=False
+            state, edges, deadline, allow_partial=False, stats=stats, ply=ply
         )
         best = LOSS_SCORE
         for index, (start_id, end_id) in enumerate(ordered):
@@ -897,11 +946,11 @@ class BeamNegamaxAgent(MinimaxAgent):
         self,
         time_limit_sec: float = DEFAULT_TIME_LIMIT_SEC,
         random_seed: int = 0,
-        depth: int = 5,
+        depth: int = 4,
         beam_widths: Sequence[int] = DEFAULT_BEAM_WIDTHS,
         adaptive_depth: bool = True,
         min_depth: int = 1,
-        depth_recovery_turns: int = 3,
+        depth_recovery_turns: int = 5,
         evaluation_config: EvaluationConfig = DEFAULT_EVALUATION_CONFIG,
     ) -> None:
         if not beam_widths or any(width <= 0 for width in beam_widths):
@@ -920,6 +969,20 @@ class BeamNegamaxAgent(MinimaxAgent):
 
     def _beam_width(self, ply: int) -> int:
         return self.beam_widths[min(ply, len(self.beam_widths) - 1)]
+
+    def _edge_ordering_limit(self, ply: int) -> int | None:
+        return self._beam_width(ply)
+
+    def _record_edge_ordering_limit(
+        self,
+        candidate_count: int,
+        selected_count: int,
+        ply: int,
+        stats: SearchStats,
+    ) -> None:
+        width = self._beam_width(ply)
+        stats.beam_widths_used[ply] = width
+        stats.beam_pruned_move_count += max(0, candidate_count - selected_count)
 
     def _select_root_candidates(
         self,
@@ -984,11 +1047,15 @@ class BeamNegamaxAgent(MinimaxAgent):
             return loss_score(ply)
         if depth <= 0:
             stats.leaf_evaluations += 1
-            return _evaluate_edge_position(
-                state, deadline, self.evaluation_config, ply=ply
-            )
+            evaluation_started = time.perf_counter()
+            try:
+                return _evaluate_edge_position(
+                    state, deadline, self.evaluation_config, ply=ply, stats=stats
+                )
+            finally:
+                stats.evaluation_time_sec += time.perf_counter() - evaluation_started
         ordered, _scores, _ = self._ordered_edges(
-            state, edges, deadline, allow_partial=False
+            state, edges, deadline, allow_partial=False, stats=stats, ply=ply
         )
         ordered = self._limit_beam(ordered, ply, stats)
         best = LOSS_SCORE
@@ -1027,17 +1094,18 @@ class AggressivePVSAgent(AlphaBetaAgent):
         self,
         time_limit_sec: float = DEFAULT_TIME_LIMIT_SEC,
         random_seed: int = 0,
-        depth: int = 5,
+        depth: int = 3,
+        branch_limit: int | None = 12,
         adaptive_depth: bool = True,
         min_depth: int = 1,
-        depth_recovery_turns: int = 3,
+        depth_recovery_turns: int = 5,
         evaluation_config: EvaluationConfig = DEFAULT_EVALUATION_CONFIG,
     ) -> None:
         super().__init__(
             time_limit_sec,
             random_seed,
             depth,
-            branch_limit=None,
+            branch_limit=branch_limit,
             adaptive_depth=adaptive_depth,
             min_depth=min_depth,
             depth_recovery_turns=depth_recovery_turns,
@@ -1181,11 +1249,15 @@ class AggressivePVSAgent(AlphaBetaAgent):
             return loss_score(ply)
         if depth <= 0:
             stats.leaf_evaluations += 1
-            return _evaluate_edge_position(
-                state, deadline, self.evaluation_config, ply=ply
-            )
+            evaluation_started = time.perf_counter()
+            try:
+                return _evaluate_edge_position(
+                    state, deadline, self.evaluation_config, ply=ply, stats=stats
+                )
+            finally:
+                stats.evaluation_time_sec += time.perf_counter() - evaluation_started
         ordered, _scores, _ = self._ordered_edges(
-            state, edges, deadline, allow_partial=False
+            state, edges, deadline, allow_partial=False, stats=stats, ply=ply
         )
         best = LOSS_SCORE
         for index, (start_id, end_id) in enumerate(ordered):
@@ -1415,17 +1487,17 @@ def build_agent(
     time_limit_sec: float = DEFAULT_TIME_LIMIT_SEC,
     random_seed: int = 0,
     minimax_depth: int = 3,
-    alpha_beta_depth: int = 4,
-    branch_limit: int | None = None,
+    alpha_beta_depth: int = 3,
+    branch_limit: int | None = 12,
     monte_carlo_candidates: int = 20,
     monte_carlo_playouts: int = 10,
     monte_carlo_max_moves: int = 200,
-    beam_negamax_depth: int = 5,
+    beam_negamax_depth: int = 4,
     beam_widths: Sequence[int] = DEFAULT_BEAM_WIDTHS,
-    aggressive_pvs_depth: int = 5,
+    aggressive_pvs_depth: int = 3,
     adaptive_depth: bool = True,
     min_depth: int = 1,
-    depth_recovery_turns: int = 3,
+    depth_recovery_turns: int = 5,
 ) -> BaseAgent:
     common = {"time_limit_sec": time_limit_sec, "random_seed": random_seed}
     search_common = {
@@ -1451,7 +1523,11 @@ def build_agent(
             **search_common, depth=beam_negamax_depth, beam_widths=beam_widths
         )
     if agent_name == "aggressive_pvs":
-        return AggressivePVSAgent(**search_common, depth=aggressive_pvs_depth)
+        return AggressivePVSAgent(
+            **search_common,
+            depth=aggressive_pvs_depth,
+            branch_limit=branch_limit,
+        )
     if agent_name == "monte_carlo":
         return MonteCarloAgent(
             **common,

@@ -121,11 +121,11 @@ class AgentsMatchTest(unittest.TestCase):
         self.assertEqual(decision.extra["effective_depth"], 2)
         self.assertEqual(agent.current_depth, 1)
 
-    def test_alpha_beta_default_depth_is_four(self) -> None:
+    def test_alpha_beta_default_depth_is_three(self) -> None:
         agent = build_agent("alpha_beta")
         self.assertIsInstance(agent, AlphaBetaAgent)
-        self.assertEqual(agent.depth, 4)
-        self.assertEqual(AlphaBetaAgent().depth, 4)
+        self.assertEqual(agent.depth, 3)
+        self.assertEqual(AlphaBetaAgent().depth, 3)
 
     def test_default_turn_timeouts(self) -> None:
         self.assertEqual(DEFAULT_TIME_LIMIT_SEC, 2.0)

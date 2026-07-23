@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import TYPE_CHECKING, Iterable
 
 from game import WordGraph
@@ -70,7 +71,9 @@ class PositionMetrics:
     legal_word_count: int
     safe_word_count: int
     danger_word_count: int
+    edge_type_count: int
     safe_edge_type_count: int
+    end_type_count: int
     safe_end_type_count: int
 
 
@@ -84,28 +87,56 @@ class CandidateEvaluation:
     immediate_loss: bool
 
 
+class RiskLevel(str, Enum):
+    NORMAL = "normal"
+    CAUTION = "caution"
+    DANGER = "danger"
+    CRITICAL = "critical"
+
+
 @dataclass
 class SearchStats:
     nodes_searched: int = 0
     leaf_evaluations: int = 0
+    ordering_evaluations: int = 0
+    full_survival_evaluations: int = 0
+    simple_survival_evaluations: int = 0
     completed_root_moves: int = 0
     cutoff_count: int = 0
     pruned_move_count: int = 0
     beam_pruned_move_count: int = 0
     null_window_search_count: int = 0
     research_count: int = 0
+    ordering_time_sec: float = 0.0
+    evaluation_time_sec: float = 0.0
+    search_time_sec: float = 0.0
+    total_search_time_sec: float = 0.0
     beam_widths_used: dict[int, int] = field(default_factory=dict)
 
     def as_extra(self) -> dict[str, object]:
+        research_rate = (
+            self.research_count / self.null_window_search_count
+            if self.null_window_search_count
+            else 0.0
+        )
         return {
             "nodes_searched": self.nodes_searched,
             "leaf_evaluations": self.leaf_evaluations,
+            "ordering_evaluations": self.ordering_evaluations,
+            "full_survival_evaluations": self.full_survival_evaluations,
+            "simple_survival_evaluations": self.simple_survival_evaluations,
             "completed_root_moves": self.completed_root_moves,
             "cutoff_count": self.cutoff_count,
             "pruned_move_count": self.pruned_move_count,
             "beam_pruned_move_count": self.beam_pruned_move_count,
             "null_window_search_count": self.null_window_search_count,
+            "null_window_searches": self.null_window_search_count,
             "research_count": self.research_count,
+            "research_rate": research_rate,
+            "ordering_time_sec": self.ordering_time_sec,
+            "evaluation_time_sec": self.evaluation_time_sec,
+            "search_time_sec": self.search_time_sec,
+            "total_search_time_sec": self.total_search_time_sec,
             "beam_widths_used": dict(sorted(self.beam_widths_used.items())),
         }
 
@@ -137,11 +168,19 @@ class AdaptiveDepthMixin:
     def _effective_depth(self) -> int:
         return self.current_depth if self.adaptive_depth else self.depth
 
-    def _record_depth_result(self, timed_out: bool) -> None:
+    def _record_depth_result(
+        self,
+        timed_out: bool,
+        elapsed_ratio: float | None = None,
+    ) -> None:
         if not self.adaptive_depth:
             return
-        if timed_out:
+        ratio = 0.0 if elapsed_ratio is None else elapsed_ratio
+        if timed_out or ratio >= 0.9:
             self.current_depth = max(self.min_depth, self.current_depth - 1)
+            self._non_timeout_streak = 0
+            return
+        if ratio > 0.5:
             self._non_timeout_streak = 0
             return
         if self.current_depth >= self.depth:
@@ -181,18 +220,23 @@ def word_position_metrics(
 ) -> PositionMetrics:
     moves = legal_moves_for_state(graph, state)
     safe_moves: list[int] = []
+    edges: set[tuple[str, str]] = set()
     safe_edges: set[tuple[str, str]] = set()
     for word_id in moves:
         check_deadline(deadline)
+        edge = (graph.start_chars[word_id], graph.end_chars[word_id])
+        edges.add(edge)
         if graph.end_chars[word_id] == "ん":
             continue
         safe_moves.append(word_id)
-        safe_edges.add((graph.start_chars[word_id], graph.end_chars[word_id]))
+        safe_edges.add(edge)
     return PositionMetrics(
         legal_word_count=len(moves),
         safe_word_count=len(safe_moves),
         danger_word_count=len(moves) - len(safe_moves),
+        edge_type_count=len(edges),
         safe_edge_type_count=len(safe_edges),
+        end_type_count=len({end_char for _start_char, end_char in edges}),
         safe_end_type_count=len({end_char for _start_char, end_char in safe_edges}),
     )
 
@@ -201,50 +245,69 @@ def edge_position_metrics(
     state: AIEdgeState,
     deadline: float | None = None,
 ) -> PositionMetrics:
-    safe_words = 0
-    danger_words = 0
-    safe_edges = 0
-    safe_end_ids: set[int] = set()
-    n_id = state.edge_dictionary.char_to_id.get("ん")
-    for start_id, end_id in state.available_edges():
-        check_deadline(deadline)
-        multiplicity = state.edge_counts[
-            state.edge_dictionary.edge_index(start_id, end_id)
-        ]
-        if end_id == n_id:
-            danger_words += multiplicity
-        else:
-            safe_words += multiplicity
-            safe_edges += 1
-            safe_end_ids.add(end_id)
+    check_deadline(deadline)
+    if state.required_char_id is not None:
+        start_id = state.required_char_id
+        legal_words = state.remaining_word_counts[start_id]
+        safe_words = state.remaining_safe_word_counts[start_id]
+        edge_types = state.active_edge_type_counts[start_id]
+        safe_edge_types = state.active_safe_edge_type_counts[start_id]
+        destination_mask = state.destination_masks[start_id]
+        safe_destination_mask = state.safe_destination_masks[start_id]
+    else:
+        legal_words = sum(state.remaining_word_counts)
+        safe_words = sum(state.remaining_safe_word_counts)
+        edge_types = sum(state.active_edge_type_counts)
+        safe_edge_types = sum(state.active_safe_edge_type_counts)
+        destination_mask = 0
+        safe_destination_mask = 0
+        for start_id in range(state.edge_dictionary.char_count):
+            check_deadline(deadline)
+            destination_mask |= state.destination_masks[start_id]
+            safe_destination_mask |= state.safe_destination_masks[start_id]
     return PositionMetrics(
-        legal_word_count=safe_words + danger_words,
+        legal_word_count=legal_words,
         safe_word_count=safe_words,
-        danger_word_count=danger_words,
-        safe_edge_type_count=safe_edges,
-        safe_end_type_count=len(safe_end_ids),
+        danger_word_count=legal_words - safe_words,
+        edge_type_count=edge_types,
+        safe_edge_type_count=safe_edge_types,
+        end_type_count=destination_mask.bit_count(),
+        safe_end_type_count=safe_destination_mask.bit_count(),
     )
+
+
+def risk_level_for_metrics(
+    metrics: PositionMetrics,
+    config: EvaluationConfig = DEFAULT_EVALUATION_CONFIG,
+) -> RiskLevel:
+    if (
+        metrics.safe_word_count <= config.critical_safe_words
+        or metrics.safe_edge_type_count <= config.critical_safe_edge_types
+    ):
+        return RiskLevel.CRITICAL
+    if (
+        metrics.safe_word_count <= config.danger_safe_words
+        or metrics.safe_edge_type_count <= config.danger_safe_edge_types
+    ):
+        return RiskLevel.DANGER
+    if (
+        metrics.safe_word_count <= config.caution_safe_words
+        or metrics.safe_edge_type_count <= config.caution_safe_edge_types
+    ):
+        return RiskLevel.CAUTION
+    return RiskLevel.NORMAL
 
 
 def survival_weight_for_metrics(
     metrics: PositionMetrics,
     config: EvaluationConfig = DEFAULT_EVALUATION_CONFIG,
 ) -> float:
-    if (
-        metrics.safe_word_count <= config.critical_safe_words
-        or metrics.safe_edge_type_count <= config.critical_safe_edge_types
-        or metrics.safe_end_type_count <= 1
-    ):
+    risk_level = risk_level_for_metrics(metrics, config)
+    if risk_level is RiskLevel.CRITICAL:
         return config.critical_survival_weight
-    if (
-        metrics.safe_word_count <= config.danger_safe_words
-        or metrics.safe_edge_type_count <= config.danger_safe_edge_types
-    ):
+    if risk_level is RiskLevel.DANGER:
         return config.danger_survival_weight
-    if (
-        metrics.safe_word_count <= config.caution_safe_words
-        or metrics.safe_edge_type_count <= config.caution_safe_edge_types
-    ):
+    if risk_level is RiskLevel.CAUTION:
         return config.caution_survival_weight
     return config.normal_survival_weight
 
@@ -347,19 +410,95 @@ def evaluate_edge_candidate(
     end_id: int,
     deadline: float | None = None,
     config: EvaluationConfig = DEFAULT_EVALUATION_CONFIG,
+    stats: SearchStats | None = None,
 ) -> CandidateEvaluation:
     check_deadline(deadline)
     if state.edge_dictionary.char_to_id.get("ん") == end_id:
         return CandidateEvaluation(LOSS_SCORE, LOSS_SCORE, 0.0, 0.0, False, True)
 
     own_metrics = edge_position_metrics(state, deadline)
+    return _evaluate_edge_candidate_with_metrics(
+        state,
+        start_id,
+        end_id,
+        own_metrics,
+        deadline,
+        config,
+        stats,
+    )
+
+
+def evaluate_ordering_score(
+    state: AIEdgeState,
+    start_id: int,
+    end_id: int,
+    deadline: float | None = None,
+    config: EvaluationConfig = DEFAULT_EVALUATION_CONFIG,
+) -> CandidateEvaluation:
+    """Cheap edge ordering score that never evaluates opponent replies."""
+
+    check_deadline(deadline)
+    if state.edge_dictionary.char_to_id.get("ん") == end_id:
+        return CandidateEvaluation(LOSS_SCORE, LOSS_SCORE, 0.0, 0.0, False, True)
     state.apply_edge(start_id, end_id)
     try:
         opponent_metrics = edge_position_metrics(state, deadline)
         if opponent_metrics.legal_word_count == 0 or opponent_metrics.safe_word_count == 0:
             return CandidateEvaluation(WIN_SCORE, WIN_SCORE, 0.0, 0.0, True, False)
-
         attack_score = attack_score_from_metrics(opponent_metrics, config)
+        return CandidateEvaluation(
+            attack_score,
+            attack_score,
+            0.0,
+            0.0,
+            False,
+            False,
+        )
+    finally:
+        state.undo_edge()
+
+
+def _evaluate_edge_candidate_with_metrics(
+    state: AIEdgeState,
+    start_id: int,
+    end_id: int,
+    own_metrics: PositionMetrics,
+    deadline: float | None,
+    config: EvaluationConfig,
+    stats: SearchStats | None,
+) -> CandidateEvaluation:
+    state.apply_edge(start_id, end_id)
+    try:
+        opponent_metrics = edge_position_metrics(state, deadline)
+        if opponent_metrics.legal_word_count == 0 or opponent_metrics.safe_word_count == 0:
+            return CandidateEvaluation(WIN_SCORE, WIN_SCORE, 0.0, 0.0, True, False)
+        attack_score = attack_score_from_metrics(opponent_metrics, config)
+        risk_level = risk_level_for_metrics(own_metrics, config)
+        if risk_level is RiskLevel.NORMAL:
+            return CandidateEvaluation(
+                attack_score,
+                attack_score,
+                0.0,
+                0.0,
+                False,
+                False,
+            )
+        survival_weight = survival_weight_for_metrics(own_metrics, config)
+        if risk_level is RiskLevel.CAUTION:
+            if stats is not None:
+                stats.simple_survival_evaluations += 1
+            survival_score = _survival_value(own_metrics, config)
+            return CandidateEvaluation(
+                attack_score + survival_weight * survival_score,
+                attack_score,
+                survival_score,
+                survival_weight,
+                False,
+                False,
+            )
+
+        if stats is not None:
+            stats.full_survival_evaluations += 1
         samples: list[tuple[float, int]] = []
         for reply_start, reply_end in state.available_edges():
             check_deadline(deadline)
@@ -379,7 +518,6 @@ def evaluate_edge_candidate(
                 state.undo_edge()
 
         survival_score = _combine_survival_samples(samples, config)
-        survival_weight = survival_weight_for_metrics(own_metrics, config)
         return CandidateEvaluation(
             attack_score + survival_weight * survival_score,
             attack_score,
@@ -423,20 +561,29 @@ def evaluate_edge_position(
     deadline: float | None = None,
     config: EvaluationConfig = DEFAULT_EVALUATION_CONFIG,
     ply: int = 0,
+    stats: SearchStats | None = None,
 ) -> float:
     edges = state.available_edges()
     if not edges:
         return LOSS_SCORE
+    own_metrics = edge_position_metrics(state, deadline)
     best = LOSS_SCORE
     for start_id, end_id in edges:
         check_deadline(deadline)
-        evaluation = evaluate_edge_candidate(
-            state,
-            start_id,
-            end_id,
-            deadline,
-            config,
-        )
+        if state.edge_dictionary.char_to_id.get("ん") == end_id:
+            evaluation = CandidateEvaluation(
+                LOSS_SCORE, LOSS_SCORE, 0.0, 0.0, False, True
+            )
+        else:
+            evaluation = _evaluate_edge_candidate_with_metrics(
+                state,
+                start_id,
+                end_id,
+                own_metrics,
+                deadline,
+                config,
+                stats,
+            )
         if evaluation.immediate_win:
             score = win_score(ply + 1)
         elif evaluation.immediate_loss:

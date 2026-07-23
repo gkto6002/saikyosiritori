@@ -14,7 +14,9 @@ sys.path.insert(0, str(PROJECT_ROOT / "src"))
 from experiment_dictionary import (  # noqa: E402
     InsufficientCandidatesError,
     build_experiment_dictionaries,
+    build_experiment_dictionaries_for_seeds,
     detail_records,
+    parse_args,
     rank_noun_pool,
     select_ranked_records,
 )
@@ -166,6 +168,59 @@ class ExperimentDictionaryTest(unittest.TestCase):
             statistics["runtime_distinct_edge_type_count"],
             len(edge_rows),
         )
+
+    def test_batch_seeds_generate_distinct_runtime_dictionaries(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            master_path = root / "master.jsonl"
+            master_path.write_text(
+                "".join(json.dumps(item, ensure_ascii=False) + "\n" for item in self.master),
+                encoding="utf-8",
+            )
+            artifacts = build_experiment_dictionaries_for_seeds(
+                master_path,
+                root / "output",
+                sizes=[6],
+                max_lengths=[5],
+                seeds=[4, 5],
+            )
+
+            self.assertEqual(
+                [item.dictionary_name for item in artifacts],
+                ["D6_L2-5_seed4", "D6_L2-5_seed5"],
+            )
+            self.assertNotEqual(
+                artifacts[0].text_path.read_bytes(),
+                artifacts[1].text_path.read_bytes(),
+            )
+            self.assertTrue(all(item.runtime_path.is_file() for item in artifacts))
+
+    def test_cli_accepts_multiple_seeds_and_preserves_seed_zero_default(self) -> None:
+        batch = parse_args(
+            [
+                "--master",
+                "master.jsonl",
+                "--size",
+                "50000",
+                "--seeds",
+                "0,1,2",
+                "--output",
+                "out",
+            ]
+        )
+        self.assertEqual(batch.seeds, [0, 1, 2])
+
+        default = parse_args(
+            [
+                "--master",
+                "master.jsonl",
+                "--size",
+                "50000",
+                "--output",
+                "out",
+            ]
+        )
+        self.assertEqual(default.seed, 0)
 
 
 if __name__ == "__main__":

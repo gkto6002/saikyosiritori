@@ -47,12 +47,75 @@ class AIEdgeStateTest(unittest.TestCase):
         state = AIEdgeState.initial(self.runtime)
         original_counts = list(state.edge_counts)
         original_masks = list(state.active_end_masks)
+        original_aggregates = (
+            list(state.remaining_word_counts),
+            list(state.remaining_safe_word_counts),
+            list(state.active_edge_type_counts),
+            list(state.active_safe_edge_type_counts),
+            list(state.destination_masks),
+            list(state.safe_destination_masks),
+        )
+        state.assert_aggregates_consistent()
         state.apply_edge(self.i_id, self.i_id)
+        state.assert_aggregates_consistent()
         state.undo_edge()
         self.assertIsNone(state.required_char_id)
         self.assertEqual(state.edge_counts, original_counts)
         self.assertEqual(state.active_end_masks, original_masks)
         self.assertEqual(state.edge_history, [])
+        self.assertEqual(
+            (
+                state.remaining_word_counts,
+                state.remaining_safe_word_counts,
+                state.active_edge_type_counts,
+                state.active_safe_edge_type_counts,
+                state.destination_masks,
+                state.safe_destination_masks,
+            ),
+            original_aggregates,
+        )
+        state.assert_aggregates_consistent()
+
+    def test_aggregate_updates_only_toggle_edge_type_at_zero(self) -> None:
+        state = AIEdgeState.initial(self.runtime)
+        edge_index = self.runtime.edge_index(self.i_id, self.i_id)
+        initial_words = state.remaining_word_counts[self.i_id]
+        initial_edge_types = state.active_edge_type_counts[self.i_id]
+        initial_mask = state.destination_masks[self.i_id]
+
+        state.apply_edge(self.i_id, self.i_id)
+        self.assertEqual(state.edge_counts[edge_index], 2)
+        self.assertEqual(state.remaining_word_counts[self.i_id], initial_words - 1)
+        self.assertEqual(state.active_edge_type_counts[self.i_id], initial_edge_types)
+        self.assertEqual(state.destination_masks[self.i_id], initial_mask)
+
+        state.apply_edge(self.i_id, self.i_id)
+        self.assertEqual(state.edge_counts[edge_index], 1)
+        self.assertEqual(state.active_edge_type_counts[self.i_id], initial_edge_types)
+        self.assertEqual(state.destination_masks[self.i_id], initial_mask)
+
+        state.apply_edge(self.i_id, self.i_id)
+        self.assertEqual(state.edge_counts[edge_index], 0)
+        self.assertEqual(state.active_edge_type_counts[self.i_id], initial_edge_types - 1)
+        self.assertFalse(state.destination_masks[self.i_id] & (1 << self.i_id))
+        state.assert_aggregates_consistent()
+
+        state.undo_edge()
+        self.assertEqual(state.edge_counts[edge_index], 1)
+        self.assertEqual(state.active_edge_type_counts[self.i_id], initial_edge_types)
+        self.assertEqual(state.destination_masks[self.i_id], initial_mask)
+        state.assert_aggregates_consistent()
+
+    def test_n_edges_are_excluded_from_safe_aggregates(self) -> None:
+        state = AIEdgeState.initial(self.runtime)
+        k_id = self.runtime.char_to_id["か"]
+        n_id = self.runtime.char_to_id["ん"]
+        self.assertEqual(state.remaining_word_counts[k_id], 1)
+        self.assertEqual(state.remaining_safe_word_counts[k_id], 0)
+        self.assertEqual(state.active_edge_type_counts[k_id], 1)
+        self.assertEqual(state.active_safe_edge_type_counts[k_id], 0)
+        self.assertTrue(state.destination_masks[k_id] & (1 << n_id))
+        self.assertFalse(state.safe_destination_masks[k_id] & (1 << n_id))
 
     def test_same_edge_can_be_used_to_capacity_and_bits_toggle(self) -> None:
         state = AIEdgeState.initial(self.runtime)

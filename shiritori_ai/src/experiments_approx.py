@@ -89,12 +89,22 @@ MATCH_FLOW_FIELDS = [
     "pruned_count",
     "nodes_searched",
     "leaf_evaluations",
+    "ordering_evaluations",
+    "full_survival_evaluations",
+    "simple_survival_evaluations",
     "completed_root_moves",
+    "ordering_time_sec",
+    "evaluation_time_sec",
+    "search_time_sec",
+    "total_search_time_sec",
+    "elapsed_ratio",
     "cutoff_count",
     "pruned_move_count",
     "beam_pruned_move_count",
     "null_window_search_count",
+    "null_window_searches",
     "research_count",
+    "research_rate",
     "beam_widths_used",
     "evaluated_moves",
     "chain_so_far",
@@ -350,12 +360,22 @@ def build_match_flow_rows(
                 "pruned_count": turn.get("pruned_count", ""),
                 "nodes_searched": turn.get("nodes_searched", ""),
                 "leaf_evaluations": turn.get("leaf_evaluations", ""),
+                "ordering_evaluations": turn.get("ordering_evaluations", ""),
+                "full_survival_evaluations": turn.get("full_survival_evaluations", ""),
+                "simple_survival_evaluations": turn.get("simple_survival_evaluations", ""),
                 "completed_root_moves": turn.get("completed_root_moves", ""),
+                "ordering_time_sec": turn.get("ordering_time_sec", ""),
+                "evaluation_time_sec": turn.get("evaluation_time_sec", ""),
+                "search_time_sec": turn.get("search_time_sec", ""),
+                "total_search_time_sec": turn.get("total_search_time_sec", ""),
+                "elapsed_ratio": turn.get("elapsed_ratio", ""),
                 "cutoff_count": turn.get("cutoff_count", ""),
                 "pruned_move_count": turn.get("pruned_move_count", ""),
                 "beam_pruned_move_count": turn.get("beam_pruned_move_count", ""),
                 "null_window_search_count": turn.get("null_window_search_count", ""),
+                "null_window_searches": turn.get("null_window_searches", ""),
                 "research_count": turn.get("research_count", ""),
+                "research_rate": turn.get("research_rate", ""),
                 "beam_widths_used": json.dumps(
                     turn.get("beam_widths_used", ""),
                     ensure_ascii=False,
@@ -549,20 +569,20 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-moves", type=int)
     parser.add_argument("--max-match-time-sec", type=float, default=960.0)
     parser.add_argument("--minimax-depth", type=int, default=3)
-    parser.add_argument("--alpha-beta-depth", type=int, default=4)
-    parser.add_argument("--beam-negamax-depth", type=int, default=5)
-    parser.add_argument("--aggressive-pvs-depth", type=int, default=5)
+    parser.add_argument("--alpha-beta-depth", type=int, default=3)
+    parser.add_argument("--beam-negamax-depth", type=int, default=4)
+    parser.add_argument("--aggressive-pvs-depth", type=int, default=3)
     parser.add_argument(
         "--beam-widths",
         type=parse_beam_widths,
         default=DEFAULT_BEAM_WIDTHS,
-        help="Comma-separated widths from root downward (default: 24,12,6,4)",
+        help="Comma-separated widths from root downward (default: 12,8,4,2)",
     )
     parser.add_argument(
         "--branch-limit",
         type=int,
-        default=None,
-        help="Optional compatibility limit for Minimax/AlphaBeta; default searches all candidates",
+        default=12,
+        help="Candidate limit for Minimax/AlphaBeta/AggressivePVS (default: 12)",
     )
     parser.add_argument(
         "--adaptive-depth",
@@ -570,7 +590,7 @@ def parse_args() -> argparse.Namespace:
         default=True,
     )
     parser.add_argument("--min-depth", type=int, default=1)
-    parser.add_argument("--depth-recovery-turns", type=int, default=3)
+    parser.add_argument("--depth-recovery-turns", type=int, default=5)
     parser.add_argument("--monte-carlo-candidates", type=int, default=20)
     parser.add_argument("--monte-carlo-playouts", type=int, default=10)
     parser.add_argument("--monte-carlo-max-moves", type=int, default=200)

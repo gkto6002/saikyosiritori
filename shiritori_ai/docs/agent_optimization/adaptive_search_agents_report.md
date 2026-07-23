@@ -1,5 +1,7 @@
 # 適応探索AI・共通評価実装レポート
 
+> この文書は初回実装時点の記録である。現在の軽量順序評価、差分集計、標準深度・候補上限、ソフトタイムアウトは`edge_native_search_performance_report.md`を参照。
+
 ## 目的
 
 `RuntimeDictionary`、`EdgeDictionary`、`AIEdgeState`を使うAI対AIを主経路とし、タイムアウトの正しい伝播、共通の適応深度、攻撃・生存評価、Beam Negamax、Aggressive PVSを実装する。WordGraphの`choose_move`は互換用に維持する。
@@ -57,7 +59,7 @@ survival weightは`0.15 / 0.35 / 0.8 / 1.5`。安全単語数の閾値は`10 / 5
 
 ## 検証結果
 
-- 自動テスト: 99件成功
+- 初回実装時の自動テスト: 101件成功
 - 構文検査: 成功
 - D100、7AI、異なる先後手42対戦のスモーク: 完走、invalid move 0
 - AlphaBeta/PVSの100個のランダム小規模グラフ比較: 最善辺と値が全件一致

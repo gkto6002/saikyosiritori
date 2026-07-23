@@ -16,6 +16,35 @@ class AIEdgeState:
     active_end_masks: list[int]
     edge_history: list[tuple[int, int]] = field(default_factory=list)
     _required_history: list[int | None] = field(default_factory=list, repr=False)
+    remaining_word_counts: list[int] = field(default_factory=list)
+    remaining_safe_word_counts: list[int] = field(default_factory=list)
+    active_edge_type_counts: list[int] = field(default_factory=list)
+    active_safe_edge_type_counts: list[int] = field(default_factory=list)
+    destination_masks: list[int] = field(default_factory=list)
+    safe_destination_masks: list[int] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        char_count = self.edge_dictionary.char_count
+        aggregate_lengths = (
+            len(self.remaining_word_counts),
+            len(self.remaining_safe_word_counts),
+            len(self.active_edge_type_counts),
+            len(self.active_safe_edge_type_counts),
+            len(self.destination_masks),
+            len(self.safe_destination_masks),
+        )
+        if aggregate_lengths == (char_count,) * 6:
+            return
+        if any(aggregate_lengths):
+            raise ValueError("AIEdgeState aggregate arrays must all match char_count")
+        (
+            self.remaining_word_counts,
+            self.remaining_safe_word_counts,
+            self.active_edge_type_counts,
+            self.active_safe_edge_type_counts,
+            self.destination_masks,
+            self.safe_destination_masks,
+        ) = self._recalculate_aggregates()
 
     @classmethod
     def initial(cls, runtime: RuntimeDictionary | EdgeDictionary) -> "AIEdgeState":
@@ -64,14 +93,60 @@ class AIEdgeState:
 
     def legal_word_count(self) -> int:
         if self.required_char_id is None:
-            return sum(self.edge_counts)
-        row_start = self.required_char_id * self.edge_dictionary.char_count
-        return sum(
-            self.edge_counts[row_start : row_start + self.edge_dictionary.char_count]
-        )
+            return sum(self.remaining_word_counts)
+        return self.remaining_word_counts[self.required_char_id]
 
     def legal_end_count(self) -> int:
         return len(self.available_end_ids())
+
+    def _recalculate_aggregates(
+        self,
+    ) -> tuple[list[int], list[int], list[int], list[int], list[int], list[int]]:
+        char_count = self.edge_dictionary.char_count
+        n_id = self.edge_dictionary.char_to_id.get("ん")
+        remaining_words = [0] * char_count
+        remaining_safe_words = [0] * char_count
+        active_edge_types = [0] * char_count
+        active_safe_edge_types = [0] * char_count
+        destination_masks = [0] * char_count
+        safe_destination_masks = [0] * char_count
+        for start_id in range(char_count):
+            row_start = start_id * char_count
+            for end_id in range(char_count):
+                count = self.edge_counts[row_start + end_id]
+                if count <= 0:
+                    continue
+                bit = 1 << end_id
+                remaining_words[start_id] += count
+                active_edge_types[start_id] += 1
+                destination_masks[start_id] |= bit
+                if end_id != n_id:
+                    remaining_safe_words[start_id] += count
+                    active_safe_edge_types[start_id] += 1
+                    safe_destination_masks[start_id] |= bit
+        return (
+            remaining_words,
+            remaining_safe_words,
+            active_edge_types,
+            active_safe_edge_types,
+            destination_masks,
+            safe_destination_masks,
+        )
+
+    def assert_aggregates_consistent(self) -> None:
+        expected = self._recalculate_aggregates()
+        actual = (
+            self.remaining_word_counts,
+            self.remaining_safe_word_counts,
+            self.active_edge_type_counts,
+            self.active_safe_edge_type_counts,
+            self.destination_masks,
+            self.safe_destination_masks,
+        )
+        if actual != expected:
+            raise AssertionError("AIEdgeState aggregate values do not match edge_counts")
+        if self.active_end_masks != self.destination_masks:
+            raise AssertionError("active_end_masks and destination_masks differ")
 
     def apply_edge(self, start_id: int, end_id: int) -> None:
         if self.required_char_id is not None and start_id != self.required_char_id:
@@ -79,12 +154,23 @@ class AIEdgeState:
                 f"edge start_id={start_id} does not match required_char_id={self.required_char_id}"
             )
         edge_index = self.edge_dictionary.edge_index(start_id, end_id)
-        if self.edge_counts[edge_index] <= 0:
+        old_count = self.edge_counts[edge_index]
+        if old_count <= 0:
             raise ValueError(f"edge ({start_id}, {end_id}) has no remaining words")
         self._required_history.append(self.required_char_id)
-        self.edge_counts[edge_index] -= 1
-        if self.edge_counts[edge_index] == 0:
-            self.active_end_masks[start_id] &= ~(1 << end_id)
+        self.edge_counts[edge_index] = old_count - 1
+        self.remaining_word_counts[start_id] -= 1
+        n_id = self.edge_dictionary.char_to_id.get("ん")
+        if end_id != n_id:
+            self.remaining_safe_word_counts[start_id] -= 1
+        if old_count == 1:
+            bit = 1 << end_id
+            self.active_edge_type_counts[start_id] -= 1
+            self.destination_masks[start_id] &= ~bit
+            self.active_end_masks[start_id] &= ~bit
+            if end_id != n_id:
+                self.active_safe_edge_type_counts[start_id] -= 1
+                self.safe_destination_masks[start_id] &= ~bit
         self.edge_history.append((start_id, end_id))
         self.required_char_id = end_id
 
@@ -93,12 +179,23 @@ class AIEdgeState:
             raise ValueError("cannot undo an empty edge history")
         start_id, end_id = self.edge_history.pop()
         edge_index = self.edge_dictionary.edge_index(start_id, end_id)
-        was_zero = self.edge_counts[edge_index] == 0
-        self.edge_counts[edge_index] += 1
-        if self.edge_counts[edge_index] > self.edge_dictionary.initial_edge_counts[edge_index]:
+        old_count = self.edge_counts[edge_index]
+        new_count = old_count + 1
+        if new_count > self.edge_dictionary.initial_edge_counts[edge_index]:
             raise AssertionError("undo would exceed the initial edge count")
-        if was_zero:
-            self.active_end_masks[start_id] |= 1 << end_id
+        self.edge_counts[edge_index] = new_count
+        self.remaining_word_counts[start_id] += 1
+        n_id = self.edge_dictionary.char_to_id.get("ん")
+        if end_id != n_id:
+            self.remaining_safe_word_counts[start_id] += 1
+        if old_count == 0:
+            bit = 1 << end_id
+            self.active_edge_type_counts[start_id] += 1
+            self.destination_masks[start_id] |= bit
+            self.active_end_masks[start_id] |= bit
+            if end_id != n_id:
+                self.active_safe_edge_type_counts[start_id] += 1
+                self.safe_destination_masks[start_id] |= bit
         self.required_char_id = self._required_history.pop()
         return start_id, end_id
 

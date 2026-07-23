@@ -104,3 +104,17 @@
 - `.edges.csv`: 非空のstart/end辺ごとに、辺数、word ID一覧、単語一覧を確認するビュー
 
 metadataには三ファイルの名前とSHA256を、statsには文字数、総辺数、異なる辺種類数を保存する。これにより、実験辞書生成後に別コマンドでRuntime変換する必要はなくなった。単独のRuntime変換コマンドは既存手順との互換性と再構築用途のため残した。
+
+## 後続改善: 複数seedの一括生成
+
+`--seeds 0,1,2`のようなカンマ区切り指定を追加した。マスターJSONLとSHA256は一度だけ読み込み、seedごとに共通名詞プール内の同優先度語の順序を再構成する。従来の`--seed`と、未指定時のseed 0は維持した。
+
+```bash
+.venv/bin/python src/experiment_dictionary.py \
+  --master data/master/master_dictionary.jsonl \
+  --size 50000 --seeds 0,1,2 \
+  --min-length 2 --max-length 12 \
+  --output data/dictionaries
+```
+
+2026-07-23にseed 1と2を追加生成し、seed 0を含む各3辞書が50,000語・重複0であることを確認した。seed間の共通語数は0–1が28,363、0–2が28,247、1–2が28,313で、三つの語彙集合はすべて異なる。複数seed用テスト2件を追加し、全自動テスト101件が成功した。
