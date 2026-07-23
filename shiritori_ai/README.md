@@ -100,7 +100,7 @@ python src/experiments_exact.py \
 
 ## 大規模近似AI対戦
 
-標準では `D1000, D3000, D5000, D10000` を対象に、各AI組み合わせを1回ずつ対戦します。AI対AIでは単語やword IDを状態へ持たず、文字ID、辺の残数、active end maskだけを使用します。Random、Greedy、Minimax、MonteCarlo、AlphaBetaはすべて辺を直接選択します。自己対戦は勝敗統計の偏りになるため生成しません。大きいDでも止まらないよう、1手ごとの時間制限、最大手数、試合全体の時間制限を分けて設定します。
+標準では `D1000, D3000, D5000, D10000` を対象に、各AI組み合わせを1回ずつ対戦します。AI対AIでは単語やword IDを状態へ持たず、文字ID、辺の残数、active end maskだけを使用します。Random、Greedy、Minimax、MonteCarlo、AlphaBeta、BeamNegamax、AggressivePVSはすべて辺を直接選択します。自己対戦は勝敗統計の偏りになるため生成しません。大きいDでも止まらないよう、1手ごとの時間制限、最大手数、試合全体の時間制限を分けて設定します。
 
 ```bash
 python src/experiments_approx.py \
@@ -113,6 +113,38 @@ python src/experiments_approx.py \
 複数の生成済み辞書は`--runtime`の後へ明示的に列挙できます。辞書サイズ、seed、文字数条件は隣接metadataから取得するため再指定しません。旧`--runtime-dir`、`--records`、`--jmdict`入力も互換用に残していますが、AI探索は同じ辺専用経路で実行されます。
 
 `--repetitions` は `random` または `monte_carlo` を含む対戦だけに適用します。`greedy`、`minimax`、`alpha_beta` だけの決定的な対戦は同じ辞書上で繰り返しても同じフローになるため、1回だけ実行します。集計では同じ `(D, seed, first_agent, second_agent)` の反復を1つの対戦単位に平均化し、反復したAIだけが勝率や先手勝率で重くならないようにします。
+
+### 共通評価関数
+
+候補手と探索深度到達局面は、共通の次式で評価します。
+
+```text
+score = attack_score + survival_weight * survival_score
+```
+
+`attack_score`は相手の合法単語数、安全単語数、安全辺種類数、安全な終端文字種類数を少なくする手を高く評価し、`ん`辺の多さを小さく加点します。`survival_score`は相手の各安全応手後に自分に残る安全単語数・辺種類数・終端文字種類数の最悪値を中心に、重み付き平均を0.15加えます。
+
+生存重みは安全単語数と安全辺種類数により`0.15`、`0.35`、`0.8`、`1.5`へ変化します。安全単語数が2以下、安全辺種類数が1以下、または安全な移動先が1文字だけなら瀕死状態です。係数と閾値は`EvaluationConfig`に集約しています。
+
+### 探索系AI
+
+- `minimax`: 標準深度3。既定では全候補を探索します。
+- `alpha_beta`: 標準深度4。全候補を対象にalpha-beta枝刈りを行います。
+- `beam_negamax`: 標準深度5。深さごとに`24,12,6,4`辺へ候補を制限するNegamaxで、alpha-beta枝刈りは行いません。
+- `aggressive_pvs`: 標準深度5。最初の候補を通常窓、2本目以降をnull windowで探索し、必要な場合だけ通常窓で再探索するPVSです。
+
+4つの探索系AIは、1手中の反復深化を行いません。現在の`current_depth`を1回探索し、タイムアウトで次手の深度を1下げ、正常終了が3回続くと1戻します。再帰中の時間切れは`SearchTimeout`で上位へ伝播し、`apply_edge`後は`finally`で必ず`undo_edge`します。
+
+```bash
+python src/experiments_approx.py \
+  --runtime data/dictionaries/D10000_L2-12_seed0.runtime.json \
+  --agents alpha_beta beam_negamax aggressive_pvs \
+  --beam-widths 24,12,6,4 \
+  --time-limit-sec 4.0 \
+  --max-match-time-sec 960
+```
+
+MinimaxとAlphaBetaの`--branch-limit`は互換用の明示オプションで、未指定時は`None`です。MonteCarloは候補を1本ずつラウンドロビンで試行し、候補間の試行数差を原則1以内に保ちます。
 
 主な出力:
 
@@ -128,7 +160,7 @@ python src/experiments_approx.py \
 
 打ち切り理由は `no_legal_move`、`ended_with_n`、`max_moves_reached`、`match_timeout` などで記録します。AIの1手制限超過は、各AIの `timeout_count` に記録します。
 
-近似AIは `random`、`greedy`、`minimax`、`monte_carlo`、`alpha_beta` を指定できます。`minimax` と `alpha_beta` は、1手でタイムアウトしたら以後の探索深さを1下げ、タイムアウトしない手が3回続いたら1戻す適応depthを使います。標準depthは `minimax=3`、`alpha_beta=4` です。`alpha_beta` は `minimax` と同じ評価関数を使い、alpha-beta pruning で不要な枝を刈ります。
+各手の`decision_extra`に、`nodes_searched`、`leaf_evaluations`、`completed_root_moves`、`effective_depth`、`next_depth`、`timed_out`を保存します。AlphaBeta/PVSは`cutoff_count`と`pruned_move_count`、BeamNegamaxは`beam_pruned_move_count`、PVSはnull windowと再探索回数も記録します。
 
 ## 図の作成
 
@@ -161,6 +193,8 @@ python src/human_cli.py \
   --human-first \
   --show-candidates
 ```
+
+BeamNegamaxまたはAggressivePVSと対戦する場合は、`--agent beam_negamax --beam-widths 24,12,6,4`または`--agent aggressive_pvs --aggressive-pvs-depth 5`を指定します。
 
 人間対AIだけは具体語の重複判定と画面表示が必要なため、`HumanRuntimeState`がword IDを保持します。AIの思考中はコピーした辺専用状態だけを渡し、AIが辺を確定した後に、その辺の未使用単語を一語だけ割り当てて表示します。人間の入力は読み仮名で受け取り、辞書と同じ正規化を行います。不正な手は理由を表示して再入力を求めます。
 人間対AIでは、AIの1手ごとの標準タイムアウトは `2.0` 秒です。

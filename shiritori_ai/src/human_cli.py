@@ -7,7 +7,7 @@ import json
 import time
 from pathlib import Path
 
-from agents import DEFAULT_TIME_LIMIT_SEC, build_agent
+from agents import DEFAULT_BEAM_WIDTHS, DEFAULT_TIME_LIMIT_SEC, build_agent
 from dataset import parse_jmdict, read_csv_records, select_records
 from runtime_dictionary import RuntimeDictionary
 from runtime_state import HumanRuntimeState
@@ -40,6 +40,16 @@ def show_candidates(state: HumanRuntimeState, limit: int = 20) -> None:
     print("候補:", "、".join(words) if words else "なし")
 
 
+def parse_beam_widths(value: str) -> tuple[int, ...]:
+    try:
+        widths = tuple(int(item.strip()) for item in value.split(",") if item.strip())
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("beam widths must be comma-separated integers") from exc
+    if not widths or any(width <= 0 for width in widths):
+        raise argparse.ArgumentTypeError("beam widths must be positive")
+    return widths
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     source_group = parser.add_mutually_exclusive_group(required=True)
@@ -51,14 +61,36 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--pool-multiplier", type=int, default=1)
     parser.add_argument("--min-length", type=int, default=2)
     parser.add_argument("--max-length", type=int, default=12)
-    parser.add_argument("--agent", choices=["random", "greedy", "minimax", "monte_carlo", "alpha_beta"], default="greedy")
+    parser.add_argument(
+        "--agent",
+        choices=[
+            "random",
+            "greedy",
+            "minimax",
+            "monte_carlo",
+            "alpha_beta",
+            "beam_negamax",
+            "aggressive_pvs",
+        ],
+        default="greedy",
+    )
     parser.add_argument("--human-first", action="store_true")
     parser.add_argument("--time-limit-sec", type=float, default=DEFAULT_TIME_LIMIT_SEC)
     parser.add_argument("--show-candidates", action="store_true")
     parser.add_argument("--history-output", default="results/human/human_match_history.json")
     parser.add_argument("--minimax-depth", type=int, default=3)
     parser.add_argument("--alpha-beta-depth", type=int, default=4)
-    parser.add_argument("--branch-limit", type=int, default=20)
+    parser.add_argument("--beam-negamax-depth", type=int, default=5)
+    parser.add_argument("--aggressive-pvs-depth", type=int, default=5)
+    parser.add_argument("--beam-widths", type=parse_beam_widths, default=DEFAULT_BEAM_WIDTHS)
+    parser.add_argument("--branch-limit", type=int, default=None)
+    parser.add_argument(
+        "--adaptive-depth",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+    )
+    parser.add_argument("--min-depth", type=int, default=1)
+    parser.add_argument("--depth-recovery-turns", type=int, default=3)
     parser.add_argument("--monte-carlo-candidates", type=int, default=20)
     parser.add_argument("--monte-carlo-playouts", type=int, default=10)
     parser.add_argument("--monte-carlo-max-moves", type=int, default=200)
@@ -76,6 +108,12 @@ def main() -> None:
         minimax_depth=args.minimax_depth,
         alpha_beta_depth=args.alpha_beta_depth,
         branch_limit=args.branch_limit,
+        beam_negamax_depth=args.beam_negamax_depth,
+        beam_widths=args.beam_widths,
+        aggressive_pvs_depth=args.aggressive_pvs_depth,
+        adaptive_depth=args.adaptive_depth,
+        min_depth=args.min_depth,
+        depth_recovery_turns=args.depth_recovery_turns,
         monte_carlo_candidates=args.monte_carlo_candidates,
         monte_carlo_playouts=args.monte_carlo_playouts,
         monte_carlo_max_moves=args.monte_carlo_max_moves,
@@ -109,6 +147,9 @@ def main() -> None:
             reason = "no_legal_move"
             break
 
+        decision_extra: dict[str, object] = {}
+        decision_timed_out = False
+        decision_score: float | None = None
         if human_turn:
             if args.show_candidates:
                 show_candidates(state)
@@ -130,6 +171,9 @@ def main() -> None:
             ai_total_time += decision.elapsed_time_sec
             ai_max_time = max(ai_max_time, decision.elapsed_time_sec)
             ai_move_count += 1
+            decision_extra = decision.extra
+            decision_timed_out = decision.timed_out
+            decision_score = decision.score
             print(f"AIの手: {runtime.word_readings[word_id]}")
             print(f"AI思考時間: {decision.elapsed_time_sec:.6f} 秒")
             player = "ai"
@@ -144,6 +188,9 @@ def main() -> None:
                 "word": word,
                 "start_char": runtime.id_to_char[runtime.word_start_ids[word_id]],
                 "end_char": runtime.id_to_char[runtime.word_end_ids[word_id]],
+                "timed_out": decision_timed_out,
+                "score": decision_score,
+                "decision_extra": decision_extra,
             }
         )
 

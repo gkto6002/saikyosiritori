@@ -1,0 +1,5 @@
+agent_name,dict_size,match_count,win_count,loss_count,draw_count,win_rate,average_turn_count,average_used_word_count,average_time_per_move_sec,max_time_sec,timeout_count,timeout_count_per_match
+aggressive_pvs,20000,6,2,3,1,0.333333,89.333333,89.333333,0.863047,1.000242,183,30.500000
+alpha_beta,20000,6,4,1,1,0.666667,85.166667,85.166667,0.901139,1.000174,205,34.166667
+beam_negamax,20000,6,5,1,0,0.833333,72.666667,72.666667,0.746853,1.000170,69,11.500000
+greedy,20000,6,0,6,0,0.000000,86.166667,86.166667,0.020031,1.000164,3,0.500000

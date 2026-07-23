@@ -131,7 +131,18 @@ def simulate_match(
                 "effective_depth": decision.extra.get("effective_depth", ""),
                 "next_depth": decision.extra.get("next_depth", ""),
                 "adaptive_depth": decision.extra.get("adaptive_depth", ""),
-                "pruned_count": decision.extra.get("pruned_count", ""),
+                "pruned_count": decision.extra.get(
+                    "pruned_move_count", decision.extra.get("pruned_count", "")
+                ),
+                "nodes_searched": decision.extra.get("nodes_searched", ""),
+                "leaf_evaluations": decision.extra.get("leaf_evaluations", ""),
+                "completed_root_moves": decision.extra.get("completed_root_moves", ""),
+                "cutoff_count": decision.extra.get("cutoff_count", ""),
+                "pruned_move_count": decision.extra.get("pruned_move_count", ""),
+                "beam_pruned_move_count": decision.extra.get("beam_pruned_move_count", ""),
+                "null_window_search_count": decision.extra.get("null_window_search_count", ""),
+                "research_count": decision.extra.get("research_count", ""),
+                "beam_widths_used": decision.extra.get("beam_widths_used", ""),
                 "evaluated_moves": decision.extra.get("evaluated_moves", ""),
                 "decision_extra": decision.extra,
             }
@@ -255,7 +266,18 @@ def simulate_runtime_match(
                 "effective_depth": decision.extra.get("effective_depth", ""),
                 "next_depth": decision.extra.get("next_depth", ""),
                 "adaptive_depth": decision.extra.get("adaptive_depth", ""),
-                "pruned_count": decision.extra.get("pruned_count", ""),
+                "pruned_count": decision.extra.get(
+                    "pruned_move_count", decision.extra.get("pruned_count", "")
+                ),
+                "nodes_searched": decision.extra.get("nodes_searched", ""),
+                "leaf_evaluations": decision.extra.get("leaf_evaluations", ""),
+                "completed_root_moves": decision.extra.get("completed_root_moves", ""),
+                "cutoff_count": decision.extra.get("cutoff_count", ""),
+                "pruned_move_count": decision.extra.get("pruned_move_count", ""),
+                "beam_pruned_move_count": decision.extra.get("beam_pruned_move_count", ""),
+                "null_window_search_count": decision.extra.get("null_window_search_count", ""),
+                "research_count": decision.extra.get("research_count", ""),
+                "beam_widths_used": decision.extra.get("beam_widths_used", ""),
                 "evaluated_moves": decision.extra.get("evaluated_moves", ""),
                 "decision_extra": decision.extra,
             }

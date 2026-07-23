@@ -10,7 +10,7 @@ from collections import defaultdict
 from dataclasses import asdict
 from pathlib import Path
 
-from agents import build_agent
+from agents import DEFAULT_BEAM_WIDTHS, build_agent
 from dataset import ReadingRecord, parse_jmdict, read_csv_records, select_records, write_json, write_records_csv
 from dictionary_stats import DICTIONARY_CHAR_TOTAL_FIELDS, edge_dictionary_char_total_rows
 from match import MatchResult, append_jsonl, simulate_runtime_match
@@ -87,6 +87,15 @@ MATCH_FLOW_FIELDS = [
     "next_depth",
     "adaptive_depth",
     "pruned_count",
+    "nodes_searched",
+    "leaf_evaluations",
+    "completed_root_moves",
+    "cutoff_count",
+    "pruned_move_count",
+    "beam_pruned_move_count",
+    "null_window_search_count",
+    "research_count",
+    "beam_widths_used",
     "evaluated_moves",
     "chain_so_far",
 ]
@@ -123,6 +132,25 @@ TOP_END_CHAR_FIELDS = [
 
 AI_MATCH_TIME_LIMIT_SEC = 4.0
 STOCHASTIC_AGENTS = {"random", "monte_carlo"}
+AGENT_NAMES = [
+    "random",
+    "greedy",
+    "minimax",
+    "monte_carlo",
+    "alpha_beta",
+    "beam_negamax",
+    "aggressive_pvs",
+]
+
+
+def parse_beam_widths(value: str) -> tuple[int, ...]:
+    try:
+        widths = tuple(int(item.strip()) for item in value.split(",") if item.strip())
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("beam widths must be comma-separated integers") from exc
+    if not widths or any(width <= 0 for width in widths):
+        raise argparse.ArgumentTypeError("beam widths must be positive")
+    return widths
 
 
 def is_self_match(row: dict[str, object]) -> bool:
@@ -320,6 +348,19 @@ def build_match_flow_rows(
                 "next_depth": turn.get("next_depth", ""),
                 "adaptive_depth": turn.get("adaptive_depth", ""),
                 "pruned_count": turn.get("pruned_count", ""),
+                "nodes_searched": turn.get("nodes_searched", ""),
+                "leaf_evaluations": turn.get("leaf_evaluations", ""),
+                "completed_root_moves": turn.get("completed_root_moves", ""),
+                "cutoff_count": turn.get("cutoff_count", ""),
+                "pruned_move_count": turn.get("pruned_move_count", ""),
+                "beam_pruned_move_count": turn.get("beam_pruned_move_count", ""),
+                "null_window_search_count": turn.get("null_window_search_count", ""),
+                "research_count": turn.get("research_count", ""),
+                "beam_widths_used": json.dumps(
+                    turn.get("beam_widths_used", ""),
+                    ensure_ascii=False,
+                    sort_keys=True,
+                ) if turn.get("beam_widths_used", "") != "" else "",
                 "evaluated_moves": turn.get("evaluated_moves", ""),
                 "chain_so_far": " -> ".join(chain),
             }
@@ -495,7 +536,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--sizes", nargs="+", type=int, default=[1000, 3000, 5000, 10000])
     parser.add_argument("--seeds", nargs="+", type=int, default=[0])
-    parser.add_argument("--agents", nargs="+", default=["random", "greedy", "minimax", "monte_carlo", "alpha_beta"])
+    parser.add_argument(
+        "--agents",
+        nargs="+",
+        choices=AGENT_NAMES,
+        default=AGENT_NAMES,
+    )
     parser.add_argument("--repetitions", type=int, default=1)
     parser.add_argument("--output-dir", default="results/approx")
     parser.add_argument("--dataset-dir", default="data/generated/approx")
@@ -504,7 +550,27 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-match-time-sec", type=float, default=960.0)
     parser.add_argument("--minimax-depth", type=int, default=3)
     parser.add_argument("--alpha-beta-depth", type=int, default=4)
-    parser.add_argument("--branch-limit", type=int, default=20)
+    parser.add_argument("--beam-negamax-depth", type=int, default=5)
+    parser.add_argument("--aggressive-pvs-depth", type=int, default=5)
+    parser.add_argument(
+        "--beam-widths",
+        type=parse_beam_widths,
+        default=DEFAULT_BEAM_WIDTHS,
+        help="Comma-separated widths from root downward (default: 24,12,6,4)",
+    )
+    parser.add_argument(
+        "--branch-limit",
+        type=int,
+        default=None,
+        help="Optional compatibility limit for Minimax/AlphaBeta; default searches all candidates",
+    )
+    parser.add_argument(
+        "--adaptive-depth",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+    )
+    parser.add_argument("--min-depth", type=int, default=1)
+    parser.add_argument("--depth-recovery-turns", type=int, default=3)
     parser.add_argument("--monte-carlo-candidates", type=int, default=20)
     parser.add_argument("--monte-carlo-playouts", type=int, default=10)
     parser.add_argument("--monte-carlo-max-moves", type=int, default=200)
@@ -512,7 +578,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-length", type=int, default=2)
     parser.add_argument("--max-length", type=int, default=12)
     parser.add_argument("--top-end-chars", type=int, default=20)
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.branch_limit is not None and args.branch_limit <= 0:
+        parser.error("--branch-limit must be positive")
+    if args.min_depth <= 0 or args.depth_recovery_turns <= 0:
+        parser.error("--min-depth and --depth-recovery-turns must be positive")
+    return args
 
 
 def main() -> None:
@@ -616,6 +687,12 @@ def main() -> None:
                     minimax_depth=args.minimax_depth,
                     alpha_beta_depth=args.alpha_beta_depth,
                     branch_limit=args.branch_limit,
+                    beam_negamax_depth=args.beam_negamax_depth,
+                    beam_widths=args.beam_widths,
+                    aggressive_pvs_depth=args.aggressive_pvs_depth,
+                    adaptive_depth=args.adaptive_depth,
+                    min_depth=args.min_depth,
+                    depth_recovery_turns=args.depth_recovery_turns,
                     monte_carlo_candidates=args.monte_carlo_candidates,
                     monte_carlo_playouts=args.monte_carlo_playouts,
                     monte_carlo_max_moves=args.monte_carlo_max_moves,
@@ -627,6 +704,12 @@ def main() -> None:
                     minimax_depth=args.minimax_depth,
                     alpha_beta_depth=args.alpha_beta_depth,
                     branch_limit=args.branch_limit,
+                    beam_negamax_depth=args.beam_negamax_depth,
+                    beam_widths=args.beam_widths,
+                    aggressive_pvs_depth=args.aggressive_pvs_depth,
+                    adaptive_depth=args.adaptive_depth,
+                    min_depth=args.min_depth,
+                    depth_recovery_turns=args.depth_recovery_turns,
                     monte_carlo_candidates=args.monte_carlo_candidates,
                     monte_carlo_playouts=args.monte_carlo_playouts,
                     monte_carlo_max_moves=args.monte_carlo_max_moves,
@@ -696,9 +779,12 @@ def main() -> None:
             "max_match_time_sec": args.max_match_time_sec,
             "minimax_depth": args.minimax_depth,
             "alpha_beta_depth": args.alpha_beta_depth,
-            "adaptive_depth": True,
-            "adaptive_depth_min": 1,
-            "adaptive_depth_recovery_turns": 3,
+            "beam_negamax_depth": args.beam_negamax_depth,
+            "beam_widths": list(args.beam_widths),
+            "aggressive_pvs_depth": args.aggressive_pvs_depth,
+            "adaptive_depth": args.adaptive_depth,
+            "adaptive_depth_min": args.min_depth,
+            "adaptive_depth_recovery_turns": args.depth_recovery_turns,
             "branch_limit": args.branch_limit,
             "monte_carlo_candidates": args.monte_carlo_candidates,
             "monte_carlo_playouts": args.monte_carlo_playouts,
