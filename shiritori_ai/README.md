@@ -218,6 +218,68 @@ python src/experiments_approx.py \
 
 詳細レポートは`docs/agent_analysis/existing_agent_detailed_analysis.md`、HybridAgentの設計案は`docs/agent_analysis/hybrid_agent_design_proposal.md`、JSON・CSV・図・代表対局は`results/existing_agent_analysis`に保存されます。この分析は既存AIの探索処理と評価関数を変更しません。
 
+### GraphControlAgentと全AI比較
+
+`GraphControlAgent`はゲーム木探索やランダムプレイアウトを行わず、候補辺を
+一時適用した残存多重有向グラフを一手評価する決定論的AIです。AI対AIでは
+具体語を保持せず、候補も`start_id → end_id`と残存多重度で記録します。
+具体語の割当は人間対AIの表示時だけ行います。
+
+quickはD1000 seed 0でGraphControlと全AIを先後入替し、fullは
+D1000、D3000、D5000、D10000、D20000のseed 0、1、2で全8 AIの
+全組合せを実行します。決定論同士は1回、RandomまたはMonteCarloを含む
+組合せは5回です。fullの一手制限1秒、探索深度・分岐制限・Beam幅は既存の
+最終比較設定を維持します。
+
+```bash
+python src/run_graph_control_comparison.py --quick
+python src/analyze_graph_control_comparison.py \
+  --input results/agent_comparison/quick/<run-hash> \
+  --reference-positions 100 \
+  --reference-time-limit-sec 0.2
+
+python src/run_graph_control_comparison.py --full
+python src/analyze_graph_control_comparison.py \
+  --input results/agent_comparison/full/<run-hash> \
+  --reference-positions 500 \
+  --reference-time-limit-sec 1.0
+```
+
+最初にD5000だけで全AIを選抜する場合は、次を使用します。3 seed、
+全8 AI、先後入替、確率系5反復で480局です。
+
+```bash
+python src/run_graph_control_comparison.py \
+  --full \
+  --sizes 5000 \
+  --seeds 0,1,2
+```
+
+最後に表示される`results/agent_comparison/D5000/<run-hash>`を集計へ渡します。
+
+```bash
+python src/analyze_graph_control_comparison.py \
+  --input results/agent_comparison/D5000/<run-hash> \
+  --reference-positions 100 \
+  --reference-time-limit-sec 1.0
+```
+
+D5000の成績から選んだAIだけを大辞書で比較する例:
+
+```bash
+python src/run_graph_control_comparison.py \
+  --full \
+  --sizes 10000,20000 \
+  --seeds 0,1,2 \
+  --agents alpha_beta,pvs,beam_negamax,graph_control
+```
+
+各runはコミットID、未コミット変更を含むソース指紋、実験設定ハッシュ、
+辞書ハッシュを保存します。同じ条件の完了済み対局だけを再利用し、対局ごとに
+JSON Linesへ追記するため途中再開できます。通常対局ログとGraphControlの
+全候補詳細ログは別ファイルです。集計CSV/JSON、30種類のPNG、自動レポートは
+各runの`analysis`以下へ保存されます。
+
 ## 図の作成
 
 ```bash

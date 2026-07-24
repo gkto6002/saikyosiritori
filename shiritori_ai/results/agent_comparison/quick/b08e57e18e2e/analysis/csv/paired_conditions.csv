@@ -1,0 +1,10 @@
+dict_size,dictionary_seed,repetition,agent_a,agent_b,seat_order_games,complete_seat_pair,agent_a_wins
+1000,0,0,alpha_beta,graph_control,2,True,2
+1000,0,0,beam_negamax,graph_control,2,True,2
+1000,0,0,graph_control,greedy,2,True,2
+1000,0,0,graph_control,minimax,2,True,0
+1000,0,0,graph_control,monte_carlo,2,True,1
+1000,0,0,graph_control,pvs,2,True,0
+1000,0,0,graph_control,random,2,True,2
+1000,0,1,graph_control,monte_carlo,2,True,0
+1000,0,1,graph_control,random,2,True,1

@@ -1,0 +1,30 @@
+[
+  {
+    "component": "evaluation_time_sec",
+    "mean_time_sec": 0.057507111607601,
+    "median_time_sec": 0.01578577107284218,
+    "p95_time_sec": 0.038276375038549304,
+    "total_time_sec": 57.277083161170594
+  },
+  {
+    "component": "scc_time_sec",
+    "mean_time_sec": 0.02127891274269139,
+    "median_time_sec": 0.007463997812010348,
+    "p95_time_sec": 0.017688787542283535,
+    "total_time_sec": 21.193797091720626
+  },
+  {
+    "component": "reachability_time_sec",
+    "mean_time_sec": 0.0012826693826822571,
+    "median_time_sec": 0.00041543913539499044,
+    "p95_time_sec": 0.0010316274128854275,
+    "total_time_sec": 1.2775387051515281
+  },
+  {
+    "component": "local_time_sec",
+    "mean_time_sec": 0.0024897290740150914,
+    "median_time_sec": 0.0008275827276520431,
+    "p95_time_sec": 0.0020645001204684377,
+    "total_time_sec": 2.479770157719031
+  }
+]

@@ -1,0 +1,86 @@
+[
+  {
+    "difference": -0.0017678339965027522,
+    "feature": "dangerous_word_count",
+    "not_selected_mean": 0.0025437040498604104,
+    "selected_mean": 0.0007758700533576584
+  },
+  {
+    "difference": 0.038636695293117584,
+    "feature": "dead_end_reach_rate",
+    "not_selected_mean": 0.05484265113182653,
+    "selected_mean": 0.09347934642494411
+  },
+  {
+    "difference": -0.18221101168095222,
+    "feature": "depth2_char_count",
+    "not_selected_mean": 0.9187453844662109,
+    "selected_mean": 0.7365343727852587
+  },
+  {
+    "difference": -0.04779824069925109,
+    "feature": "depth3_char_count",
+    "not_selected_mean": 0.9447094148074486,
+    "selected_mean": 0.8969111741081975
+  },
+  {
+    "difference": 0.1703342367936962,
+    "feature": "destination_concentration",
+    "not_selected_mean": 0.11939273491879533,
+    "selected_mean": 0.2897269717124915
+  },
+  {
+    "difference": -0.24944347957014248,
+    "feature": "destination_count",
+    "not_selected_mean": 0.4015223834208394,
+    "selected_mean": 0.15207890385069692
+  },
+  {
+    "difference": -0.013118035649965044,
+    "feature": "legal_word_count",
+    "not_selected_mean": 0.017590507538841456,
+    "selected_mean": 0.004472471888876413
+  },
+  {
+    "difference": 0.05055113613375268,
+    "feature": "low_out_degree_reach_rate",
+    "not_selected_mean": 0.061167525836778876,
+    "selected_mean": 0.11171866197053155
+  },
+  {
+    "difference": -0.04594234570571387,
+    "feature": "reachable_char_count",
+    "not_selected_mean": 0.9448615519424255,
+    "selected_mean": 0.8989192062367116
+  },
+  {
+    "difference": -0.042916866514185914,
+    "feature": "reachable_edge_count",
+    "not_selected_mean": 0.9527742678252509,
+    "selected_mean": 0.909857401311065
+  },
+  {
+    "difference": -0.01135020165346229,
+    "feature": "safe_word_count",
+    "not_selected_mean": 0.015046803488981044,
+    "selected_mean": 0.0036966018355187543
+  },
+  {
+    "difference": -0.01205722096622125,
+    "feature": "scc_exit_edge_count",
+    "not_selected_mean": 0.14347832385394257,
+    "selected_mean": 0.13142110288772132
+  },
+  {
+    "difference": -0.07645250599230202,
+    "feature": "scc_internal_edge_count",
+    "not_selected_mean": 0.8090970692958626,
+    "selected_mean": 0.7326445633035605
+  },
+  {
+    "difference": -0.09078643860272506,
+    "feature": "scc_vertex_count",
+    "not_selected_mean": 0.9300552786688719,
+    "selected_mean": 0.8392688400661469
+  }
+]

@@ -6,8 +6,9 @@ import json
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
+from typing import Callable
 
-from agents import BaseAgent, GameState
+from agents import BaseAgent, EdgeMoveDecision, GameState
 from game import WordGraph
 from runtime_dictionary import EdgeDictionary, RuntimeDictionary
 from runtime_state import AIEdgeState
@@ -216,6 +217,9 @@ def simulate_runtime_match(
     max_moves: int,
     max_match_time_sec: float,
     match_id: str = "",
+    turn_observer: Callable[
+        [int, int, BaseAgent, EdgeMoveDecision, AIEdgeState], None
+    ] | None = None,
 ) -> MatchResult:
     """Run an AI-vs-AI match using only character IDs and edge multiplicities."""
 
@@ -261,6 +265,8 @@ def simulate_runtime_match(
             winner = "second" if player_index == 0 else "first"
             loss_reason = "invalid_ai_move"
             break
+        if turn_observer is not None:
+            turn_observer(turn_index, player_index, agent, decision, state)
         required_start = (
             "ANY"
             if state.required_char_id is None

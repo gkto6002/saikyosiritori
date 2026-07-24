@@ -1,0 +1,17 @@
+agent,outcome,games,mean_turns
+alpha_beta,win,2,18.5
+alpha_beta,loss,0,0.0
+beam_negamax,win,2,16.5
+beam_negamax,loss,0,0.0
+graph_control,win,6,8.833333333333334
+graph_control,loss,12,16.0
+greedy,win,0,0.0
+greedy,loss,2,7.5
+minimax,win,2,23.5
+minimax,loss,0,0.0
+monte_carlo,win,3,9.666666666666666
+monte_carlo,loss,1,4.0
+pvs,win,2,18.5
+pvs,loss,0,0.0
+random,win,1,9.0
+random,loss,3,11.333333333333334

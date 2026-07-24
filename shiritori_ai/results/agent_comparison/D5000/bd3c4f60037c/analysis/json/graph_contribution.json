@@ -1,0 +1,22 @@
+[
+  {
+    "contribution": "global_only",
+    "positions": 0,
+    "rate": 0.0
+  },
+  {
+    "contribution": "local_only",
+    "positions": 69,
+    "rate": 0.06927710843373494
+  },
+  {
+    "contribution": "both",
+    "positions": 893,
+    "rate": 0.8965863453815262
+  },
+  {
+    "contribution": "neither",
+    "positions": 34,
+    "rate": 0.03413654618473896
+  }
+]

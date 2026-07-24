@@ -1,0 +1,67 @@
+{
+  "commit_id": "95118b12a55cc70107a2226ba14fbd99e5caeabd",
+  "config": {
+    "agents": [
+      "random",
+      "greedy",
+      "monte_carlo",
+      "minimax",
+      "alpha_beta",
+      "pvs",
+      "beam_negamax",
+      "graph_control"
+    ],
+    "candidate_unit": "directed_edge_type_with_multiplicity",
+    "dictionary_seeds": [
+      0
+    ],
+    "dictionary_sizes": [
+      1000
+    ],
+    "format_version": "graph_control_comparison_v1",
+    "max_match_time_sec": 30.0,
+    "max_moves": 100,
+    "mode": "quick",
+    "settings": {
+      "alpha_beta": {
+        "adaptive_depth": false,
+        "branch_limit": 8,
+        "depth": 5
+      },
+      "beam_negamax": {
+        "adaptive_depth": false,
+        "beam_widths": [
+          8,
+          6,
+          4,
+          2
+        ],
+        "depth": 5
+      },
+      "graph_control": {
+        "search": "none",
+        "simulation": "none",
+        "tie_break": "score,start_id,end_id"
+      },
+      "minimax": {
+        "adaptive_depth": false,
+        "branch_limit": 8,
+        "depth": 3
+      },
+      "monte_carlo": {
+        "candidate_limit": 20,
+        "max_playout_moves": 200,
+        "playouts_per_move": 10
+      },
+      "pvs": {
+        "adaptive_depth": false,
+        "branch_limit": 8,
+        "depth": 5
+      }
+    },
+    "stochastic_repetitions": 2,
+    "time_limit_sec": 0.2
+  },
+  "experiment_config_hash": "b08e57e18e2ef2db1c20756d710def727ee39e9d3bff53028eba2e5d62e66f37",
+  "source_fingerprint": "3f18e7096ec8bcb0b3617f5ff82934eb7cae659ed196a33567e8984c37c343ac"
+}

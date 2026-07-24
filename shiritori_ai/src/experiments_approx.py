@@ -161,6 +161,7 @@ STOCHASTIC_AGENTS = {"random", "monte_carlo"}
 AGENT_NAMES = [
     "random",
     "greedy",
+    "graph_control",
     "minimax",
     "monte_carlo",
     "alpha_beta",

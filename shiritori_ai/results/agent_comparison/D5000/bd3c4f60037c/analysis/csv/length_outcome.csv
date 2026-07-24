@@ -1,0 +1,17 @@
+agent,outcome,games,mean_turns
+alpha_beta,win,83,38.0
+alpha_beta,loss,7,68.85714285714286
+beam_negamax,win,76,45.578947368421055
+beam_negamax,loss,14,97.35714285714286
+graph_control,win,53,21.150943396226417
+graph_control,loss,37,23.64864864864865
+greedy,win,54,21.40740740740741
+greedy,loss,36,24.25
+minimax,win,82,34.0609756097561
+minimax,loss,8,103.75
+monte_carlo,win,44,113.56818181818181
+monte_carlo,loss,166,35.57831325301205
+pvs,win,83,38.81927710843374
+pvs,loss,7,68.85714285714286
+random,win,5,174.4
+random,loss,205,48.62439024390244

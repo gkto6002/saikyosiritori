@@ -66,6 +66,7 @@ def parse_args() -> argparse.Namespace:
         choices=[
             "random",
             "greedy",
+            "graph_control",
             "minimax",
             "monte_carlo",
             "alpha_beta",

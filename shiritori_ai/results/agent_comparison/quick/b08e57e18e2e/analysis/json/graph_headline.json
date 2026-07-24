@@ -1,0 +1,9 @@
+{
+  "all_candidates_tied_rate": 0.12396694214876033,
+  "alpha_beta_agreement_rate": 0.4,
+  "greedy_agreement_rate": 0.8,
+  "positions": 121,
+  "reachable_chars_all_same_rate": 0.49586776859504134,
+  "reachable_edges_nearly_same_rate": 0.49586776859504134,
+  "scc_nearly_whole_rate": 0.0
+}

@@ -1,0 +1,92 @@
+[
+  {
+    "agent_a": "alpha_beta",
+    "agent_a_wins": 2,
+    "agent_b": "graph_control",
+    "complete_seat_pair": true,
+    "dict_size": 1000,
+    "dictionary_seed": 0,
+    "repetition": 0,
+    "seat_order_games": 2
+  },
+  {
+    "agent_a": "beam_negamax",
+    "agent_a_wins": 2,
+    "agent_b": "graph_control",
+    "complete_seat_pair": true,
+    "dict_size": 1000,
+    "dictionary_seed": 0,
+    "repetition": 0,
+    "seat_order_games": 2
+  },
+  {
+    "agent_a": "graph_control",
+    "agent_a_wins": 2,
+    "agent_b": "greedy",
+    "complete_seat_pair": true,
+    "dict_size": 1000,
+    "dictionary_seed": 0,
+    "repetition": 0,
+    "seat_order_games": 2
+  },
+  {
+    "agent_a": "graph_control",
+    "agent_a_wins": 0,
+    "agent_b": "minimax",
+    "complete_seat_pair": true,
+    "dict_size": 1000,
+    "dictionary_seed": 0,
+    "repetition": 0,
+    "seat_order_games": 2
+  },
+  {
+    "agent_a": "graph_control",
+    "agent_a_wins": 1,
+    "agent_b": "monte_carlo",
+    "complete_seat_pair": true,
+    "dict_size": 1000,
+    "dictionary_seed": 0,
+    "repetition": 0,
+    "seat_order_games": 2
+  },
+  {
+    "agent_a": "graph_control",
+    "agent_a_wins": 0,
+    "agent_b": "pvs",
+    "complete_seat_pair": true,
+    "dict_size": 1000,
+    "dictionary_seed": 0,
+    "repetition": 0,
+    "seat_order_games": 2
+  },
+  {
+    "agent_a": "graph_control",
+    "agent_a_wins": 2,
+    "agent_b": "random",
+    "complete_seat_pair": true,
+    "dict_size": 1000,
+    "dictionary_seed": 0,
+    "repetition": 0,
+    "seat_order_games": 2
+  },
+  {
+    "agent_a": "graph_control",
+    "agent_a_wins": 0,
+    "agent_b": "monte_carlo",
+    "complete_seat_pair": true,
+    "dict_size": 1000,
+    "dictionary_seed": 0,
+    "repetition": 1,
+    "seat_order_games": 2
+  },
+  {
+    "agent_a": "graph_control",
+    "agent_a_wins": 1,
+    "agent_b": "random",
+    "complete_seat_pair": true,
+    "dict_size": 1000,
+    "dictionary_seed": 0,
+    "repetition": 1,
+    "seat_order_games": 2
+  }
+]

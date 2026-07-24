@@ -1,0 +1,15 @@
+[
+  {
+    "all_candidates_tied_rate": 0.1487603305785124,
+    "alpha_beta_agreement_rate": 0.47,
+    "alpha_beta_reference_positions": 100,
+    "greedy_agreement_rate": 0.72,
+    "greedy_reference_positions": 100,
+    "mean_best_score_tie_count": 0.9917355371900827,
+    "mean_distinct_score_count": 12.909090909090908,
+    "mean_score_range": 1.5197011085075602,
+    "mean_score_stddev": 0.42668067766431106,
+    "remaining_bin": "80-100%",
+    "turns": 121
+  }
+]

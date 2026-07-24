@@ -1,0 +1,86 @@
+[
+  {
+    "difference": 1.3261106536530554e-05,
+    "feature": "dangerous_word_count",
+    "losing_turn_candidate_mean": 0.0025167249082992996,
+    "winning_turn_candidate_mean": 0.00252998601483583
+  },
+  {
+    "difference": -0.0011618900505204546,
+    "feature": "dead_end_reach_rate",
+    "losing_turn_candidate_mean": 0.05593524109335571,
+    "winning_turn_candidate_mean": 0.054773351042835254
+  },
+  {
+    "difference": 0.0020986903334634377,
+    "feature": "depth2_char_count",
+    "losing_turn_candidate_mean": 0.9155425457086577,
+    "winning_turn_candidate_mean": 0.9176412360421211
+  },
+  {
+    "difference": 0.0012948355610515883,
+    "feature": "depth3_char_count",
+    "losing_turn_candidate_mean": 0.9434399703387697,
+    "winning_turn_candidate_mean": 0.9447348058998213
+  },
+  {
+    "difference": -0.0007157021411961922,
+    "feature": "destination_concentration",
+    "losing_turn_candidate_mean": 0.121668083930464,
+    "winning_turn_candidate_mean": 0.1209523817892678
+  },
+  {
+    "difference": -0.0013777131122952868,
+    "feature": "destination_count",
+    "losing_turn_candidate_mean": 0.3995893353839863,
+    "winning_turn_candidate_mean": 0.398211622271691
+  },
+  {
+    "difference": -1.7560342495764186e-05,
+    "feature": "legal_word_count",
+    "losing_turn_candidate_mean": 0.017457191585661704,
+    "winning_turn_candidate_mean": 0.01743963124316594
+  },
+  {
+    "difference": 0.0007468394603394116,
+    "feature": "low_out_degree_reach_rate",
+    "losing_turn_candidate_mean": 0.06128956526213615,
+    "winning_turn_candidate_mean": 0.06203640472247556
+  },
+  {
+    "difference": 0.001206901434141261,
+    "feature": "reachable_char_count",
+    "losing_turn_candidate_mean": 0.9436631161685748,
+    "winning_turn_candidate_mean": 0.944870017602716
+  },
+  {
+    "difference": 0.001826579001889761,
+    "feature": "reachable_edge_count",
+    "losing_turn_candidate_mean": 0.9512515248140482,
+    "winning_turn_candidate_mean": 0.9530781038159379
+  },
+  {
+    "difference": -3.0821449032297776e-05,
+    "feature": "safe_word_count",
+    "losing_turn_candidate_mean": 0.014940466677362407,
+    "winning_turn_candidate_mean": 0.01490964522833011
+  },
+  {
+    "difference": 0.001142332274547797,
+    "feature": "scc_exit_edge_count",
+    "losing_turn_candidate_mean": 0.1426876558940271,
+    "winning_turn_candidate_mean": 0.1438299881685749
+  },
+  {
+    "difference": 0.000772249182225182,
+    "feature": "scc_internal_edge_count",
+    "losing_turn_candidate_mean": 0.8078156893759089,
+    "winning_turn_candidate_mean": 0.808587938558134
+  },
+  {
+    "difference": 0.0006607788019329375,
+    "feature": "scc_vertex_count",
+    "losing_turn_candidate_mean": 0.9286814484567464,
+    "winning_turn_candidate_mean": 0.9293422272586793
+  }
+]

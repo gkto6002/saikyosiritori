@@ -1,0 +1,100 @@
+[
+  {
+    "feature": "dangerous_word_count",
+    "mean_candidate_variance": 5.767881793445816e-06,
+    "median_candidate_variance": 3.336176782467929e-06,
+    "nonzero_variance_rate": 0.8760330578512396,
+    "positions": 121
+  },
+  {
+    "feature": "dead_end_reach_rate",
+    "mean_candidate_variance": 0.05114818827125134,
+    "median_candidate_variance": 5.449896858126722e-05,
+    "nonzero_variance_rate": 0.8760330578512396,
+    "positions": 121
+  },
+  {
+    "feature": "depth2_char_count",
+    "mean_candidate_variance": 0.032426896449257,
+    "median_candidate_variance": 0.036548442906574385,
+    "nonzero_variance_rate": 0.8760330578512396,
+    "positions": 121
+  },
+  {
+    "feature": "depth3_char_count",
+    "mean_candidate_variance": 0.040841257424870596,
+    "median_candidate_variance": 0.030820540158685513,
+    "nonzero_variance_rate": 0.8760330578512396,
+    "positions": 121
+  },
+  {
+    "feature": "destination_concentration",
+    "mean_candidate_variance": 0.051452371760235746,
+    "median_candidate_variance": 0.037464498649781776,
+    "nonzero_variance_rate": 0.8760330578512396,
+    "positions": 121
+  },
+  {
+    "feature": "destination_count",
+    "mean_candidate_variance": 0.007054491227253994,
+    "median_candidate_variance": 0.006195393598615918,
+    "nonzero_variance_rate": 0.8760330578512396,
+    "positions": 121
+  },
+  {
+    "feature": "legal_word_count",
+    "mean_candidate_variance": 0.0001366523353657224,
+    "median_candidate_variance": 0.00012139602353751085,
+    "nonzero_variance_rate": 0.8760330578512396,
+    "positions": 121
+  },
+  {
+    "feature": "low_out_degree_reach_rate",
+    "mean_candidate_variance": 0.04632221797769161,
+    "median_candidate_variance": 0.03338767683441455,
+    "nonzero_variance_rate": 0.8760330578512396,
+    "positions": 121
+  },
+  {
+    "feature": "reachable_char_count",
+    "mean_candidate_variance": 0.04425955756025444,
+    "median_candidate_variance": 0.03108780276816609,
+    "nonzero_variance_rate": 0.5041322314049587,
+    "positions": 121
+  },
+  {
+    "feature": "reachable_edge_count",
+    "mean_candidate_variance": 0.051369305045394845,
+    "median_candidate_variance": 0.036707595767783645,
+    "nonzero_variance_rate": 0.5041322314049587,
+    "positions": 121
+  },
+  {
+    "feature": "safe_word_count",
+    "mean_candidate_variance": 9.219720619932393e-05,
+    "median_candidate_variance": 8.403302788336978e-05,
+    "nonzero_variance_rate": 0.8760330578512396,
+    "positions": 121
+  },
+  {
+    "feature": "scc_exit_edge_count",
+    "mean_candidate_variance": 0.001620715365027022,
+    "median_candidate_variance": 0.0009318507669559413,
+    "nonzero_variance_rate": 0.5206611570247934,
+    "positions": 121
+  },
+  {
+    "feature": "scc_internal_edge_count",
+    "mean_candidate_variance": 0.03668769040005317,
+    "median_candidate_variance": 0.025942267170582112,
+    "nonzero_variance_rate": 0.5206611570247934,
+    "positions": 121
+  },
+  {
+    "feature": "scc_vertex_count",
+    "mean_candidate_variance": 0.04356758324619091,
+    "median_candidate_variance": 0.03006017817666282,
+    "nonzero_variance_rate": 0.5206611570247934,
+    "positions": 121
+  }
+]

@@ -6,10 +6,18 @@ import heapq
 import math
 import random
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any, Sequence, TypeVar
 
 from game import WordGraph
+from graph_control import (
+    DEFAULT_GRAPH_CONTROL_WEIGHTS,
+    GraphControlWeights,
+    candidate_summary,
+    evaluate_applied_candidate,
+    topology_features,
+    weights_dict,
+)
 from search_common import (
     DEFAULT_EVALUATION_CONFIG,
     LOSS_SCORE,
@@ -384,6 +392,158 @@ class GreedyAgent(BaseAgent):
         return EdgeMoveDecision(
             edge[0], edge[1], time.perf_counter() - started, final_timed_out, score,
             {"evaluated_moves": len(evaluations), "move_unit": "edge_type"},
+        )
+
+
+class GraphControlAgent(BaseAgent):
+    """One-ply deterministic agent that evaluates residual multigraph structure."""
+
+    name = "graph_control"
+
+    def __init__(
+        self,
+        time_limit_sec: float = DEFAULT_TIME_LIMIT_SEC,
+        random_seed: int = 0,
+        evaluation_config: EvaluationConfig = DEFAULT_EVALUATION_CONFIG,
+        graph_weights: GraphControlWeights = DEFAULT_GRAPH_CONTROL_WEIGHTS,
+    ) -> None:
+        super().__init__(time_limit_sec, random_seed, evaluation_config)
+        self.graph_weights = graph_weights
+        self.last_candidate_details: list[dict[str, Any]] = []
+        self.last_evaluation_summary: dict[str, Any] = {}
+
+    def choose_move(self, graph: WordGraph, state: GameState) -> MoveDecision:
+        raise NotImplementedError(
+            "GraphControlAgent requires RuntimeDictionary/AIEdgeState edge mode"
+        )
+
+    def choose_edge(self, state: AIEdgeState) -> EdgeMoveDecision:
+        started = time.perf_counter()
+        deadline = started + self.time_limit_sec
+        edges = sorted(state.available_edges())
+        self.last_candidate_details = []
+        self.last_evaluation_summary = {}
+        if not edges:
+            return EdgeMoveDecision(None, None, 0.0, False, LOSS_SCORE, {
+                "move_unit": "edge_type",
+                "evaluated_moves": 0,
+                "graph_control_weights": weights_dict(self.graph_weights),
+            })
+
+        topology_cache: dict[tuple[int, int], Any] = {}
+        timed_out = False
+        for start_id, end_id in edges:
+            if time.perf_counter() >= deadline and self.last_candidate_details:
+                timed_out = True
+                break
+            edge_index = state.edge_dictionary.edge_index(start_id, end_id)
+            old_count = state.edge_counts[edge_index]
+            topology_key = (end_id, edge_index if old_count == 1 else -1)
+            candidate_started = time.perf_counter()
+            state.apply_edge(start_id, end_id)
+            try:
+                topology = topology_cache.get(topology_key)
+                if topology is None:
+                    topology = topology_features(state, end_id)
+                    topology_cache[topology_key] = topology
+                else:
+                    topology = replace(
+                        topology,
+                        reachability_time_sec=0.0,
+                        scc_time_sec=0.0,
+                        local_time_sec=0.0,
+                    )
+                detail = evaluate_applied_candidate(
+                    state,
+                    start_id,
+                    end_id,
+                    topology,
+                    self.graph_weights,
+                )
+            finally:
+                state.undo_edge()
+            detail["evaluation_time_sec"] = time.perf_counter() - candidate_started
+            self.last_candidate_details.append(detail)
+
+        if not self.last_candidate_details:
+            start_id, end_id = edges[0]
+            return EdgeMoveDecision(
+                start_id,
+                end_id,
+                time.perf_counter() - started,
+                True,
+                LOSS_SCORE,
+                {
+                    "move_unit": "edge_type",
+                    "evaluated_moves": 0,
+                    "score_complete": False,
+                    "graph_control_weights": weights_dict(self.graph_weights),
+                },
+            )
+
+        ordered = sorted(
+            self.last_candidate_details,
+            key=lambda detail: (
+                -float(detail["score"]),
+                int(detail["start_id"]),
+                int(detail["end_id"]),
+            ),
+        )
+        ranks = {
+            (int(detail["start_id"]), int(detail["end_id"])): rank
+            for rank, detail in enumerate(ordered, 1)
+        }
+        for detail in self.last_candidate_details:
+            detail["rank"] = ranks[
+                (int(detail["start_id"]), int(detail["end_id"]))
+            ]
+        selected = ordered[0]
+        summary = candidate_summary(self.last_candidate_details)
+        summary.update(
+            {
+                "evaluated_candidate_count": len(self.last_candidate_details),
+                "legal_candidate_count": len(edges),
+                "selected_start_id": selected["start_id"],
+                "selected_end_id": selected["end_id"],
+                "evaluation_time_sec": time.perf_counter() - started,
+                "scc_time_sec": sum(
+                    float(detail["scc_time_sec"])
+                    for detail in self.last_candidate_details
+                ),
+                "reachability_time_sec": sum(
+                    float(detail["reachability_time_sec"])
+                    for detail in self.last_candidate_details
+                ),
+                "local_time_sec": sum(
+                    float(detail["local_time_sec"])
+                    for detail in self.last_candidate_details
+                ),
+                "topology_cache_entries": len(topology_cache),
+                "graph_control_weights": weights_dict(self.graph_weights),
+            }
+        )
+        self.last_evaluation_summary = summary
+        elapsed = time.perf_counter() - started
+        extra = {
+            "move_unit": "edge_type",
+            "nodes_searched": 0,
+            "leaf_evaluations": 0,
+            "ordering_evaluations": len(self.last_candidate_details),
+            "evaluated_moves": len(self.last_candidate_details),
+            "root_candidate_count": len(edges),
+            "searched_root_candidate_count": len(self.last_candidate_details),
+            "timed_out": timed_out,
+            "graph_control_summary": summary,
+            "graph_control_selected_features": selected,
+            "graph_control_weights": weights_dict(self.graph_weights),
+        }
+        return EdgeMoveDecision(
+            int(selected["start_id"]),
+            int(selected["end_id"]),
+            elapsed,
+            timed_out,
+            float(selected["score"]),
+            extra,
         )
 
 
@@ -1554,6 +1714,8 @@ def build_agent(
         return RandomAgent(**common)
     if agent_name == "greedy":
         return GreedyAgent(**common)
+    if agent_name == "graph_control":
+        return GraphControlAgent(**common)
     if agent_name == "minimax":
         return MinimaxAgent(
             **search_common, depth=minimax_depth, branch_limit=branch_limit

@@ -1,0 +1,72 @@
+[
+  {
+    "candidate_count": 87439,
+    "feature": "dangerous_word_count",
+    "pearson_correlation_with_score": -0.5017625924136865
+  },
+  {
+    "candidate_count": 87439,
+    "feature": "dead_end_reach_rate",
+    "pearson_correlation_with_score": 0.6218516705142032
+  },
+  {
+    "candidate_count": 87439,
+    "feature": "depth2_char_count",
+    "pearson_correlation_with_score": -0.7698684890721699
+  },
+  {
+    "candidate_count": 87439,
+    "feature": "depth3_char_count",
+    "pearson_correlation_with_score": -0.6546281513357801
+  },
+  {
+    "candidate_count": 87439,
+    "feature": "destination_concentration",
+    "pearson_correlation_with_score": 0.7147642847797684
+  },
+  {
+    "candidate_count": 87439,
+    "feature": "destination_count",
+    "pearson_correlation_with_score": -0.7626230858877765
+  },
+  {
+    "candidate_count": 87439,
+    "feature": "legal_word_count",
+    "pearson_correlation_with_score": -0.6278803210043995
+  },
+  {
+    "candidate_count": 87439,
+    "feature": "low_out_degree_reach_rate",
+    "pearson_correlation_with_score": 0.6445402414690649
+  },
+  {
+    "candidate_count": 87439,
+    "feature": "reachable_char_count",
+    "pearson_correlation_with_score": -0.6380641239379686
+  },
+  {
+    "candidate_count": 87439,
+    "feature": "reachable_edge_count",
+    "pearson_correlation_with_score": -0.6429003145630391
+  },
+  {
+    "candidate_count": 87439,
+    "feature": "safe_word_count",
+    "pearson_correlation_with_score": -0.6446698261985294
+  },
+  {
+    "candidate_count": 87439,
+    "feature": "scc_exit_edge_count",
+    "pearson_correlation_with_score": -0.45442113183042204
+  },
+  {
+    "candidate_count": 87439,
+    "feature": "scc_internal_edge_count",
+    "pearson_correlation_with_score": -0.5656054085047678
+  },
+  {
+    "candidate_count": 87439,
+    "feature": "scc_vertex_count",
+    "pearson_correlation_with_score": -0.5658029100066778
+  }
+]

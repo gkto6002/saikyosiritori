@@ -1,0 +1,98 @@
+[
+  {
+    "agent": "alpha_beta",
+    "games": 83,
+    "mean_turns": 38.0,
+    "outcome": "win"
+  },
+  {
+    "agent": "alpha_beta",
+    "games": 7,
+    "mean_turns": 68.85714285714286,
+    "outcome": "loss"
+  },
+  {
+    "agent": "beam_negamax",
+    "games": 76,
+    "mean_turns": 45.578947368421055,
+    "outcome": "win"
+  },
+  {
+    "agent": "beam_negamax",
+    "games": 14,
+    "mean_turns": 97.35714285714286,
+    "outcome": "loss"
+  },
+  {
+    "agent": "graph_control",
+    "games": 53,
+    "mean_turns": 21.150943396226417,
+    "outcome": "win"
+  },
+  {
+    "agent": "graph_control",
+    "games": 37,
+    "mean_turns": 23.64864864864865,
+    "outcome": "loss"
+  },
+  {
+    "agent": "greedy",
+    "games": 54,
+    "mean_turns": 21.40740740740741,
+    "outcome": "win"
+  },
+  {
+    "agent": "greedy",
+    "games": 36,
+    "mean_turns": 24.25,
+    "outcome": "loss"
+  },
+  {
+    "agent": "minimax",
+    "games": 82,
+    "mean_turns": 34.0609756097561,
+    "outcome": "win"
+  },
+  {
+    "agent": "minimax",
+    "games": 8,
+    "mean_turns": 103.75,
+    "outcome": "loss"
+  },
+  {
+    "agent": "monte_carlo",
+    "games": 44,
+    "mean_turns": 113.56818181818181,
+    "outcome": "win"
+  },
+  {
+    "agent": "monte_carlo",
+    "games": 166,
+    "mean_turns": 35.57831325301205,
+    "outcome": "loss"
+  },
+  {
+    "agent": "pvs",
+    "games": 83,
+    "mean_turns": 38.81927710843374,
+    "outcome": "win"
+  },
+  {
+    "agent": "pvs",
+    "games": 7,
+    "mean_turns": 68.85714285714286,
+    "outcome": "loss"
+  },
+  {
+    "agent": "random",
+    "games": 5,
+    "mean_turns": 174.4,
+    "outcome": "win"
+  },
+  {
+    "agent": "random",
+    "games": 205,
+    "mean_turns": 48.62439024390244,
+    "outcome": "loss"
+  }
+]

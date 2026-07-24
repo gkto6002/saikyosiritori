@@ -1,0 +1,74 @@
+[
+  {
+    "agent": "alpha_beta",
+    "max_time_sec": 0.568913,
+    "mean_time_sec": 0.11919846247240619,
+    "median_time_sec": 0.10315350000000001,
+    "move_count": 1812,
+    "p95_time_sec": 0.273025,
+    "timeout_count": 0
+  },
+  {
+    "agent": "beam_negamax",
+    "max_time_sec": 0.23098,
+    "mean_time_sec": 0.09162975747508305,
+    "median_time_sec": 0.0895605,
+    "move_count": 2408,
+    "p95_time_sec": 0.157565,
+    "timeout_count": 0
+  },
+  {
+    "agent": "graph_control",
+    "max_time_sec": 1.022583,
+    "mean_time_sec": 0.05754283333333333,
+    "median_time_sec": 0.0158045,
+    "move_count": 996,
+    "p95_time_sec": 0.038297,
+    "timeout_count": 24
+  },
+  {
+    "agent": "greedy",
+    "max_time_sec": 0.021308,
+    "mean_time_sec": 0.0004445665024630542,
+    "median_time_sec": 0.000104,
+    "move_count": 1015,
+    "p95_time_sec": 0.000332,
+    "timeout_count": 0
+  },
+  {
+    "agent": "minimax",
+    "max_time_sec": 0.088295,
+    "mean_time_sec": 0.04444898448753463,
+    "median_time_sec": 0.043461,
+    "move_count": 1805,
+    "p95_time_sec": 0.065879,
+    "timeout_count": 0
+  },
+  {
+    "agent": "monte_carlo",
+    "max_time_sec": 0.988525,
+    "mean_time_sec": 0.24724456373626374,
+    "median_time_sec": 0.248315,
+    "move_count": 5460,
+    "p95_time_sec": 0.538476,
+    "timeout_count": 0
+  },
+  {
+    "agent": "pvs",
+    "max_time_sec": 0.597445,
+    "mean_time_sec": 0.12477532249322493,
+    "median_time_sec": 0.099731,
+    "move_count": 1845,
+    "p95_time_sec": 0.312332,
+    "timeout_count": 0
+  },
+  {
+    "agent": "random",
+    "max_time_sec": 0.008267,
+    "mean_time_sec": 2.7253585877160722e-05,
+    "median_time_sec": 1.1e-05,
+    "move_count": 5438,
+    "p95_time_sec": 2.5e-05,
+    "timeout_count": 0
+  }
+]

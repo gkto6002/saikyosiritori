@@ -1,0 +1,15 @@
+feature,candidate_count,pearson_correlation_with_score
+dangerous_word_count,6062,-0.4332341541095151
+dead_end_reach_rate,6062,0.24369989909294829
+depth2_char_count,6062,-0.7988184893241372
+depth3_char_count,6062,-0.7559575589398938
+destination_concentration,6062,0.7851034293679737
+destination_count,6062,-0.7542004670818926
+legal_word_count,6062,-0.6286405439956746
+low_out_degree_reach_rate,6062,0.40516538845031086
+reachable_char_count,6062,-0.20939509044815194
+reachable_edge_count,6062,-0.21586933226580263
+safe_word_count,6062,-0.6618867327106617
+scc_exit_edge_count,6062,-0.529010822289034
+scc_internal_edge_count,6062,-0.5773792419792103
+scc_vertex_count,6062,-0.5776255050147348
