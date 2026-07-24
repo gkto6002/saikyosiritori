@@ -1,0 +1,8 @@
+runtime,dict_size,seed,total_words,safe_words,edge_types,safe_edge_types,start_char_count,safe_start_char_count,start_word_hhi,mean_outgoing_words_active,max_outgoing_words,dead_end_char_count,strong_component_count,largest_strong_component,cycle_char_count,mean_match_turns,danger_turn_rate
+/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D10000_L2-12_seed0.runtime.json,10000,0,10000,8475,2248,2183,67,67,0.02435372,149.2537313432836,686,1,3,66,66,64.25,0.057068741893644616
+/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D1000_L2-12_seed0.runtime.json,1000,0,1000,845,640,591,67,67,0.024644,14.925373134328359,71,1,8,61,61,20.8,0.31490384615384615
+/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D20000_L2-12_seed0.runtime.json,20000,0,20000,16954,2895,2829,67,67,0.02468621,298.5074626865672,1388,1,3,66,66,144.58333333333334,0.026512968299711816
+/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D20000_L2-12_seed1.runtime.json,20000,1,20000,16966,2897,2831,67,67,0.0247631,298.5074626865672,1405,1,3,66,66,151.41666666666666,0.02201430930104568
+/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D20000_L2-12_seed2.runtime.json,20000,2,20000,16937,2892,2826,67,67,0.024787125,298.5074626865672,1413,1,3,66,66,150.25,0.019966722129783693
+/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D3000_L2-12_seed0.runtime.json,3000,0,3000,2550,1278,1214,67,67,0.024629333333333333,44.776119402985074,213,1,5,64,64,40.8,0.11397058823529412
+/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D5000_L2-12_seed0.runtime.json,5000,0,5000,4256,1686,1622,67,67,0.02448832,74.6268656716418,351,1,3,66,66,42.9,0.11421911421911422

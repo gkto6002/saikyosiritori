@@ -1,0 +1,28 @@
+{
+  "available_final_fields": [
+    "dict_size",
+    "first_agent",
+    "first_avg_time_sec",
+    "first_timeout_count",
+    "loss_reason",
+    "match_elapsed_time_sec",
+    "runtime",
+    "second_agent",
+    "second_avg_time_sec",
+    "second_timeout_count",
+    "seed",
+    "turn_count",
+    "winner"
+  ],
+  "deterministic_repetitions": [],
+  "duplicate_keys": [],
+  "match_count": 108,
+  "missing_required_fields": [],
+  "unavailable_without_trace_rerun": [
+    "per-turn nodes and evaluation fields for the final 108 matches",
+    "per-turn candidate ordering and alternative candidate scores",
+    "counterfactual continuations"
+  ],
+  "unique_match_count": 108,
+  "valid": true
+}

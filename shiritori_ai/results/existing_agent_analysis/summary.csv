@@ -1,0 +1,7 @@
+metric,value
+baseline_match_count,108
+trace_match_count,108
+trace_turn_count,8216
+beam_position_count,1582
+beam_dropped_reference_count,78
+counterfactual_outcome_changes,5

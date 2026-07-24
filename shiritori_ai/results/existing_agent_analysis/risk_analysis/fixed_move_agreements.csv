@@ -1,0 +1,13 @@
+risk_level,left_agent,right_agent,pairs,move_agreement_rate
+normal,alpha_beta,pvs,45,1.0
+normal,alpha_beta,beam_negamax,45,1.0
+normal,pvs,beam_negamax,45,1.0
+caution,alpha_beta,pvs,15,1.0
+caution,alpha_beta,beam_negamax,15,0.6666666666666666
+caution,pvs,beam_negamax,15,0.6666666666666666
+danger,alpha_beta,pvs,15,1.0
+danger,alpha_beta,beam_negamax,15,0.6666666666666666
+danger,pvs,beam_negamax,15,0.6666666666666666
+near_death,alpha_beta,pvs,15,1.0
+near_death,alpha_beta,beam_negamax,15,1.0
+near_death,pvs,beam_negamax,15,1.0

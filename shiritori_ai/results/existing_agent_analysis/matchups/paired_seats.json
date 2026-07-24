@@ -1,0 +1,488 @@
+[
+  {
+    "dict_size": 10000,
+    "left_agent": "alpha_beta",
+    "left_result": "two_wins",
+    "left_wins": 2,
+    "right_agent": "beam_negamax",
+    "right_wins": 0,
+    "seed": 0
+  },
+  {
+    "dict_size": 10000,
+    "left_agent": "alpha_beta",
+    "left_result": "two_wins",
+    "left_wins": 2,
+    "right_agent": "greedy",
+    "right_wins": 0,
+    "seed": 0
+  },
+  {
+    "dict_size": 10000,
+    "left_agent": "alpha_beta",
+    "left_result": "split",
+    "left_wins": 1,
+    "right_agent": "pvs",
+    "right_wins": 1,
+    "seed": 0
+  },
+  {
+    "dict_size": 10000,
+    "left_agent": "beam_negamax",
+    "left_result": "two_wins",
+    "left_wins": 2,
+    "right_agent": "greedy",
+    "right_wins": 0,
+    "seed": 0
+  },
+  {
+    "dict_size": 10000,
+    "left_agent": "beam_negamax",
+    "left_result": "two_losses",
+    "left_wins": 0,
+    "right_agent": "pvs",
+    "right_wins": 2,
+    "seed": 0
+  },
+  {
+    "dict_size": 10000,
+    "left_agent": "greedy",
+    "left_result": "two_losses",
+    "left_wins": 0,
+    "right_agent": "pvs",
+    "right_wins": 2,
+    "seed": 0
+  },
+  {
+    "dict_size": 1000,
+    "left_agent": "alpha_beta",
+    "left_result": "split",
+    "left_wins": 1,
+    "right_agent": "beam_negamax",
+    "right_wins": 1,
+    "seed": 0
+  },
+  {
+    "dict_size": 1000,
+    "left_agent": "alpha_beta",
+    "left_result": "two_wins",
+    "left_wins": 2,
+    "right_agent": "greedy",
+    "right_wins": 0,
+    "seed": 0
+  },
+  {
+    "dict_size": 1000,
+    "left_agent": "alpha_beta",
+    "left_result": "split",
+    "left_wins": 1,
+    "right_agent": "minimax",
+    "right_wins": 1,
+    "seed": 0
+  },
+  {
+    "dict_size": 1000,
+    "left_agent": "alpha_beta",
+    "left_result": "split",
+    "left_wins": 1,
+    "right_agent": "pvs",
+    "right_wins": 1,
+    "seed": 0
+  },
+  {
+    "dict_size": 1000,
+    "left_agent": "beam_negamax",
+    "left_result": "two_wins",
+    "left_wins": 2,
+    "right_agent": "greedy",
+    "right_wins": 0,
+    "seed": 0
+  },
+  {
+    "dict_size": 1000,
+    "left_agent": "beam_negamax",
+    "left_result": "split",
+    "left_wins": 1,
+    "right_agent": "minimax",
+    "right_wins": 1,
+    "seed": 0
+  },
+  {
+    "dict_size": 1000,
+    "left_agent": "beam_negamax",
+    "left_result": "split",
+    "left_wins": 1,
+    "right_agent": "pvs",
+    "right_wins": 1,
+    "seed": 0
+  },
+  {
+    "dict_size": 1000,
+    "left_agent": "greedy",
+    "left_result": "two_losses",
+    "left_wins": 0,
+    "right_agent": "minimax",
+    "right_wins": 2,
+    "seed": 0
+  },
+  {
+    "dict_size": 1000,
+    "left_agent": "greedy",
+    "left_result": "two_losses",
+    "left_wins": 0,
+    "right_agent": "pvs",
+    "right_wins": 2,
+    "seed": 0
+  },
+  {
+    "dict_size": 1000,
+    "left_agent": "minimax",
+    "left_result": "split",
+    "left_wins": 1,
+    "right_agent": "pvs",
+    "right_wins": 1,
+    "seed": 0
+  },
+  {
+    "dict_size": 20000,
+    "left_agent": "alpha_beta",
+    "left_result": "two_wins",
+    "left_wins": 2,
+    "right_agent": "beam_negamax",
+    "right_wins": 0,
+    "seed": 0
+  },
+  {
+    "dict_size": 20000,
+    "left_agent": "alpha_beta",
+    "left_result": "two_wins",
+    "left_wins": 2,
+    "right_agent": "greedy",
+    "right_wins": 0,
+    "seed": 0
+  },
+  {
+    "dict_size": 20000,
+    "left_agent": "alpha_beta",
+    "left_result": "split",
+    "left_wins": 1,
+    "right_agent": "pvs",
+    "right_wins": 1,
+    "seed": 0
+  },
+  {
+    "dict_size": 20000,
+    "left_agent": "beam_negamax",
+    "left_result": "two_wins",
+    "left_wins": 2,
+    "right_agent": "greedy",
+    "right_wins": 0,
+    "seed": 0
+  },
+  {
+    "dict_size": 20000,
+    "left_agent": "beam_negamax",
+    "left_result": "two_losses",
+    "left_wins": 0,
+    "right_agent": "pvs",
+    "right_wins": 2,
+    "seed": 0
+  },
+  {
+    "dict_size": 20000,
+    "left_agent": "greedy",
+    "left_result": "two_losses",
+    "left_wins": 0,
+    "right_agent": "pvs",
+    "right_wins": 2,
+    "seed": 0
+  },
+  {
+    "dict_size": 20000,
+    "left_agent": "alpha_beta",
+    "left_result": "two_wins",
+    "left_wins": 2,
+    "right_agent": "beam_negamax",
+    "right_wins": 0,
+    "seed": 1
+  },
+  {
+    "dict_size": 20000,
+    "left_agent": "alpha_beta",
+    "left_result": "two_wins",
+    "left_wins": 2,
+    "right_agent": "greedy",
+    "right_wins": 0,
+    "seed": 1
+  },
+  {
+    "dict_size": 20000,
+    "left_agent": "alpha_beta",
+    "left_result": "split",
+    "left_wins": 1,
+    "right_agent": "pvs",
+    "right_wins": 1,
+    "seed": 1
+  },
+  {
+    "dict_size": 20000,
+    "left_agent": "beam_negamax",
+    "left_result": "two_wins",
+    "left_wins": 2,
+    "right_agent": "greedy",
+    "right_wins": 0,
+    "seed": 1
+  },
+  {
+    "dict_size": 20000,
+    "left_agent": "beam_negamax",
+    "left_result": "two_losses",
+    "left_wins": 0,
+    "right_agent": "pvs",
+    "right_wins": 2,
+    "seed": 1
+  },
+  {
+    "dict_size": 20000,
+    "left_agent": "greedy",
+    "left_result": "two_losses",
+    "left_wins": 0,
+    "right_agent": "pvs",
+    "right_wins": 2,
+    "seed": 1
+  },
+  {
+    "dict_size": 20000,
+    "left_agent": "alpha_beta",
+    "left_result": "two_wins",
+    "left_wins": 2,
+    "right_agent": "beam_negamax",
+    "right_wins": 0,
+    "seed": 2
+  },
+  {
+    "dict_size": 20000,
+    "left_agent": "alpha_beta",
+    "left_result": "two_wins",
+    "left_wins": 2,
+    "right_agent": "greedy",
+    "right_wins": 0,
+    "seed": 2
+  },
+  {
+    "dict_size": 20000,
+    "left_agent": "alpha_beta",
+    "left_result": "split",
+    "left_wins": 1,
+    "right_agent": "pvs",
+    "right_wins": 1,
+    "seed": 2
+  },
+  {
+    "dict_size": 20000,
+    "left_agent": "beam_negamax",
+    "left_result": "two_wins",
+    "left_wins": 2,
+    "right_agent": "greedy",
+    "right_wins": 0,
+    "seed": 2
+  },
+  {
+    "dict_size": 20000,
+    "left_agent": "beam_negamax",
+    "left_result": "two_losses",
+    "left_wins": 0,
+    "right_agent": "pvs",
+    "right_wins": 2,
+    "seed": 2
+  },
+  {
+    "dict_size": 20000,
+    "left_agent": "greedy",
+    "left_result": "two_losses",
+    "left_wins": 0,
+    "right_agent": "pvs",
+    "right_wins": 2,
+    "seed": 2
+  },
+  {
+    "dict_size": 3000,
+    "left_agent": "alpha_beta",
+    "left_result": "split",
+    "left_wins": 1,
+    "right_agent": "beam_negamax",
+    "right_wins": 1,
+    "seed": 0
+  },
+  {
+    "dict_size": 3000,
+    "left_agent": "alpha_beta",
+    "left_result": "two_wins",
+    "left_wins": 2,
+    "right_agent": "greedy",
+    "right_wins": 0,
+    "seed": 0
+  },
+  {
+    "dict_size": 3000,
+    "left_agent": "alpha_beta",
+    "left_result": "two_losses",
+    "left_wins": 0,
+    "right_agent": "minimax",
+    "right_wins": 2,
+    "seed": 0
+  },
+  {
+    "dict_size": 3000,
+    "left_agent": "alpha_beta",
+    "left_result": "split",
+    "left_wins": 1,
+    "right_agent": "pvs",
+    "right_wins": 1,
+    "seed": 0
+  },
+  {
+    "dict_size": 3000,
+    "left_agent": "beam_negamax",
+    "left_result": "two_wins",
+    "left_wins": 2,
+    "right_agent": "greedy",
+    "right_wins": 0,
+    "seed": 0
+  },
+  {
+    "dict_size": 3000,
+    "left_agent": "beam_negamax",
+    "left_result": "two_wins",
+    "left_wins": 2,
+    "right_agent": "minimax",
+    "right_wins": 0,
+    "seed": 0
+  },
+  {
+    "dict_size": 3000,
+    "left_agent": "beam_negamax",
+    "left_result": "split",
+    "left_wins": 1,
+    "right_agent": "pvs",
+    "right_wins": 1,
+    "seed": 0
+  },
+  {
+    "dict_size": 3000,
+    "left_agent": "greedy",
+    "left_result": "two_losses",
+    "left_wins": 0,
+    "right_agent": "minimax",
+    "right_wins": 2,
+    "seed": 0
+  },
+  {
+    "dict_size": 3000,
+    "left_agent": "greedy",
+    "left_result": "two_losses",
+    "left_wins": 0,
+    "right_agent": "pvs",
+    "right_wins": 2,
+    "seed": 0
+  },
+  {
+    "dict_size": 3000,
+    "left_agent": "minimax",
+    "left_result": "two_wins",
+    "left_wins": 2,
+    "right_agent": "pvs",
+    "right_wins": 0,
+    "seed": 0
+  },
+  {
+    "dict_size": 5000,
+    "left_agent": "alpha_beta",
+    "left_result": "two_wins",
+    "left_wins": 2,
+    "right_agent": "beam_negamax",
+    "right_wins": 0,
+    "seed": 0
+  },
+  {
+    "dict_size": 5000,
+    "left_agent": "alpha_beta",
+    "left_result": "two_wins",
+    "left_wins": 2,
+    "right_agent": "greedy",
+    "right_wins": 0,
+    "seed": 0
+  },
+  {
+    "dict_size": 5000,
+    "left_agent": "alpha_beta",
+    "left_result": "split",
+    "left_wins": 1,
+    "right_agent": "minimax",
+    "right_wins": 1,
+    "seed": 0
+  },
+  {
+    "dict_size": 5000,
+    "left_agent": "alpha_beta",
+    "left_result": "split",
+    "left_wins": 1,
+    "right_agent": "pvs",
+    "right_wins": 1,
+    "seed": 0
+  },
+  {
+    "dict_size": 5000,
+    "left_agent": "beam_negamax",
+    "left_result": "two_wins",
+    "left_wins": 2,
+    "right_agent": "greedy",
+    "right_wins": 0,
+    "seed": 0
+  },
+  {
+    "dict_size": 5000,
+    "left_agent": "beam_negamax",
+    "left_result": "split",
+    "left_wins": 1,
+    "right_agent": "minimax",
+    "right_wins": 1,
+    "seed": 0
+  },
+  {
+    "dict_size": 5000,
+    "left_agent": "beam_negamax",
+    "left_result": "two_losses",
+    "left_wins": 0,
+    "right_agent": "pvs",
+    "right_wins": 2,
+    "seed": 0
+  },
+  {
+    "dict_size": 5000,
+    "left_agent": "greedy",
+    "left_result": "two_losses",
+    "left_wins": 0,
+    "right_agent": "minimax",
+    "right_wins": 2,
+    "seed": 0
+  },
+  {
+    "dict_size": 5000,
+    "left_agent": "greedy",
+    "left_result": "two_losses",
+    "left_wins": 0,
+    "right_agent": "pvs",
+    "right_wins": 2,
+    "seed": 0
+  },
+  {
+    "dict_size": 5000,
+    "left_agent": "minimax",
+    "left_result": "split",
+    "left_wins": 1,
+    "right_agent": "pvs",
+    "right_wins": 1,
+    "seed": 0
+  }
+]

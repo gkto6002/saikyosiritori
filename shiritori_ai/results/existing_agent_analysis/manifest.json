@@ -1,0 +1,73 @@
+{
+  "commit_id": "a645d77e1a29f88c8b33b466b1dd6e0b8d08c645",
+  "input_hashes": {
+    "final_matches": "9303c09a0272d404fb134c894fa63dfc72a41cf80bad253b2d995099b46f7081",
+    "selected_settings": "db9ff73a466c78108e1de77419cc4776c364d0c2ec03fd766d5b54f947c3ca9d"
+  },
+  "mode": "full",
+  "selected_settings": {
+    "alpha_beta": {
+      "agent": "alpha_beta",
+      "branch_limit": 8,
+      "config_id": "alpha_beta_d5_b8",
+      "depth": 5,
+      "mean_completed_root_moves": 6.666666666666667,
+      "mean_effective_depth": 5.0,
+      "mean_nodes": 687.0833333333334,
+      "mean_time_sec": 0.07193244588755382,
+      "median_time_sec": 0.07822243752889335,
+      "p95_time_sec": 0.14396975003182888,
+      "run_count": 60,
+      "stable_position_rate": 1.0,
+      "timeout_rate": 0.0
+    },
+    "beam_negamax": {
+      "agent": "beam_negamax",
+      "beam_widths": [
+        8,
+        6,
+        4,
+        2
+      ],
+      "config_id": "beam_d5_w8-6-4-2",
+      "depth": 5,
+      "mean_completed_root_moves": 6.666666666666667,
+      "mean_effective_depth": 5.0,
+      "mean_nodes": 1048.9166666666667,
+      "mean_time_sec": 0.09159964999028793,
+      "median_time_sec": 0.09612475044559687,
+      "p95_time_sec": 0.1870784170459956,
+      "run_count": 60,
+      "stable_position_rate": 1.0,
+      "timeout_rate": 0.0
+    },
+    "pvs": {
+      "agent": "pvs",
+      "branch_limit": 8,
+      "config_id": "pvs_d5_b8",
+      "depth": 5,
+      "mean_completed_root_moves": 6.666666666666667,
+      "mean_effective_depth": 5.0,
+      "mean_nodes": 737.0833333333334,
+      "mean_time_sec": 0.07356745203142054,
+      "median_time_sec": 0.0808441040571779,
+      "p95_time_sec": 0.1542465410893783,
+      "run_count": 60,
+      "stable_position_rate": 1.0,
+      "timeout_rate": 0.0
+    }
+  },
+  "stages": [
+    "validate",
+    "traces",
+    "matchups",
+    "search-efficiency",
+    "beam-analysis",
+    "risk-analysis",
+    "counterfactual",
+    "representative-matches",
+    "dictionary-analysis",
+    "plots",
+    "report"
+  ]
+}

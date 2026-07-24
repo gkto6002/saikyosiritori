@@ -206,6 +206,18 @@ python src/experiments_approx.py \
 
 本実験のレポートは`docs/agent_improvement/existing_agent_improvement_report.md`、機械可読な集計は`results/existing_agent_improvement/analysis`、図は`results/existing_agent_improvement/figures`にあります。
 
+### 既存AIの詳細特徴分析
+
+既存108局を重複させず再利用し、必要な全手ログ、主要AI直接対決、探索効率、Beam参照手保持、反実仮想、危険度、辞書構造、代表対局を分析します。`--quick`は配線確認、`--full`は108局のトレースと全Beam局面を対象とします。
+
+```bash
+.venv/bin/python src/run_existing_agent_analysis.py --quick
+.venv/bin/python src/run_existing_agent_analysis.py --full
+.venv/bin/python src/run_existing_agent_analysis.py --full --stage beam-analysis
+```
+
+詳細レポートは`docs/agent_analysis/existing_agent_detailed_analysis.md`、HybridAgentの設計案は`docs/agent_analysis/hybrid_agent_design_proposal.md`、JSON・CSV・図・代表対局は`results/existing_agent_analysis`に保存されます。この分析は既存AIの探索処理と評価関数を変更しません。
+
 ## 図の作成
 
 ```bash

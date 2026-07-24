@@ -1,0 +1,5298 @@
+[
+  {
+    "beam_edge": "る→る",
+    "beam_end_id": 63,
+    "beam_ordering_score": -30.0,
+    "beam_search_score": 533.144,
+    "beam_start_id": 63,
+    "beam_won": false,
+    "candidate_count": 640,
+    "classification": "same_outcome_longer_survival",
+    "counterfactual_edge_history": [
+      [
+        42,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        63
+      ],
+      [
+        63,
+        55
+      ],
+      [
+        55,
+        66
+      ],
+      [
+        66,
+        9
+      ],
+      [
+        9,
+        10
+      ],
+      [
+        10,
+        5
+      ],
+      [
+        5,
+        60
+      ],
+      [
+        60,
+        41
+      ],
+      [
+        41,
+        28
+      ],
+      [
+        28,
+        29
+      ],
+      [
+        29,
+        2
+      ],
+      [
+        2,
+        9
+      ],
+      [
+        9,
+        64
+      ],
+      [
+        64,
+        55
+      ],
+      [
+        55,
+        2
+      ],
+      [
+        2,
+        55
+      ],
+      [
+        55,
+        58
+      ],
+      [
+        58,
+        55
+      ],
+      [
+        55,
+        28
+      ],
+      [
+        28,
+        9
+      ],
+      [
+        9,
+        5
+      ],
+      [
+        5,
+        28
+      ],
+      [
+        28,
+        58
+      ],
+      [
+        58,
+        10
+      ],
+      [
+        10,
+        2
+      ],
+      [
+        2,
+        37
+      ],
+      [
+        37,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        9
+      ],
+      [
+        9,
+        61
+      ],
+      [
+        61,
+        63
+      ]
+    ],
+    "counterfactual_match_turns": 34,
+    "counterfactual_winner_agent": "alpha_beta",
+    "dict_size": 1000,
+    "match_id": "D1000_seed0_beam_negamax_vs_alpha_beta",
+    "match_winner": "alpha_beta",
+    "original_match_turns": 26,
+    "original_winner_agent": "alpha_beta",
+    "phase": "early",
+    "reference_edge": "よ→び",
+    "reference_end_id": 42,
+    "reference_ordering_score": -49.0,
+    "reference_rank": 10,
+    "reference_search_score": 237.26,
+    "reference_start_id": 60,
+    "required_char": "ANY",
+    "risk_level": "normal",
+    "same_edge": false,
+    "seed": 0,
+    "top_12": true,
+    "top_16": true,
+    "top_2": false,
+    "top_4": false,
+    "top_6": false,
+    "top_8": false,
+    "turn": 1,
+    "widened_edge": "る→る",
+    "widened_selects_reference": false
+  },
+  {
+    "beam_edge": "る→る",
+    "beam_end_id": 63,
+    "beam_ordering_score": -30.0,
+    "beam_search_score": 533.144,
+    "beam_start_id": 63,
+    "beam_won": false,
+    "candidate_count": 640,
+    "classification": "same_outcome_longer_survival",
+    "counterfactual_edge_history": [
+      [
+        42,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        63
+      ],
+      [
+        63,
+        55
+      ],
+      [
+        55,
+        66
+      ],
+      [
+        66,
+        9
+      ],
+      [
+        9,
+        10
+      ],
+      [
+        10,
+        5
+      ],
+      [
+        5,
+        60
+      ],
+      [
+        60,
+        41
+      ],
+      [
+        41,
+        28
+      ],
+      [
+        28,
+        29
+      ],
+      [
+        29,
+        2
+      ],
+      [
+        2,
+        9
+      ],
+      [
+        9,
+        64
+      ],
+      [
+        64,
+        55
+      ],
+      [
+        55,
+        2
+      ],
+      [
+        2,
+        55
+      ],
+      [
+        55,
+        58
+      ],
+      [
+        58,
+        55
+      ],
+      [
+        55,
+        28
+      ],
+      [
+        28,
+        9
+      ],
+      [
+        9,
+        5
+      ],
+      [
+        5,
+        28
+      ],
+      [
+        28,
+        58
+      ],
+      [
+        58,
+        10
+      ],
+      [
+        10,
+        2
+      ],
+      [
+        2,
+        37
+      ],
+      [
+        37,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        9
+      ],
+      [
+        9,
+        61
+      ],
+      [
+        61,
+        63
+      ]
+    ],
+    "counterfactual_match_turns": 34,
+    "counterfactual_winner_agent": "pvs",
+    "dict_size": 1000,
+    "match_id": "D1000_seed0_beam_negamax_vs_pvs",
+    "match_winner": "pvs",
+    "original_match_turns": 26,
+    "original_winner_agent": "pvs",
+    "phase": "early",
+    "reference_edge": "よ→び",
+    "reference_end_id": 42,
+    "reference_ordering_score": -49.0,
+    "reference_rank": 10,
+    "reference_search_score": 237.26,
+    "reference_start_id": 60,
+    "required_char": "ANY",
+    "risk_level": "normal",
+    "same_edge": false,
+    "seed": 0,
+    "top_12": true,
+    "top_16": true,
+    "top_2": false,
+    "top_4": false,
+    "top_6": false,
+    "top_8": false,
+    "turn": 1,
+    "widened_edge": "る→る",
+    "widened_selects_reference": false
+  },
+  {
+    "beam_edge": "や→わ",
+    "beam_end_id": 66,
+    "beam_ordering_score": -468.0,
+    "beam_search_score": 454.8034482758621,
+    "beam_start_id": 58,
+    "beam_won": false,
+    "candidate_count": 18,
+    "classification": "outcome_improved",
+    "counterfactual_edge_history": [
+      [
+        2,
+        28
+      ],
+      [
+        28,
+        2
+      ],
+      [
+        2,
+        11
+      ],
+      [
+        11,
+        2
+      ],
+      [
+        2,
+        37
+      ],
+      [
+        37,
+        63
+      ],
+      [
+        63,
+        59
+      ],
+      [
+        59,
+        63
+      ]
+    ],
+    "counterfactual_match_turns": 33,
+    "counterfactual_winner_agent": "beam_negamax",
+    "dict_size": 3000,
+    "match_id": "D3000_seed0_beam_negamax_vs_alpha_beta",
+    "match_winner": "alpha_beta",
+    "original_match_turns": 38,
+    "original_winner_agent": "alpha_beta",
+    "phase": "middle",
+    "reference_edge": "や→う",
+    "reference_end_id": 2,
+    "reference_ordering_score": -898.5,
+    "reference_rank": 10,
+    "reference_search_score": 448.5,
+    "reference_start_id": 58,
+    "required_char": "や",
+    "risk_level": "normal",
+    "same_edge": false,
+    "seed": 0,
+    "top_12": true,
+    "top_16": true,
+    "top_2": false,
+    "top_4": false,
+    "top_6": false,
+    "top_8": false,
+    "turn": 25,
+    "widened_edge": "や→う",
+    "widened_selects_reference": true
+  },
+  {
+    "beam_edge": "や→わ",
+    "beam_end_id": 66,
+    "beam_ordering_score": -468.0,
+    "beam_search_score": 454.8034482758621,
+    "beam_start_id": 58,
+    "beam_won": false,
+    "candidate_count": 18,
+    "classification": "outcome_improved",
+    "counterfactual_edge_history": [
+      [
+        2,
+        28
+      ],
+      [
+        28,
+        2
+      ],
+      [
+        2,
+        11
+      ],
+      [
+        11,
+        2
+      ],
+      [
+        2,
+        37
+      ],
+      [
+        37,
+        63
+      ],
+      [
+        63,
+        59
+      ],
+      [
+        59,
+        63
+      ]
+    ],
+    "counterfactual_match_turns": 33,
+    "counterfactual_winner_agent": "beam_negamax",
+    "dict_size": 3000,
+    "match_id": "D3000_seed0_beam_negamax_vs_pvs",
+    "match_winner": "pvs",
+    "original_match_turns": 38,
+    "original_winner_agent": "pvs",
+    "phase": "middle",
+    "reference_edge": "や→う",
+    "reference_end_id": 2,
+    "reference_ordering_score": -898.5,
+    "reference_rank": 10,
+    "reference_search_score": 448.5,
+    "reference_start_id": 58,
+    "required_char": "や",
+    "risk_level": "normal",
+    "same_edge": false,
+    "seed": 0,
+    "top_12": true,
+    "top_16": true,
+    "top_2": false,
+    "top_4": false,
+    "top_6": false,
+    "top_8": false,
+    "turn": 25,
+    "widened_edge": "や→う",
+    "widened_selects_reference": true
+  },
+  {
+    "beam_edge": "つ→ぜ",
+    "beam_end_id": 22,
+    "beam_ordering_score": -1162.0,
+    "beam_search_score": 1255.5,
+    "beam_start_id": 28,
+    "beam_won": false,
+    "candidate_count": 35,
+    "classification": "same_outcome_longer_survival",
+    "counterfactual_edge_history": [
+      [
+        56,
+        28
+      ],
+      [
+        28,
+        22
+      ],
+      [
+        22,
+        61
+      ],
+      [
+        61,
+        56
+      ],
+      [
+        56,
+        63
+      ],
+      [
+        63,
+        59
+      ],
+      [
+        59,
+        20
+      ],
+      [
+        20,
+        28
+      ],
+      [
+        28,
+        8
+      ],
+      [
+        8,
+        10
+      ],
+      [
+        10,
+        63
+      ],
+      [
+        63,
+        33
+      ],
+      [
+        33,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        55
+      ],
+      [
+        55,
+        8
+      ],
+      [
+        8,
+        58
+      ],
+      [
+        58,
+        16
+      ],
+      [
+        16,
+        2
+      ],
+      [
+        2,
+        55
+      ],
+      [
+        55,
+        58
+      ],
+      [
+        58,
+        55
+      ],
+      [
+        55,
+        58
+      ],
+      [
+        58,
+        8
+      ],
+      [
+        8,
+        8
+      ],
+      [
+        8,
+        55
+      ],
+      [
+        55,
+        28
+      ],
+      [
+        28,
+        28
+      ],
+      [
+        28,
+        58
+      ],
+      [
+        58,
+        28
+      ],
+      [
+        28,
+        39
+      ],
+      [
+        39,
+        63
+      ],
+      [
+        63,
+        31
+      ],
+      [
+        31,
+        63
+      ],
+      [
+        63,
+        31
+      ],
+      [
+        31,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        0
+      ],
+      [
+        0,
+        63
+      ],
+      [
+        63,
+        7
+      ],
+      [
+        7,
+        63
+      ],
+      [
+        63,
+        67
+      ]
+    ],
+    "counterfactual_match_turns": 114,
+    "counterfactual_winner_agent": "alpha_beta",
+    "dict_size": 10000,
+    "match_id": "D10000_seed0_alpha_beta_vs_beam_negamax",
+    "match_winner": "alpha_beta",
+    "original_match_turns": 112,
+    "original_winner_agent": "alpha_beta",
+    "phase": "middle",
+    "reference_edge": "つ→め",
+    "reference_end_id": 56,
+    "reference_ordering_score": -2323.5,
+    "reference_rank": 12,
+    "reference_search_score": 1555.5,
+    "reference_start_id": 28,
+    "required_char": "つ",
+    "risk_level": "normal",
+    "same_edge": false,
+    "seed": 0,
+    "top_12": true,
+    "top_16": true,
+    "top_2": false,
+    "top_4": false,
+    "top_6": false,
+    "top_8": false,
+    "turn": 68,
+    "widened_edge": "つ→の",
+    "widened_selects_reference": false
+  },
+  {
+    "beam_edge": "つ→や",
+    "beam_end_id": 58,
+    "beam_ordering_score": -1735.0,
+    "beam_search_score": 219.5,
+    "beam_start_id": 28,
+    "beam_won": false,
+    "candidate_count": 35,
+    "classification": "outcome_improved",
+    "counterfactual_edge_history": [
+      [
+        28,
+        58
+      ],
+      [
+        58,
+        28
+      ],
+      [
+        28,
+        66
+      ],
+      [
+        66,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        59
+      ],
+      [
+        59,
+        63
+      ],
+      [
+        63,
+        46
+      ],
+      [
+        46,
+        63
+      ],
+      [
+        63,
+        59
+      ],
+      [
+        59,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        0
+      ],
+      [
+        0,
+        63
+      ],
+      [
+        63,
+        7
+      ],
+      [
+        7,
+        63
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        20,
+        64
+      ],
+      [
+        64,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        67
+      ]
+    ],
+    "counterfactual_match_turns": 60,
+    "counterfactual_winner_agent": "beam_negamax",
+    "dict_size": 10000,
+    "match_id": "D10000_seed0_beam_negamax_vs_alpha_beta",
+    "match_winner": "alpha_beta",
+    "original_match_turns": 61,
+    "original_winner_agent": "alpha_beta",
+    "phase": "middle",
+    "reference_edge": "つ→つ",
+    "reference_end_id": 28,
+    "reference_ordering_score": -2127.0,
+    "reference_rank": 10,
+    "reference_search_score": 1664.0,
+    "reference_start_id": 28,
+    "required_char": "つ",
+    "risk_level": "normal",
+    "same_edge": false,
+    "seed": 0,
+    "top_12": true,
+    "top_16": true,
+    "top_2": false,
+    "top_4": false,
+    "top_6": false,
+    "top_8": false,
+    "turn": 35,
+    "widened_edge": "つ→つ",
+    "widened_selects_reference": true
+  },
+  {
+    "beam_edge": "つ→や",
+    "beam_end_id": 58,
+    "beam_ordering_score": -1735.0,
+    "beam_search_score": 219.5,
+    "beam_start_id": 28,
+    "beam_won": false,
+    "candidate_count": 35,
+    "classification": "outcome_improved",
+    "counterfactual_edge_history": [
+      [
+        28,
+        58
+      ],
+      [
+        58,
+        28
+      ],
+      [
+        28,
+        66
+      ],
+      [
+        66,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        59
+      ],
+      [
+        59,
+        63
+      ],
+      [
+        63,
+        46
+      ],
+      [
+        46,
+        63
+      ],
+      [
+        63,
+        59
+      ],
+      [
+        59,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        0
+      ],
+      [
+        0,
+        63
+      ],
+      [
+        63,
+        7
+      ],
+      [
+        7,
+        63
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        20,
+        64
+      ],
+      [
+        64,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        67
+      ]
+    ],
+    "counterfactual_match_turns": 60,
+    "counterfactual_winner_agent": "beam_negamax",
+    "dict_size": 10000,
+    "match_id": "D10000_seed0_beam_negamax_vs_pvs",
+    "match_winner": "pvs",
+    "original_match_turns": 61,
+    "original_winner_agent": "pvs",
+    "phase": "middle",
+    "reference_edge": "つ→つ",
+    "reference_end_id": 28,
+    "reference_ordering_score": -2127.0,
+    "reference_rank": 10,
+    "reference_search_score": 1664.0,
+    "reference_start_id": 28,
+    "required_char": "つ",
+    "risk_level": "normal",
+    "same_edge": false,
+    "seed": 0,
+    "top_12": true,
+    "top_16": true,
+    "top_2": false,
+    "top_4": false,
+    "top_6": false,
+    "top_8": false,
+    "turn": 35,
+    "widened_edge": "つ→や",
+    "widened_selects_reference": false
+  },
+  {
+    "beam_edge": "つ→ぜ",
+    "beam_end_id": 22,
+    "beam_ordering_score": -1162.0,
+    "beam_search_score": 1255.5,
+    "beam_start_id": 28,
+    "beam_won": false,
+    "candidate_count": 35,
+    "classification": "same_outcome_longer_survival",
+    "counterfactual_edge_history": [
+      [
+        56,
+        28
+      ],
+      [
+        28,
+        22
+      ],
+      [
+        22,
+        61
+      ],
+      [
+        61,
+        56
+      ],
+      [
+        56,
+        63
+      ],
+      [
+        63,
+        59
+      ],
+      [
+        59,
+        20
+      ],
+      [
+        20,
+        28
+      ],
+      [
+        28,
+        8
+      ],
+      [
+        8,
+        10
+      ],
+      [
+        10,
+        63
+      ],
+      [
+        63,
+        33
+      ],
+      [
+        33,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        55
+      ],
+      [
+        55,
+        8
+      ],
+      [
+        8,
+        58
+      ],
+      [
+        58,
+        16
+      ],
+      [
+        16,
+        2
+      ],
+      [
+        2,
+        55
+      ],
+      [
+        55,
+        58
+      ],
+      [
+        58,
+        55
+      ],
+      [
+        55,
+        58
+      ],
+      [
+        58,
+        8
+      ],
+      [
+        8,
+        8
+      ],
+      [
+        8,
+        55
+      ],
+      [
+        55,
+        28
+      ],
+      [
+        28,
+        28
+      ],
+      [
+        28,
+        58
+      ],
+      [
+        58,
+        28
+      ],
+      [
+        28,
+        39
+      ],
+      [
+        39,
+        63
+      ],
+      [
+        63,
+        31
+      ],
+      [
+        31,
+        63
+      ],
+      [
+        63,
+        31
+      ],
+      [
+        31,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        0
+      ],
+      [
+        0,
+        63
+      ],
+      [
+        63,
+        7
+      ],
+      [
+        7,
+        63
+      ],
+      [
+        63,
+        67
+      ]
+    ],
+    "counterfactual_match_turns": 114,
+    "counterfactual_winner_agent": "pvs",
+    "dict_size": 10000,
+    "match_id": "D10000_seed0_pvs_vs_beam_negamax",
+    "match_winner": "pvs",
+    "original_match_turns": 112,
+    "original_winner_agent": "pvs",
+    "phase": "middle",
+    "reference_edge": "つ→め",
+    "reference_end_id": 56,
+    "reference_ordering_score": -2323.5,
+    "reference_rank": 12,
+    "reference_search_score": 1555.5,
+    "reference_start_id": 28,
+    "required_char": "つ",
+    "risk_level": "normal",
+    "same_edge": false,
+    "seed": 0,
+    "top_12": true,
+    "top_16": true,
+    "top_2": false,
+    "top_4": false,
+    "top_6": false,
+    "top_8": false,
+    "turn": 68,
+    "widened_edge": "つ→の",
+    "widened_selects_reference": false
+  },
+  {
+    "beam_edge": "や→の",
+    "beam_end_id": 37,
+    "beam_ordering_score": -2822.5,
+    "beam_search_score": 4059.5,
+    "beam_start_id": 58,
+    "beam_won": false,
+    "candidate_count": 35,
+    "classification": "same_outcome",
+    "counterfactual_edge_history": [
+      [
+        28,
+        63
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        2,
+        58
+      ],
+      [
+        58,
+        37
+      ],
+      [
+        37,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        58
+      ],
+      [
+        58,
+        36
+      ],
+      [
+        36,
+        63
+      ],
+      [
+        63,
+        33
+      ],
+      [
+        33,
+        63
+      ],
+      [
+        63,
+        59
+      ],
+      [
+        59,
+        63
+      ],
+      [
+        63,
+        59
+      ],
+      [
+        59,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        9
+      ],
+      [
+        9,
+        63
+      ],
+      [
+        63,
+        62
+      ],
+      [
+        62,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        31
+      ],
+      [
+        31,
+        63
+      ],
+      [
+        63,
+        31
+      ],
+      [
+        31,
+        63
+      ],
+      [
+        63,
+        44
+      ],
+      [
+        44,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        0
+      ],
+      [
+        0,
+        63
+      ],
+      [
+        63,
+        7
+      ],
+      [
+        7,
+        63
+      ],
+      [
+        63,
+        18
+      ],
+      [
+        18,
+        63
+      ],
+      [
+        63,
+        67
+      ]
+    ],
+    "counterfactual_match_turns": 150,
+    "counterfactual_winner_agent": "alpha_beta",
+    "dict_size": 20000,
+    "match_id": "D20000_seed0_alpha_beta_vs_beam_negamax",
+    "match_winner": "alpha_beta",
+    "original_match_turns": 150,
+    "original_winner_agent": "alpha_beta",
+    "phase": "middle",
+    "reference_edge": "や→つ",
+    "reference_end_id": 28,
+    "reference_ordering_score": -4220.5,
+    "reference_rank": 10,
+    "reference_search_score": 626.5,
+    "reference_start_id": 58,
+    "required_char": "や",
+    "risk_level": "normal",
+    "same_edge": false,
+    "seed": 0,
+    "top_12": true,
+    "top_16": true,
+    "top_2": false,
+    "top_4": false,
+    "top_6": false,
+    "top_8": false,
+    "turn": 96,
+    "widened_edge": "や→わ",
+    "widened_selects_reference": false
+  },
+  {
+    "beam_edge": "の→ず",
+    "beam_end_id": 20,
+    "beam_ordering_score": -704.0,
+    "beam_search_score": 896.5,
+    "beam_start_id": 37,
+    "beam_won": false,
+    "candidate_count": 35,
+    "classification": "outcome_improved",
+    "counterfactual_edge_history": [
+      [
+        58,
+        58
+      ],
+      [
+        58,
+        58
+      ],
+      [
+        58,
+        58
+      ],
+      [
+        58,
+        58
+      ],
+      [
+        58,
+        58
+      ],
+      [
+        58,
+        16
+      ],
+      [
+        16,
+        58
+      ],
+      [
+        58,
+        58
+      ],
+      [
+        58,
+        58
+      ],
+      [
+        58,
+        10
+      ],
+      [
+        10,
+        20
+      ],
+      [
+        20,
+        20
+      ],
+      [
+        20,
+        55
+      ],
+      [
+        55,
+        10
+      ],
+      [
+        10,
+        46
+      ],
+      [
+        46,
+        10
+      ],
+      [
+        10,
+        46
+      ],
+      [
+        46,
+        20
+      ],
+      [
+        20,
+        61
+      ],
+      [
+        61,
+        10
+      ],
+      [
+        10,
+        42
+      ],
+      [
+        42,
+        20
+      ],
+      [
+        20,
+        64
+      ],
+      [
+        64,
+        20
+      ],
+      [
+        20,
+        6
+      ],
+      [
+        6,
+        20
+      ],
+      [
+        20,
+        28
+      ],
+      [
+        28,
+        10
+      ],
+      [
+        10,
+        37
+      ],
+      [
+        37,
+        20
+      ],
+      [
+        20,
+        28
+      ],
+      [
+        28,
+        10
+      ],
+      [
+        10,
+        8
+      ],
+      [
+        8,
+        16
+      ],
+      [
+        16,
+        43
+      ],
+      [
+        43,
+        16
+      ],
+      [
+        16,
+        12
+      ],
+      [
+        12,
+        46
+      ],
+      [
+        46,
+        16
+      ],
+      [
+        16,
+        28
+      ],
+      [
+        28,
+        58
+      ],
+      [
+        58,
+        10
+      ],
+      [
+        10,
+        8
+      ],
+      [
+        8,
+        16
+      ],
+      [
+        16,
+        28
+      ],
+      [
+        28,
+        22
+      ],
+      [
+        22,
+        16
+      ],
+      [
+        16,
+        28
+      ],
+      [
+        28,
+        58
+      ],
+      [
+        58,
+        36
+      ],
+      [
+        36,
+        16
+      ],
+      [
+        16,
+        28
+      ],
+      [
+        28,
+        58
+      ],
+      [
+        58,
+        36
+      ],
+      [
+        36,
+        58
+      ],
+      [
+        58,
+        36
+      ],
+      [
+        36,
+        16
+      ],
+      [
+        16,
+        28
+      ],
+      [
+        28,
+        22
+      ],
+      [
+        22,
+        58
+      ],
+      [
+        58,
+        8
+      ],
+      [
+        8,
+        16
+      ],
+      [
+        16,
+        60
+      ],
+      [
+        60,
+        20
+      ],
+      [
+        20,
+        60
+      ],
+      [
+        60,
+        20
+      ],
+      [
+        20,
+        60
+      ],
+      [
+        60,
+        10
+      ],
+      [
+        10,
+        61
+      ],
+      [
+        61,
+        10
+      ],
+      [
+        10,
+        28
+      ],
+      [
+        28,
+        36
+      ],
+      [
+        36,
+        43
+      ],
+      [
+        43,
+        10
+      ],
+      [
+        10,
+        28
+      ],
+      [
+        28,
+        36
+      ],
+      [
+        36,
+        43
+      ],
+      [
+        43,
+        10
+      ],
+      [
+        10,
+        39
+      ],
+      [
+        39,
+        10
+      ],
+      [
+        10,
+        32
+      ],
+      [
+        32,
+        10
+      ],
+      [
+        10,
+        32
+      ],
+      [
+        32,
+        10
+      ],
+      [
+        10,
+        32
+      ],
+      [
+        32,
+        10
+      ],
+      [
+        10,
+        32
+      ],
+      [
+        32,
+        10
+      ],
+      [
+        10,
+        60
+      ],
+      [
+        60,
+        58
+      ],
+      [
+        58,
+        8
+      ],
+      [
+        8,
+        10
+      ],
+      [
+        10,
+        63
+      ],
+      [
+        63,
+        63
+      ],
+      [
+        63,
+        46
+      ],
+      [
+        46,
+        63
+      ],
+      [
+        63,
+        63
+      ],
+      [
+        63,
+        63
+      ],
+      [
+        63,
+        12
+      ],
+      [
+        12,
+        63
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        28
+      ],
+      [
+        28,
+        63
+      ],
+      [
+        63,
+        62
+      ],
+      [
+        62,
+        63
+      ],
+      [
+        63,
+        31
+      ],
+      [
+        31,
+        63
+      ],
+      [
+        63,
+        31
+      ],
+      [
+        31,
+        63
+      ],
+      [
+        63,
+        52
+      ],
+      [
+        52,
+        63
+      ],
+      [
+        63,
+        42
+      ],
+      [
+        42,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        59
+      ],
+      [
+        59,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        55
+      ],
+      [
+        55,
+        63
+      ],
+      [
+        63,
+        59
+      ],
+      [
+        59,
+        63
+      ],
+      [
+        63,
+        33
+      ],
+      [
+        33,
+        63
+      ],
+      [
+        63,
+        9
+      ],
+      [
+        9,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        44
+      ],
+      [
+        44,
+        63
+      ],
+      [
+        63,
+        0
+      ],
+      [
+        0,
+        63
+      ],
+      [
+        63,
+        7
+      ],
+      [
+        7,
+        63
+      ],
+      [
+        63,
+        18
+      ],
+      [
+        18,
+        63
+      ],
+      [
+        63,
+        67
+      ]
+    ],
+    "counterfactual_match_turns": 162,
+    "counterfactual_winner_agent": "beam_negamax",
+    "dict_size": 20000,
+    "match_id": "D20000_seed0_beam_negamax_vs_alpha_beta",
+    "match_winner": "alpha_beta",
+    "original_match_turns": 285,
+    "original_winner_agent": "alpha_beta",
+    "phase": "early",
+    "reference_edge": "の→や",
+    "reference_end_id": 58,
+    "reference_ordering_score": -3333.0,
+    "reference_rank": 12,
+    "reference_search_score": 936.5,
+    "reference_start_id": 37,
+    "required_char": "の",
+    "risk_level": "normal",
+    "same_edge": false,
+    "seed": 0,
+    "top_12": true,
+    "top_16": true,
+    "top_2": false,
+    "top_4": false,
+    "top_6": false,
+    "top_8": false,
+    "turn": 3,
+    "widened_edge": "の→や",
+    "widened_selects_reference": true
+  },
+  {
+    "beam_edge": "や→ね",
+    "beam_end_id": 36,
+    "beam_ordering_score": -3083.0,
+    "beam_search_score": 896.5,
+    "beam_start_id": 58,
+    "beam_won": false,
+    "candidate_count": 33,
+    "classification": "same_outcome_longer_survival",
+    "counterfactual_edge_history": [
+      [
+        60,
+        58
+      ],
+      [
+        58,
+        36
+      ],
+      [
+        36,
+        55
+      ],
+      [
+        55,
+        28
+      ],
+      [
+        28,
+        58
+      ],
+      [
+        58,
+        36
+      ],
+      [
+        36,
+        58
+      ],
+      [
+        58,
+        8
+      ],
+      [
+        8,
+        58
+      ],
+      [
+        58,
+        8
+      ],
+      [
+        8,
+        58
+      ],
+      [
+        58,
+        61
+      ],
+      [
+        61,
+        55
+      ],
+      [
+        55,
+        28
+      ],
+      [
+        28,
+        58
+      ],
+      [
+        58,
+        61
+      ],
+      [
+        61,
+        55
+      ],
+      [
+        55,
+        28
+      ],
+      [
+        28,
+        10
+      ],
+      [
+        10,
+        55
+      ],
+      [
+        55,
+        28
+      ],
+      [
+        28,
+        10
+      ],
+      [
+        10,
+        8
+      ],
+      [
+        8,
+        10
+      ],
+      [
+        10,
+        8
+      ],
+      [
+        8,
+        10
+      ],
+      [
+        10,
+        61
+      ],
+      [
+        61,
+        10
+      ],
+      [
+        10,
+        56
+      ],
+      [
+        56,
+        36
+      ],
+      [
+        36,
+        16
+      ],
+      [
+        16,
+        55
+      ],
+      [
+        55,
+        28
+      ],
+      [
+        28,
+        22
+      ],
+      [
+        22,
+        16
+      ],
+      [
+        16,
+        28
+      ],
+      [
+        28,
+        22
+      ],
+      [
+        22,
+        8
+      ],
+      [
+        8,
+        16
+      ],
+      [
+        16,
+        28
+      ],
+      [
+        28,
+        36
+      ],
+      [
+        36,
+        8
+      ],
+      [
+        8,
+        16
+      ],
+      [
+        16,
+        28
+      ],
+      [
+        28,
+        36
+      ],
+      [
+        36,
+        43
+      ],
+      [
+        43,
+        16
+      ],
+      [
+        16,
+        28
+      ],
+      [
+        28,
+        36
+      ],
+      [
+        36,
+        43
+      ],
+      [
+        43,
+        55
+      ],
+      [
+        55,
+        28
+      ],
+      [
+        28,
+        36
+      ],
+      [
+        36,
+        56
+      ],
+      [
+        56,
+        8
+      ],
+      [
+        8,
+        16
+      ],
+      [
+        16,
+        58
+      ],
+      [
+        58,
+        28
+      ],
+      [
+        28,
+        8
+      ],
+      [
+        8,
+        16
+      ],
+      [
+        16,
+        43
+      ],
+      [
+        43,
+        10
+      ],
+      [
+        10,
+        28
+      ],
+      [
+        28,
+        8
+      ],
+      [
+        8,
+        58
+      ],
+      [
+        58,
+        28
+      ],
+      [
+        28,
+        8
+      ],
+      [
+        8,
+        8
+      ],
+      [
+        8,
+        58
+      ],
+      [
+        58,
+        28
+      ],
+      [
+        28,
+        8
+      ],
+      [
+        8,
+        8
+      ],
+      [
+        8,
+        58
+      ],
+      [
+        58,
+        12
+      ],
+      [
+        12,
+        55
+      ],
+      [
+        55,
+        39
+      ],
+      [
+        39,
+        55
+      ],
+      [
+        55,
+        32
+      ],
+      [
+        32,
+        55
+      ],
+      [
+        55,
+        60
+      ],
+      [
+        60,
+        58
+      ],
+      [
+        58,
+        61
+      ],
+      [
+        61,
+        58
+      ],
+      [
+        58,
+        61
+      ],
+      [
+        61,
+        10
+      ],
+      [
+        10,
+        28
+      ],
+      [
+        28,
+        8
+      ],
+      [
+        8,
+        28
+      ],
+      [
+        28,
+        8
+      ],
+      [
+        8,
+        28
+      ],
+      [
+        28,
+        8
+      ],
+      [
+        8,
+        28
+      ],
+      [
+        28,
+        61
+      ],
+      [
+        61,
+        10
+      ],
+      [
+        10,
+        39
+      ],
+      [
+        39,
+        10
+      ],
+      [
+        10,
+        63
+      ],
+      [
+        63,
+        63
+      ],
+      [
+        63,
+        55
+      ],
+      [
+        55,
+        63
+      ],
+      [
+        63,
+        12
+      ],
+      [
+        12,
+        63
+      ],
+      [
+        63,
+        28
+      ],
+      [
+        28,
+        63
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        63
+      ],
+      [
+        63,
+        63
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        2,
+        58
+      ],
+      [
+        58,
+        61
+      ],
+      [
+        61,
+        63
+      ],
+      [
+        63,
+        62
+      ],
+      [
+        62,
+        55
+      ],
+      [
+        55,
+        60
+      ],
+      [
+        60,
+        58
+      ],
+      [
+        58,
+        39
+      ],
+      [
+        39,
+        55
+      ],
+      [
+        55,
+        2
+      ],
+      [
+        2,
+        58
+      ],
+      [
+        58,
+        39
+      ],
+      [
+        39,
+        55
+      ],
+      [
+        55,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        31
+      ],
+      [
+        31,
+        58
+      ],
+      [
+        58,
+        39
+      ],
+      [
+        39,
+        58
+      ],
+      [
+        58,
+        39
+      ],
+      [
+        39,
+        63
+      ],
+      [
+        63,
+        31
+      ],
+      [
+        31,
+        58
+      ],
+      [
+        58,
+        57
+      ],
+      [
+        57,
+        58
+      ],
+      [
+        58,
+        2
+      ],
+      [
+        2,
+        10
+      ],
+      [
+        10,
+        63
+      ],
+      [
+        63,
+        52
+      ],
+      [
+        52,
+        20
+      ],
+      [
+        20,
+        1
+      ],
+      [
+        1,
+        20
+      ],
+      [
+        20,
+        9
+      ],
+      [
+        9,
+        63
+      ],
+      [
+        63,
+        46
+      ],
+      [
+        46,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        42
+      ],
+      [
+        42,
+        63
+      ],
+      [
+        63,
+        59
+      ],
+      [
+        59,
+        63
+      ],
+      [
+        63,
+        59
+      ],
+      [
+        59,
+        63
+      ],
+      [
+        63,
+        33
+      ],
+      [
+        33,
+        63
+      ],
+      [
+        63,
+        9
+      ],
+      [
+        9,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        44
+      ],
+      [
+        44,
+        20
+      ],
+      [
+        20,
+        27
+      ],
+      [
+        27,
+        20
+      ],
+      [
+        20,
+        27
+      ],
+      [
+        27,
+        20
+      ],
+      [
+        20,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        0
+      ],
+      [
+        0,
+        63
+      ],
+      [
+        63,
+        7
+      ],
+      [
+        7,
+        63
+      ],
+      [
+        63,
+        18
+      ],
+      [
+        18,
+        63
+      ],
+      [
+        63,
+        67
+      ]
+    ],
+    "counterfactual_match_turns": 287,
+    "counterfactual_winner_agent": "pvs",
+    "dict_size": 20000,
+    "match_id": "D20000_seed0_beam_negamax_vs_pvs",
+    "match_winner": "pvs",
+    "original_match_turns": 285,
+    "original_winner_agent": "pvs",
+    "phase": "early",
+    "reference_edge": "や→よ",
+    "reference_end_id": 60,
+    "reference_ordering_score": -5348.0,
+    "reference_rank": 14,
+    "reference_search_score": 916.5,
+    "reference_start_id": 58,
+    "required_char": "や",
+    "risk_level": "normal",
+    "same_edge": false,
+    "seed": 0,
+    "top_12": false,
+    "top_16": true,
+    "top_2": false,
+    "top_4": false,
+    "top_6": false,
+    "top_8": false,
+    "turn": 93,
+    "widened_edge": "や→ね",
+    "widened_selects_reference": false
+  },
+  {
+    "beam_edge": "や→の",
+    "beam_end_id": 37,
+    "beam_ordering_score": -2822.5,
+    "beam_search_score": 4059.5,
+    "beam_start_id": 58,
+    "beam_won": false,
+    "candidate_count": 35,
+    "classification": "same_outcome",
+    "counterfactual_edge_history": [
+      [
+        28,
+        63
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        2,
+        58
+      ],
+      [
+        58,
+        37
+      ],
+      [
+        37,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        58
+      ],
+      [
+        58,
+        36
+      ],
+      [
+        36,
+        63
+      ],
+      [
+        63,
+        33
+      ],
+      [
+        33,
+        63
+      ],
+      [
+        63,
+        59
+      ],
+      [
+        59,
+        63
+      ],
+      [
+        63,
+        59
+      ],
+      [
+        59,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        9
+      ],
+      [
+        9,
+        63
+      ],
+      [
+        63,
+        62
+      ],
+      [
+        62,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        31
+      ],
+      [
+        31,
+        63
+      ],
+      [
+        63,
+        31
+      ],
+      [
+        31,
+        63
+      ],
+      [
+        63,
+        44
+      ],
+      [
+        44,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        0
+      ],
+      [
+        0,
+        63
+      ],
+      [
+        63,
+        7
+      ],
+      [
+        7,
+        63
+      ],
+      [
+        63,
+        18
+      ],
+      [
+        18,
+        63
+      ],
+      [
+        63,
+        67
+      ]
+    ],
+    "counterfactual_match_turns": 150,
+    "counterfactual_winner_agent": "pvs",
+    "dict_size": 20000,
+    "match_id": "D20000_seed0_pvs_vs_beam_negamax",
+    "match_winner": "pvs",
+    "original_match_turns": 150,
+    "original_winner_agent": "pvs",
+    "phase": "middle",
+    "reference_edge": "や→つ",
+    "reference_end_id": 28,
+    "reference_ordering_score": -4220.5,
+    "reference_rank": 10,
+    "reference_search_score": 626.5,
+    "reference_start_id": 58,
+    "required_char": "や",
+    "risk_level": "normal",
+    "same_edge": false,
+    "seed": 0,
+    "top_12": true,
+    "top_16": true,
+    "top_2": false,
+    "top_4": false,
+    "top_6": false,
+    "top_8": false,
+    "turn": 96,
+    "widened_edge": "や→わ",
+    "widened_selects_reference": false
+  },
+  {
+    "beam_edge": "む→る",
+    "beam_end_id": 63,
+    "beam_ordering_score": -786.5,
+    "beam_search_score": 2144.5,
+    "beam_start_id": 55,
+    "beam_won": false,
+    "candidate_count": 30,
+    "classification": "same_outcome",
+    "counterfactual_edge_history": [
+      [
+        2,
+        55
+      ],
+      [
+        55,
+        63
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        2,
+        8
+      ],
+      [
+        8,
+        28
+      ],
+      [
+        28,
+        58
+      ],
+      [
+        58,
+        16
+      ],
+      [
+        16,
+        60
+      ],
+      [
+        60,
+        8
+      ],
+      [
+        8,
+        28
+      ],
+      [
+        28,
+        58
+      ],
+      [
+        58,
+        36
+      ],
+      [
+        36,
+        14
+      ],
+      [
+        14,
+        63
+      ],
+      [
+        63,
+        28
+      ],
+      [
+        28,
+        63
+      ],
+      [
+        63,
+        63
+      ],
+      [
+        63,
+        55
+      ],
+      [
+        55,
+        58
+      ],
+      [
+        58,
+        55
+      ],
+      [
+        55,
+        58
+      ],
+      [
+        58,
+        58
+      ],
+      [
+        58,
+        14
+      ],
+      [
+        14,
+        55
+      ],
+      [
+        55,
+        58
+      ],
+      [
+        58,
+        58
+      ],
+      [
+        58,
+        58
+      ],
+      [
+        58,
+        58
+      ],
+      [
+        58,
+        58
+      ],
+      [
+        58,
+        58
+      ],
+      [
+        58,
+        58
+      ],
+      [
+        58,
+        8
+      ],
+      [
+        8,
+        28
+      ],
+      [
+        28,
+        10
+      ],
+      [
+        10,
+        20
+      ],
+      [
+        20,
+        67
+      ]
+    ],
+    "counterfactual_match_turns": 202,
+    "counterfactual_winner_agent": "alpha_beta",
+    "dict_size": 20000,
+    "match_id": "D20000_seed1_alpha_beta_vs_beam_negamax",
+    "match_winner": "alpha_beta",
+    "original_match_turns": 208,
+    "original_winner_agent": "alpha_beta",
+    "phase": "late",
+    "reference_edge": "む→う",
+    "reference_end_id": 2,
+    "reference_ordering_score": -5626.5,
+    "reference_rank": 10,
+    "reference_search_score": 1410.0,
+    "reference_start_id": 55,
+    "required_char": "む",
+    "risk_level": "normal",
+    "same_edge": false,
+    "seed": 1,
+    "top_12": true,
+    "top_16": true,
+    "top_2": false,
+    "top_4": false,
+    "top_6": false,
+    "top_8": false,
+    "turn": 166,
+    "widened_edge": "む→る",
+    "widened_selects_reference": false
+  },
+  {
+    "beam_edge": "つ→る",
+    "beam_end_id": 63,
+    "beam_ordering_score": -916.5,
+    "beam_search_score": 534.0,
+    "beam_start_id": 28,
+    "beam_won": false,
+    "candidate_count": 42,
+    "classification": "same_outcome_longer_survival",
+    "counterfactual_edge_history": [
+      [
+        28,
+        63
+      ],
+      [
+        63,
+        63
+      ],
+      [
+        63,
+        12
+      ],
+      [
+        12,
+        63
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        20,
+        60
+      ],
+      [
+        60,
+        20
+      ],
+      [
+        20,
+        60
+      ],
+      [
+        60,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        52
+      ],
+      [
+        52,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        46
+      ],
+      [
+        46,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        55
+      ],
+      [
+        55,
+        28
+      ],
+      [
+        28,
+        58
+      ],
+      [
+        58,
+        20
+      ],
+      [
+        20,
+        9
+      ],
+      [
+        9,
+        20
+      ],
+      [
+        20,
+        54
+      ],
+      [
+        54,
+        20
+      ],
+      [
+        20,
+        27
+      ],
+      [
+        27,
+        20
+      ],
+      [
+        20,
+        27
+      ],
+      [
+        27,
+        20
+      ],
+      [
+        20,
+        1
+      ],
+      [
+        1,
+        20
+      ],
+      [
+        20,
+        1
+      ],
+      [
+        1,
+        20
+      ],
+      [
+        20,
+        1
+      ],
+      [
+        1,
+        20
+      ],
+      [
+        20,
+        7
+      ],
+      [
+        7,
+        20
+      ],
+      [
+        20,
+        7
+      ],
+      [
+        7,
+        20
+      ],
+      [
+        20,
+        17
+      ],
+      [
+        17,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        2,
+        55
+      ],
+      [
+        55,
+        63
+      ],
+      [
+        63,
+        28
+      ],
+      [
+        28,
+        63
+      ],
+      [
+        63,
+        63
+      ],
+      [
+        63,
+        55
+      ],
+      [
+        55,
+        58
+      ],
+      [
+        58,
+        8
+      ],
+      [
+        8,
+        46
+      ],
+      [
+        46,
+        55
+      ],
+      [
+        55,
+        58
+      ],
+      [
+        58,
+        8
+      ],
+      [
+        8,
+        46
+      ],
+      [
+        46,
+        55
+      ],
+      [
+        55,
+        58
+      ],
+      [
+        58,
+        55
+      ],
+      [
+        55,
+        58
+      ],
+      [
+        58,
+        16
+      ],
+      [
+        16,
+        61
+      ],
+      [
+        61,
+        46
+      ],
+      [
+        46,
+        16
+      ],
+      [
+        16,
+        60
+      ],
+      [
+        60,
+        48
+      ],
+      [
+        48,
+        8
+      ],
+      [
+        8,
+        58
+      ],
+      [
+        58,
+        14
+      ],
+      [
+        14,
+        46
+      ],
+      [
+        46,
+        55
+      ],
+      [
+        55,
+        58
+      ],
+      [
+        58,
+        58
+      ],
+      [
+        58,
+        61
+      ],
+      [
+        61,
+        58
+      ],
+      [
+        58,
+        61
+      ],
+      [
+        61,
+        28
+      ],
+      [
+        28,
+        58
+      ],
+      [
+        58,
+        58
+      ],
+      [
+        58,
+        36
+      ],
+      [
+        36,
+        55
+      ],
+      [
+        55,
+        60
+      ],
+      [
+        60,
+        36
+      ],
+      [
+        36,
+        46
+      ],
+      [
+        46,
+        61
+      ],
+      [
+        61,
+        46
+      ],
+      [
+        46,
+        28
+      ],
+      [
+        28,
+        58
+      ],
+      [
+        58,
+        36
+      ],
+      [
+        36,
+        28
+      ],
+      [
+        28,
+        10
+      ],
+      [
+        10,
+        20
+      ],
+      [
+        20,
+        67
+      ]
+    ],
+    "counterfactual_match_turns": 217,
+    "counterfactual_winner_agent": "alpha_beta",
+    "dict_size": 20000,
+    "match_id": "D20000_seed1_beam_negamax_vs_alpha_beta",
+    "match_winner": "alpha_beta",
+    "original_match_turns": 215,
+    "original_winner_agent": "alpha_beta",
+    "phase": "middle",
+    "reference_edge": "つ→つ",
+    "reference_end_id": 28,
+    "reference_ordering_score": -3903.0,
+    "reference_rank": 11,
+    "reference_search_score": 866.5,
+    "reference_start_id": 28,
+    "required_char": "つ",
+    "risk_level": "normal",
+    "same_edge": false,
+    "seed": 1,
+    "top_12": true,
+    "top_16": true,
+    "top_2": false,
+    "top_4": false,
+    "top_6": false,
+    "top_8": false,
+    "turn": 119,
+    "widened_edge": "つ→る",
+    "widened_selects_reference": false
+  },
+  {
+    "beam_edge": "つ→る",
+    "beam_end_id": 63,
+    "beam_ordering_score": -916.5,
+    "beam_search_score": 534.0,
+    "beam_start_id": 28,
+    "beam_won": false,
+    "candidate_count": 42,
+    "classification": "same_outcome_longer_survival",
+    "counterfactual_edge_history": [
+      [
+        28,
+        63
+      ],
+      [
+        63,
+        63
+      ],
+      [
+        63,
+        12
+      ],
+      [
+        12,
+        63
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        20,
+        60
+      ],
+      [
+        60,
+        20
+      ],
+      [
+        20,
+        60
+      ],
+      [
+        60,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        52
+      ],
+      [
+        52,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        46
+      ],
+      [
+        46,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        55
+      ],
+      [
+        55,
+        28
+      ],
+      [
+        28,
+        58
+      ],
+      [
+        58,
+        20
+      ],
+      [
+        20,
+        9
+      ],
+      [
+        9,
+        20
+      ],
+      [
+        20,
+        54
+      ],
+      [
+        54,
+        20
+      ],
+      [
+        20,
+        27
+      ],
+      [
+        27,
+        20
+      ],
+      [
+        20,
+        27
+      ],
+      [
+        27,
+        20
+      ],
+      [
+        20,
+        1
+      ],
+      [
+        1,
+        20
+      ],
+      [
+        20,
+        1
+      ],
+      [
+        1,
+        20
+      ],
+      [
+        20,
+        1
+      ],
+      [
+        1,
+        20
+      ],
+      [
+        20,
+        7
+      ],
+      [
+        7,
+        20
+      ],
+      [
+        20,
+        7
+      ],
+      [
+        7,
+        20
+      ],
+      [
+        20,
+        17
+      ],
+      [
+        17,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        2,
+        55
+      ],
+      [
+        55,
+        63
+      ],
+      [
+        63,
+        28
+      ],
+      [
+        28,
+        63
+      ],
+      [
+        63,
+        63
+      ],
+      [
+        63,
+        55
+      ],
+      [
+        55,
+        58
+      ],
+      [
+        58,
+        8
+      ],
+      [
+        8,
+        46
+      ],
+      [
+        46,
+        55
+      ],
+      [
+        55,
+        58
+      ],
+      [
+        58,
+        8
+      ],
+      [
+        8,
+        46
+      ],
+      [
+        46,
+        55
+      ],
+      [
+        55,
+        58
+      ],
+      [
+        58,
+        55
+      ],
+      [
+        55,
+        58
+      ],
+      [
+        58,
+        16
+      ],
+      [
+        16,
+        61
+      ],
+      [
+        61,
+        46
+      ],
+      [
+        46,
+        16
+      ],
+      [
+        16,
+        60
+      ],
+      [
+        60,
+        48
+      ],
+      [
+        48,
+        8
+      ],
+      [
+        8,
+        58
+      ],
+      [
+        58,
+        14
+      ],
+      [
+        14,
+        46
+      ],
+      [
+        46,
+        55
+      ],
+      [
+        55,
+        58
+      ],
+      [
+        58,
+        58
+      ],
+      [
+        58,
+        61
+      ],
+      [
+        61,
+        58
+      ],
+      [
+        58,
+        61
+      ],
+      [
+        61,
+        28
+      ],
+      [
+        28,
+        58
+      ],
+      [
+        58,
+        58
+      ],
+      [
+        58,
+        36
+      ],
+      [
+        36,
+        55
+      ],
+      [
+        55,
+        60
+      ],
+      [
+        60,
+        36
+      ],
+      [
+        36,
+        46
+      ],
+      [
+        46,
+        61
+      ],
+      [
+        61,
+        46
+      ],
+      [
+        46,
+        28
+      ],
+      [
+        28,
+        58
+      ],
+      [
+        58,
+        36
+      ],
+      [
+        36,
+        28
+      ],
+      [
+        28,
+        10
+      ],
+      [
+        10,
+        20
+      ],
+      [
+        20,
+        67
+      ]
+    ],
+    "counterfactual_match_turns": 217,
+    "counterfactual_winner_agent": "pvs",
+    "dict_size": 20000,
+    "match_id": "D20000_seed1_beam_negamax_vs_pvs",
+    "match_winner": "pvs",
+    "original_match_turns": 215,
+    "original_winner_agent": "pvs",
+    "phase": "middle",
+    "reference_edge": "つ→つ",
+    "reference_end_id": 28,
+    "reference_ordering_score": -3903.0,
+    "reference_rank": 11,
+    "reference_search_score": 866.5,
+    "reference_start_id": 28,
+    "required_char": "つ",
+    "risk_level": "normal",
+    "same_edge": false,
+    "seed": 1,
+    "top_12": true,
+    "top_16": true,
+    "top_2": false,
+    "top_4": false,
+    "top_6": false,
+    "top_8": false,
+    "turn": 119,
+    "widened_edge": "つ→る",
+    "widened_selects_reference": false
+  },
+  {
+    "beam_edge": "げ→る",
+    "beam_end_id": 63,
+    "beam_ordering_score": -866.5,
+    "beam_search_score": 1187.5,
+    "beam_start_id": 12,
+    "beam_won": false,
+    "candidate_count": 37,
+    "classification": "same_outcome_longer_survival",
+    "counterfactual_edge_history": [
+      [
+        28,
+        63
+      ],
+      [
+        63,
+        28
+      ],
+      [
+        28,
+        10
+      ],
+      [
+        10,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        52
+      ],
+      [
+        52,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        59
+      ],
+      [
+        59,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        55
+      ],
+      [
+        55,
+        28
+      ],
+      [
+        28,
+        10
+      ],
+      [
+        10,
+        63
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        2
+      ],
+      [
+        2,
+        55
+      ],
+      [
+        55,
+        63
+      ],
+      [
+        63,
+        55
+      ],
+      [
+        55,
+        60
+      ],
+      [
+        60,
+        63
+      ],
+      [
+        63,
+        63
+      ],
+      [
+        63,
+        63
+      ],
+      [
+        63,
+        62
+      ],
+      [
+        62,
+        63
+      ],
+      [
+        63,
+        31
+      ],
+      [
+        31,
+        63
+      ],
+      [
+        63,
+        31
+      ],
+      [
+        31,
+        63
+      ],
+      [
+        63,
+        46
+      ],
+      [
+        46,
+        20
+      ],
+      [
+        20,
+        9
+      ],
+      [
+        9,
+        20
+      ],
+      [
+        20,
+        1
+      ],
+      [
+        1,
+        20
+      ],
+      [
+        20,
+        1
+      ],
+      [
+        1,
+        20
+      ],
+      [
+        20,
+        54
+      ],
+      [
+        54,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        42
+      ],
+      [
+        42,
+        63
+      ],
+      [
+        63,
+        59
+      ],
+      [
+        59,
+        63
+      ],
+      [
+        63,
+        33
+      ],
+      [
+        33,
+        63
+      ],
+      [
+        63,
+        9
+      ],
+      [
+        9,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        44
+      ],
+      [
+        44,
+        20
+      ],
+      [
+        20,
+        27
+      ],
+      [
+        27,
+        20
+      ],
+      [
+        20,
+        27
+      ],
+      [
+        27,
+        20
+      ],
+      [
+        20,
+        1
+      ],
+      [
+        1,
+        63
+      ],
+      [
+        63,
+        0
+      ],
+      [
+        0,
+        63
+      ],
+      [
+        63,
+        7
+      ],
+      [
+        7,
+        63
+      ],
+      [
+        63,
+        18
+      ],
+      [
+        18,
+        63
+      ],
+      [
+        63,
+        67
+      ]
+    ],
+    "counterfactual_match_turns": 218,
+    "counterfactual_winner_agent": "pvs",
+    "dict_size": 20000,
+    "match_id": "D20000_seed1_pvs_vs_beam_negamax",
+    "match_winner": "pvs",
+    "original_match_turns": 208,
+    "original_winner_agent": "pvs",
+    "phase": "middle",
+    "reference_edge": "げ→つ",
+    "reference_end_id": 28,
+    "reference_ordering_score": -3903.0,
+    "reference_rank": 14,
+    "reference_search_score": 866.5,
+    "reference_start_id": 12,
+    "required_char": "げ",
+    "risk_level": "normal",
+    "same_edge": false,
+    "seed": 1,
+    "top_12": false,
+    "top_16": true,
+    "top_2": false,
+    "top_4": false,
+    "top_6": false,
+    "top_8": false,
+    "turn": 126,
+    "widened_edge": "げ→る",
+    "widened_selects_reference": false
+  },
+  {
+    "beam_edge": "く→る",
+    "beam_end_id": 63,
+    "beam_ordering_score": -237.5,
+    "beam_search_score": 7897.289307479225,
+    "beam_start_id": 9,
+    "beam_won": false,
+    "candidate_count": 55,
+    "classification": "same_outcome_longer_survival",
+    "counterfactual_edge_history": [
+      [
+        55,
+        60
+      ],
+      [
+        60,
+        20
+      ],
+      [
+        20,
+        60
+      ],
+      [
+        60,
+        20
+      ],
+      [
+        20,
+        60
+      ],
+      [
+        60,
+        10
+      ],
+      [
+        10,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        44
+      ],
+      [
+        44,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        44
+      ],
+      [
+        44,
+        63
+      ],
+      [
+        63,
+        0
+      ],
+      [
+        0,
+        63
+      ],
+      [
+        63,
+        18
+      ],
+      [
+        18,
+        63
+      ],
+      [
+        63,
+        7
+      ],
+      [
+        7,
+        63
+      ],
+      [
+        63,
+        67
+      ]
+    ],
+    "counterfactual_match_turns": 154,
+    "counterfactual_winner_agent": "alpha_beta",
+    "dict_size": 20000,
+    "match_id": "D20000_seed2_alpha_beta_vs_beam_negamax",
+    "match_winner": "alpha_beta",
+    "original_match_turns": 150,
+    "original_winner_agent": "alpha_beta",
+    "phase": "late",
+    "reference_edge": "く→む",
+    "reference_end_id": 55,
+    "reference_ordering_score": -2706.0,
+    "reference_rank": 9,
+    "reference_search_score": 8083.843823529412,
+    "reference_start_id": 9,
+    "required_char": "く",
+    "risk_level": "normal",
+    "same_edge": false,
+    "seed": 2,
+    "top_12": true,
+    "top_16": true,
+    "top_2": false,
+    "top_4": false,
+    "top_6": false,
+    "top_8": false,
+    "turn": 124,
+    "widened_edge": "く→る",
+    "widened_selects_reference": false
+  },
+  {
+    "beam_edge": "く→る",
+    "beam_end_id": 63,
+    "beam_ordering_score": -237.5,
+    "beam_search_score": 7897.282659279778,
+    "beam_start_id": 9,
+    "beam_won": false,
+    "candidate_count": 55,
+    "classification": "same_outcome_longer_survival",
+    "counterfactual_edge_history": [
+      [
+        55,
+        60
+      ],
+      [
+        60,
+        20
+      ],
+      [
+        20,
+        60
+      ],
+      [
+        60,
+        20
+      ],
+      [
+        20,
+        60
+      ],
+      [
+        60,
+        10
+      ],
+      [
+        10,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        44
+      ],
+      [
+        44,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        44
+      ],
+      [
+        44,
+        63
+      ],
+      [
+        63,
+        0
+      ],
+      [
+        0,
+        63
+      ],
+      [
+        63,
+        18
+      ],
+      [
+        18,
+        63
+      ],
+      [
+        63,
+        7
+      ],
+      [
+        7,
+        63
+      ],
+      [
+        63,
+        67
+      ]
+    ],
+    "counterfactual_match_turns": 153,
+    "counterfactual_winner_agent": "alpha_beta",
+    "dict_size": 20000,
+    "match_id": "D20000_seed2_beam_negamax_vs_alpha_beta",
+    "match_winner": "alpha_beta",
+    "original_match_turns": 149,
+    "original_winner_agent": "alpha_beta",
+    "phase": "late",
+    "reference_edge": "く→む",
+    "reference_end_id": 55,
+    "reference_ordering_score": -2706.0,
+    "reference_rank": 9,
+    "reference_search_score": 8083.839705882353,
+    "reference_start_id": 9,
+    "required_char": "く",
+    "risk_level": "normal",
+    "same_edge": false,
+    "seed": 2,
+    "top_12": true,
+    "top_16": true,
+    "top_2": false,
+    "top_4": false,
+    "top_6": false,
+    "top_8": false,
+    "turn": 123,
+    "widened_edge": "く→る",
+    "widened_selects_reference": false
+  },
+  {
+    "beam_edge": "く→る",
+    "beam_end_id": 63,
+    "beam_ordering_score": -237.5,
+    "beam_search_score": 7897.282659279778,
+    "beam_start_id": 9,
+    "beam_won": false,
+    "candidate_count": 55,
+    "classification": "same_outcome_longer_survival",
+    "counterfactual_edge_history": [
+      [
+        55,
+        60
+      ],
+      [
+        60,
+        20
+      ],
+      [
+        20,
+        60
+      ],
+      [
+        60,
+        20
+      ],
+      [
+        20,
+        60
+      ],
+      [
+        60,
+        10
+      ],
+      [
+        10,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        44
+      ],
+      [
+        44,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        44
+      ],
+      [
+        44,
+        63
+      ],
+      [
+        63,
+        0
+      ],
+      [
+        0,
+        63
+      ],
+      [
+        63,
+        18
+      ],
+      [
+        18,
+        63
+      ],
+      [
+        63,
+        7
+      ],
+      [
+        7,
+        63
+      ],
+      [
+        63,
+        67
+      ]
+    ],
+    "counterfactual_match_turns": 153,
+    "counterfactual_winner_agent": "pvs",
+    "dict_size": 20000,
+    "match_id": "D20000_seed2_beam_negamax_vs_pvs",
+    "match_winner": "pvs",
+    "original_match_turns": 149,
+    "original_winner_agent": "pvs",
+    "phase": "late",
+    "reference_edge": "く→む",
+    "reference_end_id": 55,
+    "reference_ordering_score": -2706.0,
+    "reference_rank": 9,
+    "reference_search_score": 8083.839705882353,
+    "reference_start_id": 9,
+    "required_char": "く",
+    "risk_level": "normal",
+    "same_edge": false,
+    "seed": 2,
+    "top_12": true,
+    "top_16": true,
+    "top_2": false,
+    "top_4": false,
+    "top_6": false,
+    "top_8": false,
+    "turn": 123,
+    "widened_edge": "く→る",
+    "widened_selects_reference": false
+  },
+  {
+    "beam_edge": "く→る",
+    "beam_end_id": 63,
+    "beam_ordering_score": -237.5,
+    "beam_search_score": 7897.289307479225,
+    "beam_start_id": 9,
+    "beam_won": false,
+    "candidate_count": 55,
+    "classification": "same_outcome_longer_survival",
+    "counterfactual_edge_history": [
+      [
+        55,
+        60
+      ],
+      [
+        60,
+        20
+      ],
+      [
+        20,
+        60
+      ],
+      [
+        60,
+        20
+      ],
+      [
+        20,
+        60
+      ],
+      [
+        60,
+        10
+      ],
+      [
+        10,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        19
+      ],
+      [
+        19,
+        63
+      ],
+      [
+        63,
+        44
+      ],
+      [
+        44,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        20,
+        2
+      ],
+      [
+        2,
+        63
+      ],
+      [
+        63,
+        44
+      ],
+      [
+        44,
+        63
+      ],
+      [
+        63,
+        0
+      ],
+      [
+        0,
+        63
+      ],
+      [
+        63,
+        18
+      ],
+      [
+        18,
+        63
+      ],
+      [
+        63,
+        7
+      ],
+      [
+        7,
+        63
+      ],
+      [
+        63,
+        67
+      ]
+    ],
+    "counterfactual_match_turns": 154,
+    "counterfactual_winner_agent": "pvs",
+    "dict_size": 20000,
+    "match_id": "D20000_seed2_pvs_vs_beam_negamax",
+    "match_winner": "pvs",
+    "original_match_turns": 150,
+    "original_winner_agent": "pvs",
+    "phase": "late",
+    "reference_edge": "く→む",
+    "reference_end_id": 55,
+    "reference_ordering_score": -2706.0,
+    "reference_rank": 9,
+    "reference_search_score": 8083.843823529412,
+    "reference_start_id": 9,
+    "required_char": "く",
+    "risk_level": "normal",
+    "same_edge": false,
+    "seed": 2,
+    "top_12": true,
+    "top_16": true,
+    "top_2": false,
+    "top_4": false,
+    "top_6": false,
+    "top_8": false,
+    "turn": 124,
+    "widened_edge": "く→る",
+    "widened_selects_reference": false
+  }
+]

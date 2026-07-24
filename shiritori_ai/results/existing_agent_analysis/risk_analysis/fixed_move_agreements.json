@@ -1,0 +1,86 @@
+[
+  {
+    "left_agent": "alpha_beta",
+    "move_agreement_rate": 1.0,
+    "pairs": 45,
+    "right_agent": "pvs",
+    "risk_level": "normal"
+  },
+  {
+    "left_agent": "alpha_beta",
+    "move_agreement_rate": 1.0,
+    "pairs": 45,
+    "right_agent": "beam_negamax",
+    "risk_level": "normal"
+  },
+  {
+    "left_agent": "pvs",
+    "move_agreement_rate": 1.0,
+    "pairs": 45,
+    "right_agent": "beam_negamax",
+    "risk_level": "normal"
+  },
+  {
+    "left_agent": "alpha_beta",
+    "move_agreement_rate": 1.0,
+    "pairs": 15,
+    "right_agent": "pvs",
+    "risk_level": "caution"
+  },
+  {
+    "left_agent": "alpha_beta",
+    "move_agreement_rate": 0.6666666666666666,
+    "pairs": 15,
+    "right_agent": "beam_negamax",
+    "risk_level": "caution"
+  },
+  {
+    "left_agent": "pvs",
+    "move_agreement_rate": 0.6666666666666666,
+    "pairs": 15,
+    "right_agent": "beam_negamax",
+    "risk_level": "caution"
+  },
+  {
+    "left_agent": "alpha_beta",
+    "move_agreement_rate": 1.0,
+    "pairs": 15,
+    "right_agent": "pvs",
+    "risk_level": "danger"
+  },
+  {
+    "left_agent": "alpha_beta",
+    "move_agreement_rate": 0.6666666666666666,
+    "pairs": 15,
+    "right_agent": "beam_negamax",
+    "risk_level": "danger"
+  },
+  {
+    "left_agent": "pvs",
+    "move_agreement_rate": 0.6666666666666666,
+    "pairs": 15,
+    "right_agent": "beam_negamax",
+    "risk_level": "danger"
+  },
+  {
+    "left_agent": "alpha_beta",
+    "move_agreement_rate": 1.0,
+    "pairs": 15,
+    "right_agent": "pvs",
+    "risk_level": "near_death"
+  },
+  {
+    "left_agent": "alpha_beta",
+    "move_agreement_rate": 1.0,
+    "pairs": 15,
+    "right_agent": "beam_negamax",
+    "risk_level": "near_death"
+  },
+  {
+    "left_agent": "pvs",
+    "move_agreement_rate": 1.0,
+    "pairs": 15,
+    "right_agent": "beam_negamax",
+    "risk_level": "near_death"
+  }
+]

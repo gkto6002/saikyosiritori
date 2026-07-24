@@ -1,0 +1,170 @@
+[
+  {
+    "descriptive_only": true,
+    "feature": "total_words",
+    "outcome": "mean_match_turns",
+    "pearson_r": 0.9913271866928809,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "total_words",
+    "outcome": "danger_turn_rate",
+    "pearson_r": -0.8081799821363946,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "total_words",
+    "outcome": "beam_top8_retention",
+    "pearson_r": -0.38136208037239105,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "safe_words",
+    "outcome": "mean_match_turns",
+    "pearson_r": 0.991339058008169,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "safe_words",
+    "outcome": "danger_turn_rate",
+    "pearson_r": -0.8084927631166475,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "safe_words",
+    "outcome": "beam_top8_retention",
+    "pearson_r": -0.3805483590787143,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "edge_types",
+    "outcome": "mean_match_turns",
+    "pearson_r": 0.93890015888952,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "edge_types",
+    "outcome": "danger_turn_rate",
+    "pearson_r": -0.9178621153458655,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "edge_types",
+    "outcome": "beam_top8_retention",
+    "pearson_r": -0.28405709193714906,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "safe_edge_types",
+    "outcome": "mean_match_turns",
+    "pearson_r": 0.9397461642198387,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "safe_edge_types",
+    "outcome": "danger_turn_rate",
+    "pearson_r": -0.9162237834149997,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "safe_edge_types",
+    "outcome": "beam_top8_retention",
+    "pearson_r": -0.284481462372385,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "start_word_hhi",
+    "outcome": "mean_match_turns",
+    "pearson_r": 0.6213278721341332,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "start_word_hhi",
+    "outcome": "danger_turn_rate",
+    "pearson_r": -0.1497601509147007,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "start_word_hhi",
+    "outcome": "beam_top8_retention",
+    "pearson_r": -0.5027997689861952,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "mean_outgoing_words_active",
+    "outcome": "mean_match_turns",
+    "pearson_r": 0.9913271866928808,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "mean_outgoing_words_active",
+    "outcome": "danger_turn_rate",
+    "pearson_r": -0.8081799821363945,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "mean_outgoing_words_active",
+    "outcome": "beam_top8_retention",
+    "pearson_r": -0.3813620803723911,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "largest_strong_component",
+    "outcome": "mean_match_turns",
+    "pearson_r": 0.6403391397634712,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "largest_strong_component",
+    "outcome": "danger_turn_rate",
+    "pearson_r": -0.9397063485031658,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "largest_strong_component",
+    "outcome": "beam_top8_retention",
+    "pearson_r": 0.05336846948711542,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "cycle_char_count",
+    "outcome": "mean_match_turns",
+    "pearson_r": 0.6403391397634712,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "cycle_char_count",
+    "outcome": "danger_turn_rate",
+    "pearson_r": -0.9397063485031658,
+    "sample_count": 7
+  },
+  {
+    "descriptive_only": true,
+    "feature": "cycle_char_count",
+    "outcome": "beam_top8_retention",
+    "pearson_r": 0.05336846948711542,
+    "sample_count": 7
+  }
+]
