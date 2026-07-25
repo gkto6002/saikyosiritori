@@ -1,0 +1,62 @@
+[
+  {
+    "config_id": "alpha_beta_d7_b8",
+    "parent_config_id": "alpha_beta_d6_b8",
+    "reason": "corresponding depth-6 setting failed safety gate: timeout=0.100, p95=1.001, root_completion=0.925",
+    "status": "excluded"
+  },
+  {
+    "config_id": "alpha_beta_d7_b12",
+    "parent_config_id": "alpha_beta_d6_b12",
+    "reason": "corresponding depth-6 setting failed safety gate: timeout=0.600, p95=1.001, root_completion=0.608",
+    "status": "excluded"
+  },
+  {
+    "config_id": "alpha_beta_d7_b16",
+    "parent_config_id": "alpha_beta_d6_b16",
+    "reason": "corresponding depth-6 setting failed safety gate: timeout=0.700, p95=1.001, root_completion=0.419",
+    "status": "excluded"
+  },
+  {
+    "config_id": "pvs_d7_b8",
+    "parent_config_id": "pvs_d6_b8",
+    "reason": "corresponding depth-6 setting failed safety gate: timeout=0.100, p95=1.000, root_completion=0.912",
+    "status": "excluded"
+  },
+  {
+    "config_id": "pvs_d7_b12",
+    "parent_config_id": "pvs_d6_b12",
+    "reason": "corresponding depth-6 setting failed safety gate: timeout=0.500, p95=1.000, root_completion=0.633",
+    "status": "excluded"
+  },
+  {
+    "config_id": "pvs_d7_b16",
+    "parent_config_id": "pvs_d6_b16",
+    "reason": "corresponding depth-6 setting failed safety gate: timeout=0.700, p95=1.001, root_completion=0.469",
+    "status": "excluded"
+  },
+  {
+    "config_id": "beam_negamax_d7_w8-6-4-2",
+    "parent_config_id": "beam_negamax_d6_w8-6-4-2",
+    "reason": "corresponding depth-6 setting failed safety gate: timeout=0.100, p95=1.002, root_completion=0.975",
+    "status": "excluded"
+  },
+  {
+    "config_id": "beam_negamax_d7_w12-8-4-2",
+    "parent_config_id": "beam_negamax_d6_w12-8-4-2",
+    "reason": "corresponding depth-6 setting failed safety gate: timeout=0.200, p95=1.000, root_completion=0.925",
+    "status": "excluded"
+  },
+  {
+    "config_id": "beam_negamax_d7_w12-8-6-4",
+    "parent_config_id": "beam_negamax_d6_w12-8-6-4",
+    "reason": "corresponding depth-6 setting failed safety gate: timeout=0.800, p95=1.000, root_completion=0.342",
+    "status": "excluded"
+  },
+  {
+    "config_id": "beam_negamax_d7_w16-12-8-4",
+    "parent_config_id": "beam_negamax_d6_w16-12-8-4",
+    "reason": "corresponding depth-6 setting failed safety gate: timeout=1.000, p95=1.001, root_completion=0.127",
+    "status": "excluded"
+  }
+]

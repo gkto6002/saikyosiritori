@@ -1,0 +1,101 @@
+[
+  {
+    "agent": "alpha_beta",
+    "draws": 0,
+    "games": 6,
+    "losses": 2,
+    "mean_time_sec": 0.22312089782954017,
+    "target": "baseline_alpha_beta",
+    "timeout_count": 4,
+    "win_rate": 0.6666666666666666,
+    "wins": 4
+  },
+  {
+    "agent": "beam_negamax",
+    "draws": 0,
+    "games": 6,
+    "losses": 3,
+    "mean_time_sec": 0.1767774979941228,
+    "target": "baseline_beam_negamax",
+    "timeout_count": 1,
+    "win_rate": 0.5,
+    "wins": 3
+  },
+  {
+    "agent": "pvs",
+    "draws": 0,
+    "games": 6,
+    "losses": 3,
+    "mean_time_sec": 0.18260599794571766,
+    "target": "baseline_pvs",
+    "timeout_count": 2,
+    "win_rate": 0.5,
+    "wins": 3
+  },
+  {
+    "agent": "alpha_beta",
+    "draws": 0,
+    "games": 18,
+    "losses": 10,
+    "mean_time_sec": 0.16681777340712822,
+    "target": "improved_adaptive_alpha_beta",
+    "timeout_count": 1,
+    "win_rate": 0.4444444444444444,
+    "wins": 8
+  },
+  {
+    "agent": "beam_negamax",
+    "draws": 0,
+    "games": 18,
+    "losses": 10,
+    "mean_time_sec": 0.17892754506985023,
+    "target": "improved_adaptive_beam_negamax",
+    "timeout_count": 0,
+    "win_rate": 0.4444444444444444,
+    "wins": 8
+  },
+  {
+    "agent": "pvs",
+    "draws": 0,
+    "games": 18,
+    "losses": 8,
+    "mean_time_sec": 0.29292585539382165,
+    "target": "improved_adaptive_pvs",
+    "timeout_count": 18,
+    "win_rate": 0.5555555555555556,
+    "wins": 10
+  },
+  {
+    "agent": "alpha_beta",
+    "draws": 0,
+    "games": 12,
+    "losses": 6,
+    "mean_time_sec": 0.20447649189483572,
+    "target": "improved_fixed_alpha_beta",
+    "timeout_count": 5,
+    "win_rate": 0.5,
+    "wins": 6
+  },
+  {
+    "agent": "beam_negamax",
+    "draws": 0,
+    "games": 12,
+    "losses": 6,
+    "mean_time_sec": 0.18320010578560267,
+    "target": "improved_fixed_beam_negamax",
+    "timeout_count": 0,
+    "win_rate": 0.5,
+    "wins": 6
+  },
+  {
+    "agent": "pvs",
+    "draws": 0,
+    "games": 12,
+    "losses": 6,
+    "mean_time_sec": 0.40160325289320215,
+    "target": "improved_fixed_pvs",
+    "timeout_count": 46,
+    "win_rate": 0.5,
+    "wins": 6
+  }
+]

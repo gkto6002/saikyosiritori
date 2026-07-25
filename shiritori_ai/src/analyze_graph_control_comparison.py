@@ -228,6 +228,12 @@ def summarize(
 def aggregate_matches(matches: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
     app = appearances(matches)
     overall = summarize(app, ("agent",))
+    non_random_app = [
+        row
+        for row in app
+        if row["agent"] != "random" and row["opponent"] != "random"
+    ]
+    overall_without_random = summarize(non_random_app, ("agent",))
     by_seat = summarize(app, ("agent", "seat"))
     by_size = summarize(app, ("dict_size", "agent"))
     by_seed = summarize(app, ("dict_size", "dictionary_seed", "agent"))
@@ -316,6 +322,7 @@ def aggregate_matches(matches: list[dict[str, Any]]) -> dict[str, list[dict[str,
         )
     return {
         "overall": overall,
+        "overall_without_random": overall_without_random,
         "by_seat": by_seat,
         "by_size": by_size,
         "by_seed": by_seed,
@@ -755,6 +762,34 @@ def calculate_reference_agreements(
     return existing
 
 
+def _format_plot_value(value: float, ylabel: str) -> str:
+    if "rate" in ylabel.lower():
+        return f"{value:.1%}"
+    if float(value).is_integer() and abs(value) >= 1:
+        return f"{int(value):,}"
+    if abs(value) >= 100:
+        return f"{value:,.0f}"
+    if abs(value) >= 10:
+        return f"{value:.1f}"
+    if abs(value) >= 1:
+        return f"{value:.2f}"
+    return f"{value:.3f}"
+
+
+def _add_bar_value_labels(ax, ylabel: str) -> None:
+    for container in ax.containers:
+        values = getattr(container, "datavalues", None)
+        if values is None:
+            continue
+        ax.bar_label(
+            container,
+            labels=[_format_plot_value(float(value), ylabel) for value in values],
+            padding=3,
+            fontsize=8,
+        )
+    ax.margins(y=0.12)
+
+
 def _bar(plt, path: Path, labels, values, title: str, ylabel: str) -> None:
     fig, ax = plt.subplots(figsize=(10, 5.5))
     ax.bar(labels, values, color="#4c78a8")
@@ -762,6 +797,7 @@ def _bar(plt, path: Path, labels, values, title: str, ylabel: str) -> None:
     ax.set_ylabel(ylabel)
     ax.tick_params(axis="x", rotation=28)
     ax.grid(axis="y", alpha=0.25)
+    _add_bar_value_labels(ax, ylabel)
     fig.tight_layout()
     fig.savefig(path, dpi=180)
     plt.close(fig)
@@ -785,12 +821,21 @@ def create_plots(
 
     overall = aggregates["overall"]
     bar("agent_overall_win_rate", overall, "agent", "win_rate", "Overall win rate by agent", "Win rate")
+    bar(
+        "agent_overall_win_rate_without_random",
+        aggregates["overall_without_random"],
+        "agent",
+        "win_rate",
+        "Overall win rate by agent (matches against Random excluded)",
+        "Win rate",
+    )
     fig, ax = plt.subplots(figsize=(11, 5.5))
     x = range(len(overall))
     ax.bar([value - 0.2 for value in x], [row["wins"] for row in overall], 0.4, label="wins")
     ax.bar([value + 0.2 for value in x], [row["losses"] for row in overall], 0.4, label="losses")
     ax.set_xticks(list(x), [row["agent"] for row in overall], rotation=28)
     ax.set_title("Wins and losses by agent")
+    _add_bar_value_labels(ax, "Games")
     ax.legend()
     fig.tight_layout()
     path = plots / "agent_wins_losses.png"
@@ -809,6 +854,7 @@ def create_plots(
     ax.set_xticks(list(x), labels, rotation=28)
     ax.set_ylabel("Win rate")
     ax.set_title("First and second seat win rates")
+    _add_bar_value_labels(ax, "Win rate")
     ax.legend()
     fig.tight_layout()
     path = plots / "agent_first_second_win_rate.png"
@@ -863,6 +909,7 @@ def create_plots(
     ax.set_xticks(list(x), [row["agent"] for row in timing], rotation=28)
     ax.set_title("Median and p95 decision time")
     ax.set_ylabel("Seconds")
+    _add_bar_value_labels(ax, "Seconds")
     ax.legend()
     fig.tight_layout()
     path = plots / "agent_median_p95_think_time.png"
@@ -963,6 +1010,7 @@ def create_plots(
     ax.bar([value + 0.2 for value in x], [row["not_selected_mean"] for row in comparison], 0.4, label="not selected")
     ax.set_xticks(list(x), [row["feature"] for row in comparison], rotation=40, ha="right")
     ax.set_title("Selected and non-selected feature means")
+    _add_bar_value_labels(ax, "Feature value")
     ax.legend()
     fig.tight_layout()
     fig.savefig(path, dpi=180)

@@ -1,0 +1,13 @@
+seat,target,agent,games,wins,losses,draws,win_rate,mean_time_sec,timeout_count
+first,baseline_alpha_beta,alpha_beta,1,0,1,0,0.0,0.0877862498940279,4
+first,baseline_beam_negamax,beam_negamax,1,1,0,0,1.0,0.15012811250053346,10
+first,baseline_pvs,pvs,1,0,1,0,0.0,0.08630137507700258,4
+first,improved_adaptive_alpha_beta,alpha_beta,3,2,1,0,0.6666666666666666,0.12900087255704284,28
+first,improved_adaptive_beam_negamax,beam_negamax,4,0,4,0,0.0,0.13623824847845661,30
+first,improved_adaptive_pvs,pvs,6,0,6,0,0.0,0.12523259335904624,39
+second,baseline_alpha_beta,alpha_beta,1,0,1,0,0.0,0.1365180655016697,11
+second,baseline_beam_negamax,beam_negamax,1,1,0,0,1.0,0.1506892878308215,11
+second,baseline_pvs,pvs,2,2,0,0,1.0,0.11914946980929622,11
+second,improved_adaptive_alpha_beta,alpha_beta,4,4,0,0,1.0,0.11219598959562264,14
+second,improved_adaptive_beam_negamax,beam_negamax,4,3,1,0,0.75,0.1503067465706004,34
+second,improved_adaptive_pvs,pvs,4,3,1,0,0.75,0.12163875000421992,24

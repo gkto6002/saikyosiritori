@@ -1,0 +1,7 @@
+seed,target,agent,games,wins,losses,draws,win_rate,mean_time_sec,timeout_count
+0,baseline_alpha_beta,alpha_beta,2,0,2,0,0.0,0.11215215769784881,15
+0,baseline_beam_negamax,beam_negamax,2,2,0,0,1.0,0.15040870016567748,21
+0,baseline_pvs,pvs,3,2,1,0,0.6666666666666666,0.10820010489853167,15
+0,improved_adaptive_alpha_beta,alpha_beta,7,6,1,0,0.8571428571428571,0.11939808229337416,42
+0,improved_adaptive_beam_negamax,beam_negamax,8,3,5,0,0.375,0.1432724975245285,64
+0,improved_adaptive_pvs,pvs,10,3,7,0,0.3,0.12379505601711571,63

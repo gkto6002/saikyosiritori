@@ -124,6 +124,83 @@ class SearchAgentTest(unittest.TestCase):
                 agent._record_depth_result(False, 0.91)
                 self.assertEqual(agent.current_depth, 2)
 
+    def test_adaptive_depth_thresholds_step_and_transition_log_are_configurable(self) -> None:
+        agent = AlphaBetaAgent(
+            depth=7,
+            adaptive_depth=True,
+            min_depth=3,
+            depth_recovery_turns=2,
+            depth_decrease_ratio=0.8,
+            depth_recovery_ratio=0.4,
+            depth_step=2,
+            timeout_decreases_depth=False,
+        )
+        agent._record_depth_result(False, 0.81)
+        self.assertEqual(5, agent.current_depth)
+        self.assertEqual("elapsed_ratio_high", agent._last_depth_transition["depth_change_reason"])
+        self.assertEqual(-2, agent._last_depth_transition["depth_change"])
+        agent._record_depth_result(False, 0.4)
+        self.assertEqual(5, agent.current_depth)
+        agent._record_depth_result(False, 0.4)
+        self.assertEqual(7, agent.current_depth)
+        self.assertEqual("recovered", agent._last_depth_transition["depth_change_reason"])
+        agent._record_depth_result(True, 0.0)
+        self.assertEqual(7, agent.current_depth)
+        for _ in range(3):
+            agent._record_depth_result(False, 0.81)
+        self.assertEqual(3, agent.current_depth)
+        self.assertEqual(3, agent._last_depth_transition["depth_after"])
+
+    def test_adaptive_depth_can_recover_above_initial_depth_up_to_maximum(self) -> None:
+        agent = AlphaBetaAgent(
+            time_limit_sec=1.0,
+            target_time_sec=0.25,
+            depth=5,
+            max_depth=7,
+            adaptive_depth=True,
+            min_depth=3,
+            depth_recovery_turns=2,
+            depth_decrease_ratio=0.8,
+            depth_recovery_ratio=0.4,
+        )
+        self.assertEqual(5, agent.initial_depth)
+        self.assertEqual(5, agent.current_depth)
+        self.assertEqual(7, agent.max_depth)
+        agent._record_depth_result(False, 0.3)
+        agent._record_depth_result(False, 0.3)
+        self.assertEqual(6, agent.current_depth)
+        agent._record_depth_result(False, 0.3)
+        agent._record_depth_result(False, 0.3)
+        self.assertEqual(7, agent.current_depth)
+        agent._record_depth_result(False, 0.81)
+        self.assertEqual(6, agent.current_depth)
+
+    def test_adaptive_depth_defaults_preserve_initial_as_maximum(self) -> None:
+        agent = PVSAgent(depth=5, adaptive_depth=True)
+        self.assertEqual(5, agent.initial_depth)
+        self.assertEqual(5, agent.max_depth)
+        self.assertEqual(agent.time_limit_sec, agent.target_time_sec)
+
+    def test_adaptive_depth_rejects_invalid_maximum_and_target_time(self) -> None:
+        with self.assertRaises(ValueError):
+            AlphaBetaAgent(depth=5, max_depth=4)
+        with self.assertRaises(ValueError):
+            AlphaBetaAgent(
+                time_limit_sec=1.0,
+                target_time_sec=1.1,
+                depth=5,
+                max_depth=7,
+            )
+
+    def test_fixed_depth_never_changes_and_logs_disabled_reason(self) -> None:
+        agent = PVSAgent(depth=6, adaptive_depth=False)
+        agent._record_depth_result(True, 1.0)
+        self.assertEqual(6, agent.current_depth)
+        self.assertEqual(
+            "adaptive_disabled",
+            agent._last_depth_transition["depth_change_reason"],
+        )
+
     def test_search_agents_use_lightweight_default_limits(self) -> None:
         for agent in [
             MinimaxAgent(time_limit_sec=10.0, depth=1, adaptive_depth=False),
@@ -304,6 +381,7 @@ class SearchAgentTest(unittest.TestCase):
             "own_safe_edge_type_count",
             "own_safe_destination_count",
             "root_candidate_count",
+            "selected_root_candidate_count",
             "searched_root_candidate_count",
         }
         self.assertTrue(required.issubset(decision.extra))

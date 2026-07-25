@@ -108,6 +108,10 @@ class SearchStats:
     null_window_search_count: int = 0
     research_count: int = 0
     root_alpha_updates: int = 0
+    legal_move_generation_time_sec: float = 0.0
+    candidate_evaluation_time_sec: float = 0.0
+    candidate_sort_time_sec: float = 0.0
+    root_ordering_time_sec: float = 0.0
     ordering_time_sec: float = 0.0
     evaluation_time_sec: float = 0.0
     search_time_sec: float = 0.0
@@ -135,6 +139,10 @@ class SearchStats:
             "research_count": self.research_count,
             "research_rate": research_rate,
             "root_alpha_updates": self.root_alpha_updates,
+            "legal_move_generation_time_sec": self.legal_move_generation_time_sec,
+            "candidate_evaluation_time_sec": self.candidate_evaluation_time_sec,
+            "candidate_sort_time_sec": self.candidate_sort_time_sec,
+            "root_ordering_time_sec": self.root_ordering_time_sec,
             "ordering_time_sec": self.ordering_time_sec,
             "evaluation_time_sec": self.evaluation_time_sec,
             "search_time_sec": self.search_time_sec,
@@ -147,11 +155,18 @@ class AdaptiveDepthMixin:
     """Shared one-search-per-turn adaptive depth controller."""
 
     depth: int
+    initial_depth: int
+    max_depth: int
     current_depth: int
     adaptive_depth: bool
     min_depth: int
     depth_recovery_turns: int
+    depth_decrease_ratio: float
+    depth_recovery_ratio: float
+    depth_step: int
+    timeout_decreases_depth: bool
     _non_timeout_streak: int
+    _last_depth_transition: dict[str, object]
 
     def _configure_adaptive_depth(
         self,
@@ -159,13 +174,41 @@ class AdaptiveDepthMixin:
         adaptive_depth: bool,
         min_depth: int,
         depth_recovery_turns: int,
+        depth_decrease_ratio: float = 0.9,
+        depth_recovery_ratio: float = 0.5,
+        depth_step: int = 1,
+        timeout_decreases_depth: bool = True,
+        max_depth: int | None = None,
     ) -> None:
+        if not 0.0 <= depth_recovery_ratio < depth_decrease_ratio <= 1.0:
+            raise ValueError(
+                "adaptive depth ratios must satisfy "
+                "0 <= recovery < decrease <= 1"
+            )
+        if depth_step <= 0:
+            raise ValueError("depth_step must be positive")
         self.depth = max(1, depth)
-        self.current_depth = self.depth
+        self.initial_depth = self.depth
+        self.max_depth = self.depth if max_depth is None else max(1, max_depth)
+        if self.max_depth < self.initial_depth:
+            raise ValueError("max_depth must be greater than or equal to depth")
+        self.current_depth = self.initial_depth
         self.adaptive_depth = adaptive_depth
-        self.min_depth = min(self.depth, max(1, min_depth))
+        self.min_depth = min(self.initial_depth, max(1, min_depth))
         self.depth_recovery_turns = max(1, depth_recovery_turns)
+        self.depth_decrease_ratio = depth_decrease_ratio
+        self.depth_recovery_ratio = depth_recovery_ratio
+        self.depth_step = depth_step
+        self.timeout_decreases_depth = timeout_decreases_depth
         self._non_timeout_streak = 0
+        self._last_depth_transition = {
+            "depth_before": self.current_depth,
+            "depth_after": self.current_depth,
+            "depth_change": 0,
+            "depth_changed": False,
+            "depth_change_reason": "not_recorded",
+            "recovery_streak": 0,
+        }
 
     def _effective_depth(self) -> int:
         return self.current_depth if self.adaptive_depth else self.depth
@@ -175,23 +218,64 @@ class AdaptiveDepthMixin:
         timed_out: bool,
         elapsed_ratio: float | None = None,
     ) -> None:
+        before = self.current_depth
+        reason = "adaptive_disabled"
         if not self.adaptive_depth:
+            self._last_depth_transition = {
+                "depth_before": before,
+                "depth_after": before,
+                "depth_change": 0,
+                "depth_changed": False,
+                "depth_change_reason": reason,
+                "recovery_streak": self._non_timeout_streak,
+            }
             return
         ratio = 0.0 if elapsed_ratio is None else elapsed_ratio
-        if timed_out or ratio >= 0.9:
-            self.current_depth = max(self.min_depth, self.current_depth - 1)
+        should_decrease = (
+            timed_out and self.timeout_decreases_depth
+        ) or ratio >= self.depth_decrease_ratio
+        if should_decrease:
+            self.current_depth = max(
+                self.min_depth, self.current_depth - self.depth_step
+            )
             self._non_timeout_streak = 0
-            return
-        if ratio > 0.5:
+            reason = "timeout" if timed_out else "elapsed_ratio_high"
+        elif ratio > self.depth_recovery_ratio:
             self._non_timeout_streak = 0
-            return
-        if self.current_depth >= self.depth:
+            reason = "recovery_streak_reset"
+        elif self.current_depth >= self.max_depth:
             self._non_timeout_streak = 0
-            return
-        self._non_timeout_streak += 1
-        if self._non_timeout_streak >= self.depth_recovery_turns:
-            self.current_depth = min(self.depth, self.current_depth + 1)
-            self._non_timeout_streak = 0
+            reason = "at_max_depth"
+        else:
+            self._non_timeout_streak += 1
+            reason = "recovery_wait"
+            if self._non_timeout_streak >= self.depth_recovery_turns:
+                self.current_depth = min(
+                    self.max_depth, self.current_depth + self.depth_step
+                )
+                self._non_timeout_streak = 0
+                reason = "recovered"
+        self._last_depth_transition = {
+            "depth_before": before,
+            "depth_after": self.current_depth,
+            "depth_change": self.current_depth - before,
+            "depth_changed": self.current_depth != before,
+            "depth_change_reason": reason,
+            "recovery_streak": self._non_timeout_streak,
+        }
+
+    def _adaptive_depth_extra(self) -> dict[str, object]:
+        return {
+            **self._last_depth_transition,
+            "initial_depth": self.initial_depth,
+            "max_depth": self.max_depth,
+            "min_depth": self.min_depth,
+            "depth_decrease_ratio": self.depth_decrease_ratio,
+            "depth_recovery_ratio": self.depth_recovery_ratio,
+            "depth_recovery_turns": self.depth_recovery_turns,
+            "depth_step": self.depth_step,
+            "timeout_decreases_depth": self.timeout_decreases_depth,
+        }
 
 
 def legal_moves_for_state(graph: WordGraph, state: GameState) -> list[int]:

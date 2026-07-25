@@ -86,6 +86,11 @@ MATCH_FLOW_FIELDS = [
     "effective_depth",
     "next_depth",
     "adaptive_depth",
+    "initial_depth",
+    "max_depth",
+    "min_depth",
+    "target_time_sec",
+    "target_elapsed_ratio",
     "pruned_count",
     "nodes_searched",
     "leaf_evaluations",
@@ -375,6 +380,11 @@ def build_match_flow_rows(
                 "effective_depth": turn.get("effective_depth", ""),
                 "next_depth": turn.get("next_depth", ""),
                 "adaptive_depth": turn.get("adaptive_depth", ""),
+                "initial_depth": turn.get("initial_depth", ""),
+                "max_depth": turn.get("max_depth", ""),
+                "min_depth": turn.get("min_depth", ""),
+                "target_time_sec": turn.get("target_time_sec", ""),
+                "target_elapsed_ratio": turn.get("target_elapsed_ratio", ""),
                 "pruned_count": turn.get("pruned_count", ""),
                 "nodes_searched": turn.get("nodes_searched", ""),
                 "leaf_evaluations": turn.get("leaf_evaluations", ""),
@@ -625,6 +635,25 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--min-depth", type=int, default=1)
     parser.add_argument("--depth-recovery-turns", type=int, default=5)
+    parser.add_argument("--depth-decrease-ratio", type=float, default=0.9)
+    parser.add_argument("--depth-recovery-ratio", type=float, default=0.5)
+    parser.add_argument("--depth-step", type=int, default=1)
+    parser.add_argument(
+        "--adaptive-max-depth-increment",
+        type=int,
+        default=0,
+        help="Maximum adaptive depth above each agent's initial depth",
+    )
+    parser.add_argument(
+        "--target-time-sec",
+        type=float,
+        help="Soft target used for depth control; defaults to --time-limit-sec",
+    )
+    parser.add_argument(
+        "--timeout-decreases-depth",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+    )
     parser.add_argument("--monte-carlo-candidates", type=int, default=20)
     parser.add_argument("--monte-carlo-playouts", type=int, default=10)
     parser.add_argument("--monte-carlo-max-moves", type=int, default=200)
@@ -635,8 +664,18 @@ def parse_args() -> argparse.Namespace:
     args = parser.parse_args()
     if args.branch_limit is not None and args.branch_limit <= 0:
         parser.error("--branch-limit must be positive")
-    if args.min_depth <= 0 or args.depth_recovery_turns <= 0:
-        parser.error("--min-depth and --depth-recovery-turns must be positive")
+    if args.min_depth <= 0 or args.depth_recovery_turns <= 0 or args.depth_step <= 0:
+        parser.error("depth values and recovery turns must be positive")
+    if args.adaptive_max_depth_increment < 0:
+        parser.error("--adaptive-max-depth-increment must be non-negative")
+    if args.target_time_sec is not None and (
+        args.target_time_sec <= 0 or args.target_time_sec > args.time_limit_sec
+    ):
+        parser.error("--target-time-sec must be positive and no greater than --time-limit-sec")
+    if not 0 <= args.depth_recovery_ratio < args.depth_decrease_ratio <= 1:
+        parser.error(
+            "adaptive ratios must satisfy 0 <= recovery < decrease <= 1"
+        )
     return args
 
 
@@ -747,6 +786,12 @@ def main() -> None:
                     adaptive_depth=args.adaptive_depth,
                     min_depth=args.min_depth,
                     depth_recovery_turns=args.depth_recovery_turns,
+                    depth_decrease_ratio=args.depth_decrease_ratio,
+                    depth_recovery_ratio=args.depth_recovery_ratio,
+                    depth_step=args.depth_step,
+                    timeout_decreases_depth=args.timeout_decreases_depth,
+                    adaptive_max_depth_increment=args.adaptive_max_depth_increment,
+                    target_time_sec=args.target_time_sec,
                     monte_carlo_candidates=args.monte_carlo_candidates,
                     monte_carlo_playouts=args.monte_carlo_playouts,
                     monte_carlo_max_moves=args.monte_carlo_max_moves,
@@ -764,6 +809,12 @@ def main() -> None:
                     adaptive_depth=args.adaptive_depth,
                     min_depth=args.min_depth,
                     depth_recovery_turns=args.depth_recovery_turns,
+                    depth_decrease_ratio=args.depth_decrease_ratio,
+                    depth_recovery_ratio=args.depth_recovery_ratio,
+                    depth_step=args.depth_step,
+                    timeout_decreases_depth=args.timeout_decreases_depth,
+                    adaptive_max_depth_increment=args.adaptive_max_depth_increment,
+                    target_time_sec=args.target_time_sec,
                     monte_carlo_candidates=args.monte_carlo_candidates,
                     monte_carlo_playouts=args.monte_carlo_playouts,
                     monte_carlo_max_moves=args.monte_carlo_max_moves,
@@ -839,6 +890,12 @@ def main() -> None:
             "adaptive_depth": args.adaptive_depth,
             "adaptive_depth_min": args.min_depth,
             "adaptive_depth_recovery_turns": args.depth_recovery_turns,
+            "adaptive_depth_decrease_ratio": args.depth_decrease_ratio,
+            "adaptive_depth_recovery_ratio": args.depth_recovery_ratio,
+            "adaptive_depth_step": args.depth_step,
+            "adaptive_timeout_decreases_depth": args.timeout_decreases_depth,
+            "adaptive_max_depth_increment": args.adaptive_max_depth_increment,
+            "adaptive_target_time_sec": args.target_time_sec,
             "branch_limit": args.branch_limit,
             "monte_carlo_candidates": args.monte_carlo_candidates,
             "monte_carlo_playouts": args.monte_carlo_playouts,

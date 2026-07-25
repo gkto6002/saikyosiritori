@@ -141,9 +141,10 @@
       "wins": 5
     }
   ],
-  "plot_count": 30,
+  "plot_count": 31,
   "plots": [
     "results/agent_comparison/D5000/bd3c4f60037c/analysis/plots/agent_overall_win_rate.png",
+    "results/agent_comparison/D5000/bd3c4f60037c/analysis/plots/agent_overall_win_rate_without_random.png",
     "results/agent_comparison/D5000/bd3c4f60037c/analysis/plots/agent_wins_losses.png",
     "results/agent_comparison/D5000/bd3c4f60037c/analysis/plots/agent_first_second_win_rate.png",
     "results/agent_comparison/D5000/bd3c4f60037c/analysis/plots/win_rate_by_dictionary_size.png",

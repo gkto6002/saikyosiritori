@@ -1,0 +1,294 @@
+{
+  "commit_id": "aa9f58450ba3718b762c520414b6ddb33489d464",
+  "config": {
+    "adaptive_profiles": {
+      "aggressive": {
+        "adaptive_depth": true,
+        "depth_decrease_ratio": 0.95,
+        "depth_recovery_ratio": 0.6,
+        "depth_recovery_turns": 3
+      },
+      "conservative": {
+        "adaptive_depth": true,
+        "depth_decrease_ratio": 0.8,
+        "depth_recovery_ratio": 0.4,
+        "depth_recovery_turns": 5
+      },
+      "fixed": {
+        "adaptive_depth": false,
+        "depth_decrease_ratio": 0.9,
+        "depth_recovery_ratio": 0.5,
+        "depth_recovery_turns": 5
+      },
+      "standard": {
+        "adaptive_depth": true,
+        "depth_decrease_ratio": 0.9,
+        "depth_recovery_ratio": 0.5,
+        "depth_recovery_turns": 5
+      }
+    },
+    "depth7_gate": {
+      "p95_time_ratio_max": 0.9,
+      "root_completion_rate_min": 0.5,
+      "timeout_rate_max": 0.2
+    },
+    "fixed_configs": [
+      {
+        "agent": "alpha_beta",
+        "branch_limit": 8,
+        "config_id": "alpha_beta_d5_b8",
+        "depth": 5
+      },
+      {
+        "agent": "alpha_beta",
+        "branch_limit": 12,
+        "config_id": "alpha_beta_d5_b12",
+        "depth": 5
+      },
+      {
+        "agent": "alpha_beta",
+        "branch_limit": 16,
+        "config_id": "alpha_beta_d5_b16",
+        "depth": 5
+      },
+      {
+        "agent": "alpha_beta",
+        "branch_limit": 8,
+        "config_id": "alpha_beta_d6_b8",
+        "depth": 6
+      },
+      {
+        "agent": "alpha_beta",
+        "branch_limit": 12,
+        "config_id": "alpha_beta_d6_b12",
+        "depth": 6
+      },
+      {
+        "agent": "alpha_beta",
+        "branch_limit": 16,
+        "config_id": "alpha_beta_d6_b16",
+        "depth": 6
+      },
+      {
+        "agent": "alpha_beta",
+        "branch_limit": 8,
+        "config_id": "alpha_beta_d7_b8",
+        "depth": 7
+      },
+      {
+        "agent": "alpha_beta",
+        "branch_limit": 12,
+        "config_id": "alpha_beta_d7_b12",
+        "depth": 7
+      },
+      {
+        "agent": "alpha_beta",
+        "branch_limit": 16,
+        "config_id": "alpha_beta_d7_b16",
+        "depth": 7
+      },
+      {
+        "agent": "pvs",
+        "branch_limit": 8,
+        "config_id": "pvs_d5_b8",
+        "depth": 5
+      },
+      {
+        "agent": "pvs",
+        "branch_limit": 12,
+        "config_id": "pvs_d5_b12",
+        "depth": 5
+      },
+      {
+        "agent": "pvs",
+        "branch_limit": 16,
+        "config_id": "pvs_d5_b16",
+        "depth": 5
+      },
+      {
+        "agent": "pvs",
+        "branch_limit": 8,
+        "config_id": "pvs_d6_b8",
+        "depth": 6
+      },
+      {
+        "agent": "pvs",
+        "branch_limit": 12,
+        "config_id": "pvs_d6_b12",
+        "depth": 6
+      },
+      {
+        "agent": "pvs",
+        "branch_limit": 16,
+        "config_id": "pvs_d6_b16",
+        "depth": 6
+      },
+      {
+        "agent": "pvs",
+        "branch_limit": 8,
+        "config_id": "pvs_d7_b8",
+        "depth": 7
+      },
+      {
+        "agent": "pvs",
+        "branch_limit": 12,
+        "config_id": "pvs_d7_b12",
+        "depth": 7
+      },
+      {
+        "agent": "pvs",
+        "branch_limit": 16,
+        "config_id": "pvs_d7_b16",
+        "depth": 7
+      },
+      {
+        "agent": "beam_negamax",
+        "beam_widths": [
+          8,
+          6,
+          4,
+          2
+        ],
+        "config_id": "beam_negamax_d5_w8-6-4-2",
+        "depth": 5
+      },
+      {
+        "agent": "beam_negamax",
+        "beam_widths": [
+          12,
+          8,
+          4,
+          2
+        ],
+        "config_id": "beam_negamax_d5_w12-8-4-2",
+        "depth": 5
+      },
+      {
+        "agent": "beam_negamax",
+        "beam_widths": [
+          12,
+          8,
+          6,
+          4
+        ],
+        "config_id": "beam_negamax_d5_w12-8-6-4",
+        "depth": 5
+      },
+      {
+        "agent": "beam_negamax",
+        "beam_widths": [
+          16,
+          12,
+          8,
+          4
+        ],
+        "config_id": "beam_negamax_d5_w16-12-8-4",
+        "depth": 5
+      },
+      {
+        "agent": "beam_negamax",
+        "beam_widths": [
+          8,
+          6,
+          4,
+          2
+        ],
+        "config_id": "beam_negamax_d6_w8-6-4-2",
+        "depth": 6
+      },
+      {
+        "agent": "beam_negamax",
+        "beam_widths": [
+          12,
+          8,
+          4,
+          2
+        ],
+        "config_id": "beam_negamax_d6_w12-8-4-2",
+        "depth": 6
+      },
+      {
+        "agent": "beam_negamax",
+        "beam_widths": [
+          12,
+          8,
+          6,
+          4
+        ],
+        "config_id": "beam_negamax_d6_w12-8-6-4",
+        "depth": 6
+      },
+      {
+        "agent": "beam_negamax",
+        "beam_widths": [
+          16,
+          12,
+          8,
+          4
+        ],
+        "config_id": "beam_negamax_d6_w16-12-8-4",
+        "depth": 6
+      },
+      {
+        "agent": "beam_negamax",
+        "beam_widths": [
+          8,
+          6,
+          4,
+          2
+        ],
+        "config_id": "beam_negamax_d7_w8-6-4-2",
+        "depth": 7
+      },
+      {
+        "agent": "beam_negamax",
+        "beam_widths": [
+          12,
+          8,
+          4,
+          2
+        ],
+        "config_id": "beam_negamax_d7_w12-8-4-2",
+        "depth": 7
+      },
+      {
+        "agent": "beam_negamax",
+        "beam_widths": [
+          12,
+          8,
+          6,
+          4
+        ],
+        "config_id": "beam_negamax_d7_w12-8-6-4",
+        "depth": 7
+      },
+      {
+        "agent": "beam_negamax",
+        "beam_widths": [
+          16,
+          12,
+          8,
+          4
+        ],
+        "config_id": "beam_negamax_d7_w16-12-8-4",
+        "depth": 7
+      }
+    ],
+    "format_version": "search_parameter_tuning_v1",
+    "mode": "quick",
+    "positions_per_seed": 3,
+    "reference_log": "/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/results/agent_comparison/D5000/bd3c4f60037c/raw_matches.jsonl",
+    "runtime_paths": [
+      "/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D5000_L2-12_seed0.runtime.json",
+      "/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D5000_L2-12_seed1.runtime.json",
+      "/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D5000_L2-12_seed2.runtime.json"
+    ],
+    "time_limit_sec": 0.15
+  },
+  "format_version": "search_parameter_tuning_v1",
+  "generated_at": "2026-07-24T16:27:13.643353+00:00",
+  "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+  "python_version": "3.13.5 (main, Jun 11 2025, 15:36:57) [Clang 17.0.0 (clang-1700.0.13.3)]",
+  "run_hash": "d31044dfa73e",
+  "source_fingerprint": "4063004999ca2fbacfe2d6d4be70361a0961f6b1e3d093ff0d9954bf11b2a7a9"
+}

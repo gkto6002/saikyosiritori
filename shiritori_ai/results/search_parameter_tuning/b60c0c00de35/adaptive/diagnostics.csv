@@ -1,0 +1,13 @@
+agent,profile,position_count,lowered_depth_count,lowered_depth_rate,move_change_when_lowered_rate,previous_time_next_fixed_time_correlation,legal_edges_effective_depth_correlation,remaining_words_effective_depth_correlation,depth_change_count,depth_oscillation_count
+alpha_beta,fixed,10,0,0.0,0.0,-0.008002003081075286,,,0,0
+alpha_beta,conservative,10,0,0.0,0.0,-0.008688189946809073,,,0,0
+alpha_beta,standard,10,0,0.0,0.0,-0.0019273770839935735,,,0,0
+alpha_beta,aggressive,10,0,0.0,0.0,-0.007413228381416146,,,0,0
+pvs,fixed,10,0,0.0,0.0,-0.16499412695502008,,,0,0
+pvs,conservative,10,0,0.0,0.0,-0.16387178948131845,,,0,0
+pvs,standard,10,0,0.0,0.0,-0.1567865847775948,,,0,0
+pvs,aggressive,10,0,0.0,0.0,-0.16118824263965478,,,0,0
+beam_negamax,fixed,10,0,0.0,0.0,-0.10229336168580837,,,0,0
+beam_negamax,conservative,10,0,0.0,0.0,0.019387768846133375,,,0,0
+beam_negamax,standard,10,0,0.0,0.0,-0.07944981078116829,,,0,0
+beam_negamax,aggressive,10,0,0.0,0.0,-0.09104948920770181,,,0,0

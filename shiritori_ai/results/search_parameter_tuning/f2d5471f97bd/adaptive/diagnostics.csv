@@ -1,0 +1,13 @@
+agent,profile,position_count,lowered_depth_count,lowered_depth_rate,raised_depth_count,raised_depth_rate,max_effective_depth,move_change_when_lowered_rate,previous_time_next_fixed_time_correlation,legal_edges_effective_depth_correlation,remaining_words_effective_depth_correlation,depth_change_count,depth_oscillation_count
+alpha_beta,fixed,10,0,0.0,0,0.0,5,0.0,0.12400204626296409,,,0,0
+alpha_beta,conservative,10,6,0.6,0,0.0,5,1.0,-0.2403829307675126,0.6130185616890218,0.6129231592140467,6,4
+alpha_beta,standard,10,0,0.0,0,0.0,5,0.0,0.07138695725263938,,,1,0
+alpha_beta,aggressive,10,0,0.0,3,0.3,6,0.0,-0.29682778949264643,-0.32560810326957784,-0.3249702676390312,4,2
+pvs,fixed,10,0,0.0,0,0.0,5,0.0,-0.0038193289257227965,,,0,0
+pvs,conservative,10,4,0.4,0,0.0,5,0.75,0.16871339286829184,0.40786858621267136,0.4062351740099116,3,1
+pvs,standard,10,0,0.0,1,0.1,6,0.0,0.23153033196145967,-0.17054044331430424,-0.17166684995581052,3,1
+pvs,aggressive,10,0,0.0,3,0.3,6,0.0,-0.16816542288267122,-0.32560810326957784,-0.3249702676390312,5,3
+beam_negamax,fixed,10,0,0.0,0,0.0,6,0.0,0.3171363839646541,,,0,0
+beam_negamax,conservative,10,8,0.8,0,0.0,6,1.0,0.785957303524188,0.9999457423007777,0.9998827820085897,2,0
+beam_negamax,standard,10,3,0.3,0,0.0,6,1.0,0.24298323111984968,0.3248436214343281,0.32187933547798786,2,1
+beam_negamax,aggressive,10,0,0.0,6,0.6,7,0.0,-0.5246539043607515,-0.6124464758678384,-0.6125836112585051,2,0

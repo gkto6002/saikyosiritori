@@ -1,0 +1,68 @@
+[
+  {
+    "agent": "alpha_beta",
+    "draws": 0,
+    "games": 2,
+    "losses": 2,
+    "mean_time_sec": 0.11215215769784881,
+    "target": "baseline_alpha_beta",
+    "timeout_count": 15,
+    "win_rate": 0.0,
+    "wins": 0
+  },
+  {
+    "agent": "beam_negamax",
+    "draws": 0,
+    "games": 2,
+    "losses": 0,
+    "mean_time_sec": 0.15040870016567748,
+    "target": "baseline_beam_negamax",
+    "timeout_count": 21,
+    "win_rate": 1.0,
+    "wins": 2
+  },
+  {
+    "agent": "pvs",
+    "draws": 0,
+    "games": 3,
+    "losses": 1,
+    "mean_time_sec": 0.10820010489853167,
+    "target": "baseline_pvs",
+    "timeout_count": 15,
+    "win_rate": 0.6666666666666666,
+    "wins": 2
+  },
+  {
+    "agent": "alpha_beta",
+    "draws": 0,
+    "games": 7,
+    "losses": 1,
+    "mean_time_sec": 0.11939808229337416,
+    "target": "improved_adaptive_alpha_beta",
+    "timeout_count": 42,
+    "win_rate": 0.8571428571428571,
+    "wins": 6
+  },
+  {
+    "agent": "beam_negamax",
+    "draws": 0,
+    "games": 8,
+    "losses": 5,
+    "mean_time_sec": 0.1432724975245285,
+    "target": "improved_adaptive_beam_negamax",
+    "timeout_count": 64,
+    "win_rate": 0.375,
+    "wins": 3
+  },
+  {
+    "agent": "pvs",
+    "draws": 0,
+    "games": 10,
+    "losses": 7,
+    "mean_time_sec": 0.12379505601711571,
+    "target": "improved_adaptive_pvs",
+    "timeout_count": 63,
+    "win_rate": 0.3,
+    "wins": 3
+  }
+]

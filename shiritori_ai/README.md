@@ -280,6 +280,79 @@ JSON Linesへ追記するため途中再開できます。通常対局ログとG
 全候補詳細ログは別ファイルです。集計CSV/JSON、30種類のPNG、自動レポートは
 各runの`analysis`以下へ保存されます。
 
+## AlphaBeta・PVS・Beamのパラメータ調整
+
+D5000の実対局から固定局面を作り、固定深度の選別、適応深度の閾値比較、
+最終対局、値付き図表、レポートまで順番に実行します。
+
+```bash
+python src/run_search_parameter_tuning.py --full
+```
+
+短時間の動作確認には`--quick`、段階実行には
+`--stage positions|fixed|adaptive|matches|analysis`を使用します。出力は
+`results/search_parameter_tuning/<run-hash>/`へ保存され、同一runの完了済み
+探索と対局は再利用されます。同じrunを同時実行するとロックエラーで停止します。
+適応深度の再実験だけを行う場合は、互換性を検証したうえで既存runの固定深度結果を
+`--reuse-fixed-from <run-dir>`により再利用できます。
+別の辞書サイズへ移る場合は`--dictionary-size`と`--selection-from`を使用します。
+選定済みの初期深度・枝数・Beam幅だけを引き継ぎ、新しい辞書上で固定設定と
+適応プロファイルを再測定します。対局ID、manifest、CSV、図表には新しい辞書サイズが
+保存されます。
+
+```bash
+python src/run_search_parameter_tuning.py \
+  --full \
+  --stage adaptive \
+  --dictionary-size 50000 \
+  --selection-from results/search_parameter_tuning/<D5000-run> \
+  --max-moves 3000 \
+  --max-match-time-sec 600
+```
+
+大規模辞書では、最初から全seed・全54対局を実行せず、seed 0の主要12対局を
+パイロットとして実行できます。`--match-limit`はそのコマンドで新しく実行する
+対局数だけを制限し、完了済み対局は数えません。これらは実行順の指定なので、
+同じrunを後から別seedやfull計画へ拡張できます。
+
+```bash
+python src/run_search_parameter_tuning.py \
+  --full \
+  --stage matches \
+  --dictionary-size 50000 \
+  --selection-from results/search_parameter_tuning/<D5000-run> \
+  --resume-run results/search_parameter_tuning/<D50000-run> \
+  --match-plan pilot \
+  --match-seeds 0 \
+  --match-limit 3 \
+  --max-moves 3000 \
+  --max-match-time-sec 600
+```
+
+通常の対局CLIでも、初期深度から上昇できる最大深度増分と、深度調整に使う
+通常目標時間を指定できます。`--time-limit-sec`は絶対上限であり、
+`--target-time-sec`を超える傾向では深度を下げ、十分軽い手が続けば
+`--adaptive-max-depth-increment`の範囲で深度を上げます。
+
+```bash
+python src/experiments_approx.py \
+  --runtime data/dictionaries/D5000_L2-12_seed0.runtime.json \
+  --agents alpha_beta pvs beam_negamax \
+  --adaptive-depth \
+  --adaptive-max-depth-increment 2 \
+  --target-time-sec 0.4 \
+  --depth-decrease-ratio 0.9 \
+  --depth-recovery-ratio 0.5 \
+  --depth-recovery-turns 3 \
+  --depth-step 1
+```
+
+最大深度増分を省略すると0、通常目標時間を省略するとハード制限時間となり、
+以前と同じ「初期深度が最大深度」の動作を維持します。
+`--no-timeout-decreases-depth`を指定すると、ハードタイムアウト自体を深度低下の
+条件にしません。ただし、同時に処理時間比が低下閾値以上なら時間比を理由として
+深度が下がります。
+
 ## 図の作成
 
 ```bash

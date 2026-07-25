@@ -1,0 +1,7 @@
+target,agent,games,wins,losses,draws,win_rate,mean_time_sec,timeout_count
+improved_adaptive_alpha_beta,alpha_beta,18,11,7,0,0.6111111111111112,0.34293339997792427,25
+improved_adaptive_beam_negamax,beam_negamax,18,7,11,0,0.3888888888888889,0.3897142350916084,3
+improved_adaptive_pvs,pvs,18,11,7,0,0.6111111111111112,0.3284238613091267,29
+improved_fixed_alpha_beta,alpha_beta,6,2,4,0,0.3333333333333333,0.11844273484894852,0
+improved_fixed_beam_negamax,beam_negamax,6,2,4,0,0.3333333333333333,0.19089965032408043,0
+improved_fixed_pvs,pvs,6,3,3,0,0.5,0.1202027618977949,0

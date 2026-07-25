@@ -237,26 +237,38 @@ def _score_edge_candidates(
 ]:
     evaluations: dict[tuple[int, int], CandidateEvaluation] = {}
     timed_out = False
-    for edge in edges:
-        try:
-            check_deadline(deadline)
-            evaluations[edge] = evaluate_ordering_score(
-                state, edge[0], edge[1], deadline, config
+    evaluation_started = time.perf_counter()
+    try:
+        for edge in edges:
+            try:
+                check_deadline(deadline)
+                evaluations[edge] = evaluate_ordering_score(
+                    state, edge[0], edge[1], deadline, config
+                )
+                if stats is not None:
+                    stats.ordering_evaluations += 1
+            except SearchTimeout:
+                if not allow_partial:
+                    raise
+                timed_out = True
+                break
+    finally:
+        if stats is not None:
+            stats.candidate_evaluation_time_sec += (
+                time.perf_counter() - evaluation_started
             )
-            if stats is not None:
-                stats.ordering_evaluations += 1
-        except SearchTimeout:
-            if not allow_partial:
-                raise
-            timed_out = True
-            break
     sort_key = lambda edge: _edge_sort_key(  # noqa: E731
         edge, evaluations[edge], aggressive
     )
-    if candidate_limit is not None and len(evaluations) > candidate_limit:
-        ordered = heapq.nsmallest(candidate_limit, evaluations, key=sort_key)
-    else:
-        ordered = sorted(evaluations, key=sort_key)
+    sort_started = time.perf_counter()
+    try:
+        if candidate_limit is not None and len(evaluations) > candidate_limit:
+            ordered = heapq.nsmallest(candidate_limit, evaluations, key=sort_key)
+        else:
+            ordered = sorted(evaluations, key=sort_key)
+    finally:
+        if stats is not None:
+            stats.candidate_sort_time_sec += time.perf_counter() - sort_started
     return ordered, evaluations, timed_out
 
 
@@ -558,11 +570,35 @@ class SearchAgentBase(BaseAgent, AdaptiveDepthMixin):
         min_depth: int,
         depth_recovery_turns: int,
         evaluation_config: EvaluationConfig,
+        depth_decrease_ratio: float = 0.9,
+        depth_recovery_ratio: float = 0.5,
+        depth_step: int = 1,
+        timeout_decreases_depth: bool = True,
+        max_depth: int | None = None,
+        target_time_sec: float | None = None,
     ) -> None:
         super().__init__(time_limit_sec, random_seed, evaluation_config)
+        self.target_time_sec = time_limit_sec if target_time_sec is None else target_time_sec
+        if target_time_sec is not None and self.target_time_sec <= 0:
+            raise ValueError("target_time_sec must be positive")
+        if (
+            target_time_sec is not None
+            and self.target_time_sec > self.time_limit_sec
+        ):
+            raise ValueError(
+                "target_time_sec must be less than or equal to time_limit_sec"
+            )
         self.branch_limit = branch_limit
         self._configure_adaptive_depth(
-            depth, adaptive_depth, min_depth, depth_recovery_turns
+            depth,
+            adaptive_depth,
+            min_depth,
+            depth_recovery_turns,
+            depth_decrease_ratio,
+            depth_recovery_ratio,
+            depth_step,
+            timeout_decreases_depth,
+            max_depth,
         )
 
     @property
@@ -582,10 +618,23 @@ class SearchAgentBase(BaseAgent, AdaptiveDepthMixin):
             "next_depth": self.current_depth,
             "adaptive_depth": self.adaptive_depth,
             "branch_limit": self.branch_limit,
+            "target_time_sec": self.target_time_sec,
             "pruned_count": stats.pruned_move_count,
+            **self._adaptive_depth_extra(),
             **stats.as_extra(),
             **extra,
         }
+
+    def _elapsed_ratios(self, elapsed: float) -> tuple[float, float]:
+        hard_limit_ratio = (
+            elapsed / self.time_limit_sec if self.time_limit_sec > 0 else math.inf
+        )
+        target_time_ratio = (
+            elapsed / self.target_time_sec
+            if self.target_time_sec > 0
+            else math.inf
+        )
+        return hard_limit_ratio, target_time_ratio
 
     def _ordered_words(
         self,
@@ -634,7 +683,10 @@ class SearchAgentBase(BaseAgent, AdaptiveDepthMixin):
                 self._edge_ordering_limit(ply),
             )
         finally:
-            stats.ordering_time_sec += time.perf_counter() - ordering_started
+            ordering_elapsed = time.perf_counter() - ordering_started
+            stats.ordering_time_sec += ordering_elapsed
+            if ply == 0:
+                stats.root_ordering_time_sec += ordering_elapsed
         self._record_edge_ordering_limit(len(edges), len(ordered), ply, stats)
         return ordered, evaluations, timed_out
 
@@ -672,6 +724,12 @@ class MinimaxAgent(SearchAgentBase):
         min_depth: int = 1,
         depth_recovery_turns: int = 5,
         evaluation_config: EvaluationConfig = DEFAULT_EVALUATION_CONFIG,
+        depth_decrease_ratio: float = 0.9,
+        depth_recovery_ratio: float = 0.5,
+        depth_step: int = 1,
+        timeout_decreases_depth: bool = True,
+        max_depth: int | None = None,
+        target_time_sec: float | None = None,
     ) -> None:
         super().__init__(
             time_limit_sec,
@@ -682,6 +740,12 @@ class MinimaxAgent(SearchAgentBase):
             min_depth,
             depth_recovery_turns,
             evaluation_config,
+            depth_decrease_ratio,
+            depth_recovery_ratio,
+            depth_step,
+            timeout_decreases_depth,
+            max_depth,
+            target_time_sec,
         )
 
     def choose_move(self, graph: WordGraph, state: GameState) -> MoveDecision:
@@ -699,14 +763,21 @@ class MinimaxAgent(SearchAgentBase):
         if not ordered:
             fallback = _safe_word_fallback(graph, moves)
             assert fallback is not None
-            self._record_depth_result(True)
+            elapsed = time.perf_counter() - started
+            elapsed_ratio, target_elapsed_ratio = self._elapsed_ratios(elapsed)
+            self._record_depth_result(True, target_elapsed_ratio)
             return MoveDecision(
                 fallback,
-                time.perf_counter() - started,
+                elapsed,
                 True,
                 LOSS_SCORE if graph.end_chars[fallback] == "ん" else -math.inf,
                 self._search_extra(
-                    stats, effective_depth, timed_out=True, score_complete=False
+                    stats,
+                    effective_depth,
+                    timed_out=True,
+                    score_complete=False,
+                    elapsed_ratio=elapsed_ratio,
+                    target_elapsed_ratio=target_elapsed_ratio,
                 ),
             )
 
@@ -726,13 +797,21 @@ class MinimaxAgent(SearchAgentBase):
                 best_score = score
                 best_move = word_id
         final_timed_out = timed_out or time.perf_counter() >= deadline
-        self._record_depth_result(final_timed_out)
+        elapsed = time.perf_counter() - started
+        elapsed_ratio, target_elapsed_ratio = self._elapsed_ratios(elapsed)
+        self._record_depth_result(final_timed_out, target_elapsed_ratio)
         return MoveDecision(
             best_move,
-            time.perf_counter() - started,
+            elapsed,
             final_timed_out,
             best_score,
-            self._search_extra(stats, effective_depth, timed_out=final_timed_out),
+            self._search_extra(
+                stats,
+                effective_depth,
+                timed_out=final_timed_out,
+                elapsed_ratio=elapsed_ratio,
+                target_elapsed_ratio=target_elapsed_ratio,
+            ),
         )
 
     def choose_edge(self, state: AIEdgeState) -> EdgeMoveDecision:
@@ -740,7 +819,11 @@ class MinimaxAgent(SearchAgentBase):
         deadline = self._deadline()
         effective_depth = self._effective_depth()
         stats = SearchStats()
+        legal_started = time.perf_counter()
         edges = state.available_edges()
+        stats.legal_move_generation_time_sec += (
+            time.perf_counter() - legal_started
+        )
         if not edges:
             return EdgeMoveDecision(None, None, time.perf_counter() - started, False, LOSS_SCORE)
         ordered, pre_scores, ordering_timed_out = self._ordered_edges(
@@ -755,8 +838,8 @@ class MinimaxAgent(SearchAgentBase):
             )
             elapsed = time.perf_counter() - started
             stats.total_search_time_sec = elapsed
-            elapsed_ratio = elapsed / self.time_limit_sec if self.time_limit_sec > 0 else math.inf
-            self._record_depth_result(True, elapsed_ratio)
+            elapsed_ratio, target_elapsed_ratio = self._elapsed_ratios(elapsed)
+            self._record_depth_result(True, target_elapsed_ratio)
             return EdgeMoveDecision(
                 fallback[0],
                 fallback[1],
@@ -770,7 +853,9 @@ class MinimaxAgent(SearchAgentBase):
                     move_unit="edge_type",
                     score_complete=False,
                     elapsed_ratio=elapsed_ratio,
+                    target_elapsed_ratio=target_elapsed_ratio,
                     root_candidate_count=len(edges),
+                    selected_root_candidate_count=0,
                     searched_root_candidate_count=0,
                     **analysis,
                 ),
@@ -801,8 +886,8 @@ class MinimaxAgent(SearchAgentBase):
         )
         elapsed = time.perf_counter() - started
         stats.total_search_time_sec = elapsed
-        elapsed_ratio = elapsed / self.time_limit_sec if self.time_limit_sec > 0 else math.inf
-        self._record_depth_result(final_timed_out, elapsed_ratio)
+        elapsed_ratio, target_elapsed_ratio = self._elapsed_ratios(elapsed)
+        self._record_depth_result(final_timed_out, target_elapsed_ratio)
         return EdgeMoveDecision(
             best_edge[0],
             best_edge[1],
@@ -815,7 +900,9 @@ class MinimaxAgent(SearchAgentBase):
                 timed_out=final_timed_out,
                 move_unit="edge_type",
                 elapsed_ratio=elapsed_ratio,
+                target_elapsed_ratio=target_elapsed_ratio,
                 root_candidate_count=len(edges),
+                selected_root_candidate_count=len(ordered),
                 searched_root_candidate_count=stats.completed_root_moves,
                 **analysis,
             ),
@@ -946,6 +1033,12 @@ class AlphaBetaAgent(MinimaxAgent):
         depth_recovery_turns: int = 5,
         evaluation_config: EvaluationConfig = DEFAULT_EVALUATION_CONFIG,
         share_root_alpha: bool = True,
+        depth_decrease_ratio: float = 0.9,
+        depth_recovery_ratio: float = 0.5,
+        depth_step: int = 1,
+        timeout_decreases_depth: bool = True,
+        max_depth: int | None = None,
+        target_time_sec: float | None = None,
     ) -> None:
         self.share_root_alpha = share_root_alpha
         super().__init__(
@@ -957,6 +1050,12 @@ class AlphaBetaAgent(MinimaxAgent):
             min_depth,
             depth_recovery_turns,
             evaluation_config,
+            depth_decrease_ratio,
+            depth_recovery_ratio,
+            depth_step,
+            timeout_decreases_depth,
+            max_depth,
+            target_time_sec,
         )
 
     def _score_move(
@@ -1139,6 +1238,12 @@ class BeamNegamaxAgent(MinimaxAgent):
         min_depth: int = 1,
         depth_recovery_turns: int = 5,
         evaluation_config: EvaluationConfig = DEFAULT_EVALUATION_CONFIG,
+        depth_decrease_ratio: float = 0.9,
+        depth_recovery_ratio: float = 0.5,
+        depth_step: int = 1,
+        timeout_decreases_depth: bool = True,
+        max_depth: int | None = None,
+        target_time_sec: float | None = None,
     ) -> None:
         if not beam_widths or any(width <= 0 for width in beam_widths):
             raise ValueError("beam_widths must contain positive integers")
@@ -1152,6 +1257,12 @@ class BeamNegamaxAgent(MinimaxAgent):
             min_depth=min_depth,
             depth_recovery_turns=depth_recovery_turns,
             evaluation_config=evaluation_config,
+            depth_decrease_ratio=depth_decrease_ratio,
+            depth_recovery_ratio=depth_recovery_ratio,
+            depth_step=depth_step,
+            timeout_decreases_depth=timeout_decreases_depth,
+            max_depth=max_depth,
+            target_time_sec=target_time_sec,
         )
 
     def _beam_width(self, ply: int) -> int:
@@ -1288,6 +1399,12 @@ class PVSAgent(AlphaBetaAgent):
         depth_recovery_turns: int = 5,
         evaluation_config: EvaluationConfig = DEFAULT_EVALUATION_CONFIG,
         null_window_epsilon: float | None = None,
+        depth_decrease_ratio: float = 0.9,
+        depth_recovery_ratio: float = 0.5,
+        depth_step: int = 1,
+        timeout_decreases_depth: bool = True,
+        max_depth: int | None = None,
+        target_time_sec: float | None = None,
     ) -> None:
         self.null_window_epsilon = null_window_epsilon
         super().__init__(
@@ -1299,6 +1416,12 @@ class PVSAgent(AlphaBetaAgent):
             min_depth=min_depth,
             depth_recovery_turns=depth_recovery_turns,
             evaluation_config=evaluation_config,
+            depth_decrease_ratio=depth_decrease_ratio,
+            depth_recovery_ratio=depth_recovery_ratio,
+            depth_step=depth_step,
+            timeout_decreases_depth=timeout_decreases_depth,
+            max_depth=max_depth,
+            target_time_sec=target_time_sec,
         )
 
     @property
@@ -1702,13 +1825,26 @@ def build_agent(
     adaptive_depth: bool = True,
     min_depth: int = 1,
     depth_recovery_turns: int = 5,
+    depth_decrease_ratio: float = 0.9,
+    depth_recovery_ratio: float = 0.5,
+    depth_step: int = 1,
+    timeout_decreases_depth: bool = True,
+    adaptive_max_depth_increment: int = 0,
+    target_time_sec: float | None = None,
 ) -> BaseAgent:
+    if adaptive_max_depth_increment < 0:
+        raise ValueError("adaptive_max_depth_increment must be non-negative")
     common = {"time_limit_sec": time_limit_sec, "random_seed": random_seed}
     search_common = {
         **common,
         "adaptive_depth": adaptive_depth,
         "min_depth": min_depth,
         "depth_recovery_turns": depth_recovery_turns,
+        "depth_decrease_ratio": depth_decrease_ratio,
+        "depth_recovery_ratio": depth_recovery_ratio,
+        "depth_step": depth_step,
+        "timeout_decreases_depth": timeout_decreases_depth,
+        "target_time_sec": target_time_sec,
     }
     if agent_name == "random":
         return RandomAgent(**common)
@@ -1718,21 +1854,31 @@ def build_agent(
         return GraphControlAgent(**common)
     if agent_name == "minimax":
         return MinimaxAgent(
-            **search_common, depth=minimax_depth, branch_limit=branch_limit
+            **search_common,
+            depth=minimax_depth,
+            max_depth=minimax_depth + adaptive_max_depth_increment,
+            branch_limit=branch_limit,
         )
     if agent_name == "alpha_beta":
         return AlphaBetaAgent(
-            **search_common, depth=alpha_beta_depth, branch_limit=branch_limit
+            **search_common,
+            depth=alpha_beta_depth,
+            max_depth=alpha_beta_depth + adaptive_max_depth_increment,
+            branch_limit=branch_limit,
         )
     if agent_name == "beam_negamax":
         return BeamNegamaxAgent(
-            **search_common, depth=beam_negamax_depth, beam_widths=beam_widths
+            **search_common,
+            depth=beam_negamax_depth,
+            max_depth=beam_negamax_depth + adaptive_max_depth_increment,
+            beam_widths=beam_widths,
         )
     if agent_name in {"pvs", "aggressive_pvs"}:
         agent_class = PVSAgent if agent_name == "pvs" else AggressivePVSAgent
         return agent_class(
             **search_common,
             depth=aggressive_pvs_depth,
+            max_depth=aggressive_pvs_depth + adaptive_max_depth_increment,
             branch_limit=branch_limit,
         )
     if agent_name == "monte_carlo":
