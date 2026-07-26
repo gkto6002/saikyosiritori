@@ -1,0 +1,155 @@
+{
+  "commit_id": "c3025850fe74072e338c0dc84f044ce8036e4bee",
+  "config": {
+    "agents": [
+      "alpha_beta",
+      "pvs",
+      "beam_alpha_beta",
+      "beam_pvs"
+    ],
+    "candidate_unit": "directed_edge_type_with_multiplicity",
+    "depth_profile": "adaptive",
+    "dictionary_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "dictionary_sizes": [
+      10000
+    ],
+    "format_version": "graph_control_comparison_v1",
+    "max_match_time_sec": 300.0,
+    "max_moves": 1000,
+    "mode": "full",
+    "output_scope": "D10000_adaptive",
+    "settings": {
+      "alpha_beta": {
+        "adaptive_depth": true,
+        "branch_limit": 8,
+        "depth_decrease_ratio": 0.95,
+        "depth_recovery_ratio": 0.6,
+        "depth_recovery_turns": 2,
+        "depth_step": 1,
+        "initial_depth": 5,
+        "max_depth": 7,
+        "min_depth": 1,
+        "selection_source": "results/search_parameter_tuning/f5a877380b91/adaptive/selected.json",
+        "target_time_ratio": 0.6,
+        "timeout_decreases_depth": true
+      },
+      "beam_alpha_beta": {
+        "adaptive_depth": true,
+        "beam_widths": [
+          8,
+          6,
+          4,
+          2
+        ],
+        "depth_decrease_ratio": 0.95,
+        "depth_recovery_ratio": 0.6,
+        "depth_recovery_turns": 2,
+        "depth_step": 1,
+        "initial_depth": 7,
+        "max_depth": 8,
+        "min_depth": 1,
+        "selection_basis": "D10000 fixed-D5/D6/D7 benchmark",
+        "target_time_ratio": 0.6,
+        "timeout_decreases_depth": true
+      },
+      "beam_negamax": {
+        "adaptive_depth": true,
+        "beam_widths": [
+          8,
+          6,
+          4,
+          2
+        ],
+        "depth_decrease_ratio": 0.95,
+        "depth_recovery_ratio": 0.6,
+        "depth_recovery_turns": 2,
+        "depth_step": 1,
+        "initial_depth": 6,
+        "max_depth": 8,
+        "min_depth": 1,
+        "selection_source": "results/search_parameter_tuning/f5a877380b91/adaptive/selected.json",
+        "target_time_ratio": 0.6,
+        "timeout_decreases_depth": true
+      },
+      "beam_pvs": {
+        "adaptive_depth": true,
+        "beam_widths": [
+          8,
+          6,
+          4,
+          2
+        ],
+        "depth_decrease_ratio": 0.95,
+        "depth_recovery_ratio": 0.6,
+        "depth_recovery_turns": 2,
+        "depth_step": 1,
+        "initial_depth": 7,
+        "max_depth": 8,
+        "min_depth": 1,
+        "selection_basis": "D10000 fixed-D5/D6/D7 benchmark",
+        "target_time_ratio": 0.6,
+        "timeout_decreases_depth": true
+      },
+      "graph_control": {
+        "search": "none",
+        "simulation": "none",
+        "tie_break": "score,start_id,end_id"
+      },
+      "graph_pvs": {
+        "adaptive_depth": true,
+        "branch_limit": 8,
+        "depth_decrease_ratio": 0.95,
+        "depth_recovery_ratio": 0.6,
+        "depth_recovery_turns": 2,
+        "depth_step": 1,
+        "initial_depth": 4,
+        "max_depth": 5,
+        "min_depth": 1,
+        "ordering": "lightweight_graph_control",
+        "selection_basis": "D10000 fixed-D5 and match results",
+        "target_time_ratio": 0.6,
+        "timeout_decreases_depth": true
+      },
+      "minimax": {
+        "adaptive_depth": false,
+        "branch_limit": 8,
+        "depth": 3
+      },
+      "monte_carlo": {
+        "candidate_limit": 20,
+        "max_playout_moves": 200,
+        "playouts_per_move": 10
+      },
+      "pvs": {
+        "adaptive_depth": true,
+        "branch_limit": 8,
+        "depth_decrease_ratio": 0.95,
+        "depth_recovery_ratio": 0.6,
+        "depth_recovery_turns": 2,
+        "depth_step": 1,
+        "initial_depth": 5,
+        "max_depth": 7,
+        "min_depth": 1,
+        "selection_source": "results/search_parameter_tuning/f5a877380b91/adaptive/selected.json",
+        "target_time_ratio": 0.6,
+        "timeout_decreases_depth": true
+      }
+    },
+    "stochastic_repetitions": 5,
+    "time_limit_sec": 1.0
+  },
+  "experiment_config_hash": "027398e3be3a18ee72b9d1cb9de8a341ce0ebdc712df61ad7d246b3317a0c3d3",
+  "run_hash": "7af6b4899cdae48b6c71c9c1f9395dd68e859204ab0065924e5d8bf6edef4222",
+  "source_fingerprint": "f6c579f043a6aed40118a23848311d49d60d2b71768d7d4f13af84d2deeaaa46"
+}

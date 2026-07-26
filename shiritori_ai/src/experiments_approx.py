@@ -170,9 +170,13 @@ AGENT_NAMES = [
     "minimax",
     "monte_carlo",
     "alpha_beta",
+    "full_alpha_beta",
     "beam_negamax",
     "pvs",
     "aggressive_pvs",
+    "graph_pvs",
+    "beam_alpha_beta",
+    "beam_pvs",
 ]
 
 
@@ -617,6 +621,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--beam-negamax-depth", type=int, default=4)
     parser.add_argument("--aggressive-pvs-depth", type=int, default=3)
     parser.add_argument(
+        "--hybrid-depth",
+        type=int,
+        help="Depth for GraphPVS/BeamAlphaBeta/BeamPVS; defaults to their base agent depth",
+    )
+    parser.add_argument(
         "--beam-widths",
         type=parse_beam_widths,
         default=DEFAULT_BEAM_WIDTHS,
@@ -664,6 +673,8 @@ def parse_args() -> argparse.Namespace:
     args = parser.parse_args()
     if args.branch_limit is not None and args.branch_limit <= 0:
         parser.error("--branch-limit must be positive")
+    if args.hybrid_depth is not None and args.hybrid_depth <= 0:
+        parser.error("--hybrid-depth must be positive")
     if args.min_depth <= 0 or args.depth_recovery_turns <= 0 or args.depth_step <= 0:
         parser.error("depth values and recovery turns must be positive")
     if args.adaptive_max_depth_increment < 0:
@@ -783,6 +794,7 @@ def main() -> None:
                     beam_negamax_depth=args.beam_negamax_depth,
                     beam_widths=args.beam_widths,
                     aggressive_pvs_depth=args.aggressive_pvs_depth,
+                    hybrid_depth=args.hybrid_depth,
                     adaptive_depth=args.adaptive_depth,
                     min_depth=args.min_depth,
                     depth_recovery_turns=args.depth_recovery_turns,
@@ -806,6 +818,7 @@ def main() -> None:
                     beam_negamax_depth=args.beam_negamax_depth,
                     beam_widths=args.beam_widths,
                     aggressive_pvs_depth=args.aggressive_pvs_depth,
+                    hybrid_depth=args.hybrid_depth,
                     adaptive_depth=args.adaptive_depth,
                     min_depth=args.min_depth,
                     depth_recovery_turns=args.depth_recovery_turns,
@@ -887,6 +900,7 @@ def main() -> None:
             "beam_negamax_depth": args.beam_negamax_depth,
             "beam_widths": list(args.beam_widths),
             "aggressive_pvs_depth": args.aggressive_pvs_depth,
+            "hybrid_depth": args.hybrid_depth,
             "adaptive_depth": args.adaptive_depth,
             "adaptive_depth_min": args.min_depth,
             "adaptive_depth_recovery_turns": args.depth_recovery_turns,

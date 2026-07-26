@@ -951,7 +951,14 @@ def create_plots(
         "Mean match length for wins and losses (two bars per agent in CSV)",
         "Turns",
     )
-    search_agents = {"alpha_beta", "pvs", "beam_negamax"}
+    search_agents = {
+        "alpha_beta",
+        "pvs",
+        "beam_negamax",
+        "graph_pvs",
+        "beam_alpha_beta",
+        "beam_pvs",
+    }
     search_timing = [row for row in timing if row["agent"] in search_agents]
     bar("search_agent_mean_time", search_timing, "agent", "mean_time_sec", "Search-agent mean decision time", "Seconds")
     search_overall = [row for row in overall if row["agent"] in search_agents]
@@ -967,13 +974,21 @@ def create_plots(
         for key, values in sorted(depth_groups.items())
     ]
     bar("search_agent_time_by_depth", depth_rows, "agent_depth", "mean_time_sec", "Search-agent time by effective depth", "Seconds")
-    pvs_turns = [row for row in turns if row["agent"] == "pvs"]
+    pvs_agents = {"pvs", "graph_pvs", "beam_pvs"}
+    pvs_turns = [row for row in turns if row["agent"] in pvs_agents]
     pvs_rate = (
         sum(float(row["research_count"] or 0) for row in pvs_turns)
         / max(1.0, sum(float(row["null_window_searches"] or 0) for row in pvs_turns))
     )
     path = plots / "pvs_research_rate.png"
-    _bar(plt, path, ["PVS"], [pvs_rate], "PVS re-search rate", "Rate")
+    _bar(
+        plt,
+        path,
+        ["PVS family"],
+        [pvs_rate],
+        "PVS-family re-search rate",
+        "Rate",
+    )
     created.append(str(path))
 
     candidate_agents = [row for row in timing if row["agent"] in {"greedy", "graph_control"}]

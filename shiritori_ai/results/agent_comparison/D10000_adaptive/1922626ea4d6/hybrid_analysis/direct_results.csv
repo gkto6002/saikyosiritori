@@ -1,0 +1,16 @@
+left_agent,right_agent,games,left_wins,right_wins,draws,left_win_rate,right_win_rate
+alpha_beta,pvs,6,2,4,0,0.3333333333333333,0.6666666666666666
+alpha_beta,beam_negamax,6,5,1,0,0.8333333333333334,0.16666666666666666
+alpha_beta,graph_pvs,6,5,1,0,0.8333333333333334,0.16666666666666666
+alpha_beta,beam_alpha_beta,6,4,2,0,0.6666666666666666,0.3333333333333333
+alpha_beta,beam_pvs,6,2,4,0,0.3333333333333333,0.6666666666666666
+pvs,beam_negamax,6,3,3,0,0.5,0.5
+pvs,graph_pvs,6,6,0,0,1.0,0.0
+pvs,beam_alpha_beta,6,3,3,0,0.5,0.5
+pvs,beam_pvs,6,2,4,0,0.3333333333333333,0.6666666666666666
+beam_negamax,graph_pvs,6,2,4,0,0.3333333333333333,0.6666666666666666
+beam_negamax,beam_alpha_beta,6,3,3,0,0.5,0.5
+beam_negamax,beam_pvs,6,0,6,0,0.0,1.0
+graph_pvs,beam_alpha_beta,6,2,4,0,0.3333333333333333,0.6666666666666666
+graph_pvs,beam_pvs,6,2,4,0,0.3333333333333333,0.6666666666666666
+beam_alpha_beta,beam_pvs,6,3,3,0,0.5,0.5

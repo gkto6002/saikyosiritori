@@ -70,9 +70,13 @@ def parse_args() -> argparse.Namespace:
             "minimax",
             "monte_carlo",
             "alpha_beta",
+            "full_alpha_beta",
             "beam_negamax",
             "pvs",
             "aggressive_pvs",
+            "graph_pvs",
+            "beam_alpha_beta",
+            "beam_pvs",
         ],
         default="greedy",
     )
@@ -84,6 +88,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--alpha-beta-depth", type=int, default=3)
     parser.add_argument("--beam-negamax-depth", type=int, default=4)
     parser.add_argument("--aggressive-pvs-depth", type=int, default=3)
+    parser.add_argument(
+        "--hybrid-depth",
+        type=int,
+        help="Depth for GraphPVS/BeamAlphaBeta/BeamPVS",
+    )
     parser.add_argument("--beam-widths", type=parse_beam_widths, default=DEFAULT_BEAM_WIDTHS)
     parser.add_argument("--branch-limit", type=int, default=12)
     parser.add_argument(
@@ -111,6 +120,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--monte-carlo-playouts", type=int, default=10)
     parser.add_argument("--monte-carlo-max-moves", type=int, default=200)
     args = parser.parse_args()
+    if args.hybrid_depth is not None and args.hybrid_depth <= 0:
+        parser.error("--hybrid-depth must be positive")
     if args.adaptive_max_depth_increment < 0:
         parser.error("--adaptive-max-depth-increment must be non-negative")
     if args.target_time_sec is not None and (
@@ -134,6 +145,7 @@ def main() -> None:
         beam_negamax_depth=args.beam_negamax_depth,
         beam_widths=args.beam_widths,
         aggressive_pvs_depth=args.aggressive_pvs_depth,
+        hybrid_depth=args.hybrid_depth,
         adaptive_depth=args.adaptive_depth,
         min_depth=args.min_depth,
         depth_recovery_turns=args.depth_recovery_turns,

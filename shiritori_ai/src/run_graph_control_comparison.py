@@ -1,4 +1,4 @@
-"""Run resumable all-agent comparisons including GraphControlAgent."""
+"""Run resumable edge-native agent comparisons."""
 
 from __future__ import annotations
 
@@ -32,6 +32,27 @@ AGENTS = (
     "pvs",
     "beam_negamax",
     "graph_control",
+    "graph_pvs",
+    "beam_alpha_beta",
+    "beam_pvs",
+)
+DEFAULT_AGENTS = (
+    "random",
+    "greedy",
+    "monte_carlo",
+    "minimax",
+    "alpha_beta",
+    "pvs",
+    "beam_negamax",
+    "graph_control",
+)
+ADAPTIVE_COMPARISON_AGENTS = (
+    "alpha_beta",
+    "pvs",
+    "beam_negamax",
+    "graph_pvs",
+    "beam_alpha_beta",
+    "beam_pvs",
 )
 STOCHASTIC_AGENTS = frozenset({"random", "monte_carlo"})
 FULL_SIZES = (1000, 3000, 5000, 10000, 20000)
@@ -157,19 +178,139 @@ def experiment_config(
     seeds: tuple[int, ...] | None = None,
     agents: tuple[str, ...] | None = None,
     stochastic_repetitions: int | None = None,
+    adaptive_depth: bool = False,
 ) -> dict[str, Any]:
     selected_sizes = sizes or ((1000,) if quick else FULL_SIZES)
     selected_seeds = seeds or ((0,) if quick else FULL_SEEDS)
-    selected_agents = agents or AGENTS
+    selected_agents = agents or (
+        ADAPTIVE_COMPARISON_AGENTS if adaptive_depth else DEFAULT_AGENTS
+    )
     if sizes is not None and len(selected_sizes) == 1:
         output_scope = f"D{selected_sizes[0]}"
     elif sizes is not None or seeds is not None or agents is not None:
         output_scope = "custom"
     else:
         output_scope = "quick" if quick else "full"
+    if adaptive_depth:
+        output_scope += "_adaptive"
+    fixed_settings = {
+        "minimax": {"depth": 3, "branch_limit": 8, "adaptive_depth": False},
+        "alpha_beta": {"depth": 5, "branch_limit": 8, "adaptive_depth": False},
+        "pvs": {"depth": 5, "branch_limit": 8, "adaptive_depth": False},
+        "beam_negamax": {
+            "depth": 5,
+            "beam_widths": [8, 6, 4, 2],
+            "adaptive_depth": False,
+        },
+        "monte_carlo": {
+            "candidate_limit": 20,
+            "playouts_per_move": 10,
+            "max_playout_moves": 200,
+        },
+        "graph_control": {
+            "search": "none",
+            "simulation": "none",
+            "tie_break": "score,start_id,end_id",
+        },
+        "graph_pvs": {
+            "depth": 5,
+            "branch_limit": 8,
+            "ordering": "lightweight_graph_control",
+            "adaptive_depth": False,
+        },
+        "beam_alpha_beta": {
+            "depth": 5,
+            "beam_widths": [8, 6, 4, 2],
+            "adaptive_depth": False,
+        },
+        "beam_pvs": {
+            "depth": 5,
+            "beam_widths": [8, 6, 4, 2],
+            "adaptive_depth": False,
+        },
+    }
+    if adaptive_depth:
+        adaptive_common = {
+            "adaptive_depth": True,
+            "min_depth": 1,
+            "depth_decrease_ratio": 0.95,
+            "depth_recovery_ratio": 0.6,
+            "depth_recovery_turns": 2,
+            "depth_step": 1,
+            "timeout_decreases_depth": True,
+            "target_time_ratio": 0.6,
+        }
+        fixed_settings.update(
+            {
+                # Reuse the selected D10000 search-parameter-tuning settings.
+                "alpha_beta": {
+                    **adaptive_common,
+                    "initial_depth": 5,
+                    "max_depth": 7,
+                    "branch_limit": 8,
+                    "selection_source": (
+                        "results/search_parameter_tuning/f5a877380b91/"
+                        "adaptive/selected.json"
+                    ),
+                },
+                "pvs": {
+                    **adaptive_common,
+                    "initial_depth": 5,
+                    "max_depth": 7,
+                    "branch_limit": 8,
+                    "selection_source": (
+                        "results/search_parameter_tuning/f5a877380b91/"
+                        "adaptive/selected.json"
+                    ),
+                },
+                "beam_negamax": {
+                    **adaptive_common,
+                    "initial_depth": 6,
+                    "max_depth": 8,
+                    "beam_widths": [8, 6, 4, 2],
+                    "selection_source": (
+                        "results/search_parameter_tuning/f5a877380b91/"
+                        "adaptive/selected.json"
+                    ),
+                },
+                # D5 timed out often in matches, so GraphPVS starts one ply
+                # lower and may recover only to the measured D5 setting.
+                "graph_pvs": {
+                    **adaptive_common,
+                    "initial_depth": 4,
+                    "max_depth": 5,
+                    "branch_limit": 8,
+                    "ordering": "lightweight_graph_control",
+                    "selection_basis": "D10000 fixed-D5 and match results",
+                },
+                # Promoted after the D10000 10-seed follow-up: this setting
+                # beat the AlphaBeta reference 16-4 while remaining faster.
+                "beam_alpha_beta": {
+                    **adaptive_common,
+                    "initial_depth": 8,
+                    "max_depth": 9,
+                    "beam_widths": [12, 8, 4, 2],
+                    "selection_basis": (
+                        "results/beam_hybrid_followup/D10000/"
+                        "c86fc7661da6"
+                    ),
+                },
+                "beam_pvs": {
+                    **adaptive_common,
+                    "initial_depth": 8,
+                    "max_depth": 9,
+                    "beam_widths": [12, 8, 4, 2],
+                    "selection_basis": (
+                        "results/beam_hybrid_followup/D10000/"
+                        "c86fc7661da6"
+                    ),
+                },
+            }
+        )
     return {
         "format_version": "graph_control_comparison_v1",
         "mode": "quick" if quick else "full",
+        "depth_profile": "adaptive" if adaptive_depth else "fixed",
         "output_scope": output_scope,
         "agents": list(selected_agents),
         "dictionary_sizes": list(selected_sizes),
@@ -184,26 +325,7 @@ def experiment_config(
         "time_limit_sec": time_limit_sec,
         "max_moves": 100 if quick else 1000,
         "max_match_time_sec": 30.0 if quick else 300.0,
-        "settings": {
-            "minimax": {"depth": 3, "branch_limit": 8, "adaptive_depth": False},
-            "alpha_beta": {"depth": 5, "branch_limit": 8, "adaptive_depth": False},
-            "pvs": {"depth": 5, "branch_limit": 8, "adaptive_depth": False},
-            "beam_negamax": {
-                "depth": 5,
-                "beam_widths": [8, 6, 4, 2],
-                "adaptive_depth": False,
-            },
-            "monte_carlo": {
-                "candidate_limit": 20,
-                "playouts_per_move": 10,
-                "max_playout_moves": 200,
-            },
-            "graph_control": {
-                "search": "none",
-                "simulation": "none",
-                "tie_break": "score,start_id,end_id",
-            },
-        },
+        "settings": fixed_settings,
         "candidate_unit": "directed_edge_type_with_multiplicity",
     }
 
@@ -212,21 +334,49 @@ def build_comparison_agent(
     name: str, config: dict[str, Any], random_seed: int
 ) -> BaseAgent:
     settings = config["settings"]
+    agent_settings = settings.get(name, {})
+    fallback_depth = int(agent_settings.get("depth", 3))
+    initial_depth = int(agent_settings.get("initial_depth", fallback_depth))
+    max_depth = int(agent_settings.get("max_depth", initial_depth))
+    target_time_ratio = float(agent_settings.get("target_time_ratio", 1.0))
+    beam_widths = tuple(
+        agent_settings.get(
+            "beam_widths",
+            settings["beam_negamax"]["beam_widths"],
+        )
+    )
     common = {
         "agent_name": name,
         "time_limit_sec": float(config["time_limit_sec"]),
         "random_seed": random_seed,
-        "adaptive_depth": False,
-        "branch_limit": 8,
-        "minimax_depth": int(settings["minimax"]["depth"]),
-        "alpha_beta_depth": (
-            int(settings["pvs"]["depth"])
-            if name == "pvs"
-            else int(settings["alpha_beta"]["depth"])
+        "adaptive_depth": bool(agent_settings.get("adaptive_depth", False)),
+        "branch_limit": agent_settings.get("branch_limit", 8),
+        "minimax_depth": initial_depth,
+        "alpha_beta_depth": initial_depth,
+        "aggressive_pvs_depth": initial_depth,
+        "beam_negamax_depth": initial_depth,
+        "beam_widths": beam_widths,
+        "hybrid_depth": initial_depth,
+        "min_depth": int(agent_settings.get("min_depth", 1)),
+        "depth_recovery_turns": int(
+            agent_settings.get("depth_recovery_turns", 5)
         ),
-        "aggressive_pvs_depth": int(settings["pvs"]["depth"]),
-        "beam_negamax_depth": int(settings["beam_negamax"]["depth"]),
-        "beam_widths": tuple(settings["beam_negamax"]["beam_widths"]),
+        "depth_decrease_ratio": float(
+            agent_settings.get("depth_decrease_ratio", 0.9)
+        ),
+        "depth_recovery_ratio": float(
+            agent_settings.get("depth_recovery_ratio", 0.5)
+        ),
+        "depth_step": int(agent_settings.get("depth_step", 1)),
+        "timeout_decreases_depth": bool(
+            agent_settings.get("timeout_decreases_depth", True)
+        ),
+        "adaptive_max_depth_increment": max_depth - initial_depth,
+        "target_time_sec": (
+            float(config["time_limit_sec"]) * target_time_ratio
+            if bool(agent_settings.get("adaptive_depth", False))
+            else None
+        ),
         "monte_carlo_candidates": int(settings["monte_carlo"]["candidate_limit"]),
         "monte_carlo_playouts": int(settings["monte_carlo"]["playouts_per_move"]),
         "monte_carlo_max_moves": int(settings["monte_carlo"]["max_playout_moves"]),
@@ -245,10 +395,11 @@ def expected_jobs(config: dict[str, Any]) -> list[tuple[int, int, str, str, int]
     for size in config["dictionary_sizes"]:
         for dictionary_seed in config["dictionary_seeds"]:
             for first, second in itertools.permutations(config["agents"], 2):
-                if config["mode"] == "quick" and "graph_control" not in {
-                    first,
-                    second,
-                }:
+                if (
+                    config["mode"] == "quick"
+                    and "graph_control" in config["agents"]
+                    and "graph_control" not in {first, second}
+                ):
                     continue
                 for repetition in range(repetitions(first, second, config)):
                     jobs.append((size, dictionary_seed, first, second, repetition))
@@ -317,6 +468,31 @@ def result_record(
         )
         row[f"{side}_leaf_evaluations"] = _turn_stat_sum(
             result, side, "leaf_evaluations"
+        )
+        for field in (
+            "cutoff_count",
+            "beam_pruned_move_count",
+            "null_window_search_count",
+            "research_count",
+            "graph_ordering_evaluations",
+            "graph_ordering_calls",
+            "graph_ordering_changed_first_count",
+            "graph_ordering_time_sec",
+        ):
+            row[f"{side}_{field}"] = _turn_stat_sum(result, side, field)
+        side_turns = [
+            turn for turn in result.history if turn["player"] == side
+        ]
+        depths = [
+            float(turn["effective_depth"])
+            for turn in side_turns
+            if turn.get("effective_depth") not in ("", None)
+        ]
+        row[f"{side}_mean_effective_depth"] = (
+            statistics.fmean(depths) if depths else 0.0
+        )
+        row[f"{side}_depth_change_count"] = sum(
+            bool(turn.get("depth_changed")) for turn in side_turns
         )
     return row
 
@@ -391,6 +567,7 @@ def run(args: argparse.Namespace) -> Path:
         seeds=args.seeds,
         agents=args.agents,
         stochastic_repetitions=args.stochastic_repetitions,
+        adaptive_depth=args.adaptive_depth,
     )
     config_hash = stable_hash(config)
     commit_id = git_commit()
@@ -560,6 +737,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         type=float,
         default=None,
         help="default: quick=0.2, full=1.0 (same final settings as existing analysis)",
+    )
+    parser.add_argument(
+        "--adaptive-depth",
+        action="store_true",
+        help=(
+            "use the selected adaptive D10000 settings; defaults to "
+            "AlphaBeta, PVS, BeamNegamax, GraphPVS, BeamAlphaBeta, and BeamPVS "
+            "(standalone GraphControl is excluded)"
+        ),
     )
     args = parser.parse_args(argv)
     if args.time_limit_sec is None:

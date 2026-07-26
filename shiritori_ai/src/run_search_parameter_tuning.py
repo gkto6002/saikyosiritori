@@ -560,6 +560,42 @@ def decision_row(
         "research_count": int(extra.get("research_count", 0) or 0),
         "research_rate": float(extra.get("research_rate", 0.0) or 0.0),
         "beam_widths_used": json.dumps(extra.get("beam_widths_used", {}), sort_keys=True),
+        "beam_candidate_counts_by_ply": json.dumps(
+            extra.get("beam_candidate_counts_by_ply", {}),
+            sort_keys=True,
+        ),
+        "beam_selected_counts_by_ply": json.dumps(
+            extra.get("beam_selected_counts_by_ply", {}),
+            sort_keys=True,
+        ),
+        "beam_ordering_calls_by_ply": json.dumps(
+            extra.get("beam_ordering_calls_by_ply", {}),
+            sort_keys=True,
+        ),
+        "beam_max_selected_by_ply": json.dumps(
+            extra.get("beam_max_selected_by_ply", {}),
+            sort_keys=True,
+        ),
+        "graph_ordering_evaluations": int(
+            extra.get("graph_ordering_evaluations", 0) or 0
+        ),
+        "graph_ordering_calls": int(
+            extra.get("graph_ordering_calls", 0) or 0
+        ),
+        "graph_ordering_changed_first_count": int(
+            extra.get("graph_ordering_changed_first_count", 0) or 0
+        ),
+        "graph_ordering_time_sec": float(
+            extra.get("graph_ordering_time_sec", 0.0) or 0.0
+        ),
+        "graph_root_baseline_first": json.dumps(
+            extra.get("graph_root_baseline_first"),
+            sort_keys=True,
+        ),
+        "graph_root_ordered_first": json.dumps(
+            extra.get("graph_root_ordered_first"),
+            sort_keys=True,
+        ),
         "legal_move_generation_time_sec": legal,
         "candidate_evaluation_time_sec": float(
             extra.get("candidate_evaluation_time_sec", 0.0) or 0.0

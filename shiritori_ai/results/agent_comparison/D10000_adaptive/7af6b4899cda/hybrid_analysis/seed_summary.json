@@ -1,0 +1,362 @@
+[
+  {
+    "agent": "alpha_beta",
+    "dictionary_seed": 0,
+    "draws": 0,
+    "games": 6,
+    "losses": 4,
+    "win_rate": 0.3333333333333333,
+    "wins": 2
+  },
+  {
+    "agent": "pvs",
+    "dictionary_seed": 0,
+    "draws": 0,
+    "games": 6,
+    "losses": 3,
+    "win_rate": 0.5,
+    "wins": 3
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "dictionary_seed": 0,
+    "draws": 0,
+    "games": 6,
+    "losses": 3,
+    "win_rate": 0.5,
+    "wins": 3
+  },
+  {
+    "agent": "beam_pvs",
+    "dictionary_seed": 0,
+    "draws": 0,
+    "games": 6,
+    "losses": 2,
+    "win_rate": 0.6666666666666666,
+    "wins": 4
+  },
+  {
+    "agent": "alpha_beta",
+    "dictionary_seed": 1,
+    "draws": 0,
+    "games": 6,
+    "losses": 4,
+    "win_rate": 0.3333333333333333,
+    "wins": 2
+  },
+  {
+    "agent": "pvs",
+    "dictionary_seed": 1,
+    "draws": 0,
+    "games": 6,
+    "losses": 5,
+    "win_rate": 0.16666666666666666,
+    "wins": 1
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "dictionary_seed": 1,
+    "draws": 0,
+    "games": 6,
+    "losses": 1,
+    "win_rate": 0.8333333333333334,
+    "wins": 5
+  },
+  {
+    "agent": "beam_pvs",
+    "dictionary_seed": 1,
+    "draws": 0,
+    "games": 6,
+    "losses": 2,
+    "win_rate": 0.6666666666666666,
+    "wins": 4
+  },
+  {
+    "agent": "alpha_beta",
+    "dictionary_seed": 2,
+    "draws": 0,
+    "games": 6,
+    "losses": 3,
+    "win_rate": 0.5,
+    "wins": 3
+  },
+  {
+    "agent": "pvs",
+    "dictionary_seed": 2,
+    "draws": 0,
+    "games": 6,
+    "losses": 3,
+    "win_rate": 0.5,
+    "wins": 3
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "dictionary_seed": 2,
+    "draws": 0,
+    "games": 6,
+    "losses": 3,
+    "win_rate": 0.5,
+    "wins": 3
+  },
+  {
+    "agent": "beam_pvs",
+    "dictionary_seed": 2,
+    "draws": 0,
+    "games": 6,
+    "losses": 3,
+    "win_rate": 0.5,
+    "wins": 3
+  },
+  {
+    "agent": "alpha_beta",
+    "dictionary_seed": 3,
+    "draws": 0,
+    "games": 6,
+    "losses": 0,
+    "win_rate": 1.0,
+    "wins": 6
+  },
+  {
+    "agent": "pvs",
+    "dictionary_seed": 3,
+    "draws": 0,
+    "games": 6,
+    "losses": 2,
+    "win_rate": 0.6666666666666666,
+    "wins": 4
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "dictionary_seed": 3,
+    "draws": 0,
+    "games": 6,
+    "losses": 5,
+    "win_rate": 0.16666666666666666,
+    "wins": 1
+  },
+  {
+    "agent": "beam_pvs",
+    "dictionary_seed": 3,
+    "draws": 0,
+    "games": 6,
+    "losses": 5,
+    "win_rate": 0.16666666666666666,
+    "wins": 1
+  },
+  {
+    "agent": "alpha_beta",
+    "dictionary_seed": 4,
+    "draws": 0,
+    "games": 6,
+    "losses": 4,
+    "win_rate": 0.3333333333333333,
+    "wins": 2
+  },
+  {
+    "agent": "pvs",
+    "dictionary_seed": 4,
+    "draws": 0,
+    "games": 6,
+    "losses": 5,
+    "win_rate": 0.16666666666666666,
+    "wins": 1
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "dictionary_seed": 4,
+    "draws": 0,
+    "games": 6,
+    "losses": 2,
+    "win_rate": 0.6666666666666666,
+    "wins": 4
+  },
+  {
+    "agent": "beam_pvs",
+    "dictionary_seed": 4,
+    "draws": 0,
+    "games": 6,
+    "losses": 1,
+    "win_rate": 0.8333333333333334,
+    "wins": 5
+  },
+  {
+    "agent": "alpha_beta",
+    "dictionary_seed": 5,
+    "draws": 0,
+    "games": 6,
+    "losses": 2,
+    "win_rate": 0.6666666666666666,
+    "wins": 4
+  },
+  {
+    "agent": "pvs",
+    "dictionary_seed": 5,
+    "draws": 0,
+    "games": 6,
+    "losses": 1,
+    "win_rate": 0.8333333333333334,
+    "wins": 5
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "dictionary_seed": 5,
+    "draws": 0,
+    "games": 6,
+    "losses": 4,
+    "win_rate": 0.3333333333333333,
+    "wins": 2
+  },
+  {
+    "agent": "beam_pvs",
+    "dictionary_seed": 5,
+    "draws": 0,
+    "games": 6,
+    "losses": 5,
+    "win_rate": 0.16666666666666666,
+    "wins": 1
+  },
+  {
+    "agent": "alpha_beta",
+    "dictionary_seed": 6,
+    "draws": 0,
+    "games": 6,
+    "losses": 4,
+    "win_rate": 0.3333333333333333,
+    "wins": 2
+  },
+  {
+    "agent": "pvs",
+    "dictionary_seed": 6,
+    "draws": 0,
+    "games": 6,
+    "losses": 2,
+    "win_rate": 0.6666666666666666,
+    "wins": 4
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "dictionary_seed": 6,
+    "draws": 0,
+    "games": 6,
+    "losses": 2,
+    "win_rate": 0.6666666666666666,
+    "wins": 4
+  },
+  {
+    "agent": "beam_pvs",
+    "dictionary_seed": 6,
+    "draws": 0,
+    "games": 6,
+    "losses": 4,
+    "win_rate": 0.3333333333333333,
+    "wins": 2
+  },
+  {
+    "agent": "alpha_beta",
+    "dictionary_seed": 7,
+    "draws": 0,
+    "games": 6,
+    "losses": 4,
+    "win_rate": 0.3333333333333333,
+    "wins": 2
+  },
+  {
+    "agent": "pvs",
+    "dictionary_seed": 7,
+    "draws": 0,
+    "games": 6,
+    "losses": 3,
+    "win_rate": 0.5,
+    "wins": 3
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "dictionary_seed": 7,
+    "draws": 0,
+    "games": 6,
+    "losses": 2,
+    "win_rate": 0.6666666666666666,
+    "wins": 4
+  },
+  {
+    "agent": "beam_pvs",
+    "dictionary_seed": 7,
+    "draws": 0,
+    "games": 6,
+    "losses": 3,
+    "win_rate": 0.5,
+    "wins": 3
+  },
+  {
+    "agent": "alpha_beta",
+    "dictionary_seed": 8,
+    "draws": 0,
+    "games": 6,
+    "losses": 2,
+    "win_rate": 0.6666666666666666,
+    "wins": 4
+  },
+  {
+    "agent": "pvs",
+    "dictionary_seed": 8,
+    "draws": 0,
+    "games": 6,
+    "losses": 2,
+    "win_rate": 0.6666666666666666,
+    "wins": 4
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "dictionary_seed": 8,
+    "draws": 0,
+    "games": 6,
+    "losses": 4,
+    "win_rate": 0.3333333333333333,
+    "wins": 2
+  },
+  {
+    "agent": "beam_pvs",
+    "dictionary_seed": 8,
+    "draws": 0,
+    "games": 6,
+    "losses": 4,
+    "win_rate": 0.3333333333333333,
+    "wins": 2
+  },
+  {
+    "agent": "alpha_beta",
+    "dictionary_seed": 9,
+    "draws": 0,
+    "games": 6,
+    "losses": 1,
+    "win_rate": 0.8333333333333334,
+    "wins": 5
+  },
+  {
+    "agent": "pvs",
+    "dictionary_seed": 9,
+    "draws": 0,
+    "games": 6,
+    "losses": 2,
+    "win_rate": 0.6666666666666666,
+    "wins": 4
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "dictionary_seed": 9,
+    "draws": 0,
+    "games": 6,
+    "losses": 4,
+    "win_rate": 0.3333333333333333,
+    "wins": 2
+  },
+  {
+    "agent": "beam_pvs",
+    "dictionary_seed": 9,
+    "draws": 0,
+    "games": 6,
+    "losses": 5,
+    "win_rate": 0.16666666666666666,
+    "wins": 1
+  }
+]

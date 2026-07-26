@@ -1,0 +1,212 @@
+[
+  {
+    "draws": 0,
+    "games": 6,
+    "left_agent": "alpha_beta",
+    "left_win_rate": 0.5,
+    "left_wins": 3,
+    "right_agent": "pvs",
+    "right_win_rate": 0.5,
+    "right_wins": 3
+  },
+  {
+    "draws": 0,
+    "games": 6,
+    "left_agent": "alpha_beta",
+    "left_win_rate": 0.6666666666666666,
+    "left_wins": 4,
+    "right_agent": "beam_negamax",
+    "right_win_rate": 0.3333333333333333,
+    "right_wins": 2
+  },
+  {
+    "draws": 0,
+    "games": 6,
+    "left_agent": "alpha_beta",
+    "left_win_rate": 1.0,
+    "left_wins": 6,
+    "right_agent": "graph_control",
+    "right_win_rate": 0.0,
+    "right_wins": 0
+  },
+  {
+    "draws": 0,
+    "games": 6,
+    "left_agent": "alpha_beta",
+    "left_win_rate": 0.8333333333333334,
+    "left_wins": 5,
+    "right_agent": "graph_pvs",
+    "right_win_rate": 0.16666666666666666,
+    "right_wins": 1
+  },
+  {
+    "draws": 0,
+    "games": 6,
+    "left_agent": "alpha_beta",
+    "left_win_rate": 0.6666666666666666,
+    "left_wins": 4,
+    "right_agent": "beam_alpha_beta",
+    "right_win_rate": 0.3333333333333333,
+    "right_wins": 2
+  },
+  {
+    "draws": 0,
+    "games": 6,
+    "left_agent": "alpha_beta",
+    "left_win_rate": 0.6666666666666666,
+    "left_wins": 4,
+    "right_agent": "beam_pvs",
+    "right_win_rate": 0.3333333333333333,
+    "right_wins": 2
+  },
+  {
+    "draws": 0,
+    "games": 6,
+    "left_agent": "pvs",
+    "left_win_rate": 0.6666666666666666,
+    "left_wins": 4,
+    "right_agent": "beam_negamax",
+    "right_win_rate": 0.3333333333333333,
+    "right_wins": 2
+  },
+  {
+    "draws": 0,
+    "games": 6,
+    "left_agent": "pvs",
+    "left_win_rate": 1.0,
+    "left_wins": 6,
+    "right_agent": "graph_control",
+    "right_win_rate": 0.0,
+    "right_wins": 0
+  },
+  {
+    "draws": 0,
+    "games": 6,
+    "left_agent": "pvs",
+    "left_win_rate": 1.0,
+    "left_wins": 6,
+    "right_agent": "graph_pvs",
+    "right_win_rate": 0.0,
+    "right_wins": 0
+  },
+  {
+    "draws": 0,
+    "games": 6,
+    "left_agent": "pvs",
+    "left_win_rate": 0.6666666666666666,
+    "left_wins": 4,
+    "right_agent": "beam_alpha_beta",
+    "right_win_rate": 0.3333333333333333,
+    "right_wins": 2
+  },
+  {
+    "draws": 0,
+    "games": 6,
+    "left_agent": "pvs",
+    "left_win_rate": 0.6666666666666666,
+    "left_wins": 4,
+    "right_agent": "beam_pvs",
+    "right_win_rate": 0.3333333333333333,
+    "right_wins": 2
+  },
+  {
+    "draws": 0,
+    "games": 6,
+    "left_agent": "beam_negamax",
+    "left_win_rate": 1.0,
+    "left_wins": 6,
+    "right_agent": "graph_control",
+    "right_win_rate": 0.0,
+    "right_wins": 0
+  },
+  {
+    "draws": 0,
+    "games": 6,
+    "left_agent": "beam_negamax",
+    "left_win_rate": 1.0,
+    "left_wins": 6,
+    "right_agent": "graph_pvs",
+    "right_win_rate": 0.0,
+    "right_wins": 0
+  },
+  {
+    "draws": 0,
+    "games": 6,
+    "left_agent": "beam_negamax",
+    "left_win_rate": 0.5,
+    "left_wins": 3,
+    "right_agent": "beam_alpha_beta",
+    "right_win_rate": 0.5,
+    "right_wins": 3
+  },
+  {
+    "draws": 0,
+    "games": 6,
+    "left_agent": "beam_negamax",
+    "left_win_rate": 0.5,
+    "left_wins": 3,
+    "right_agent": "beam_pvs",
+    "right_win_rate": 0.5,
+    "right_wins": 3
+  },
+  {
+    "draws": 0,
+    "games": 6,
+    "left_agent": "graph_control",
+    "left_win_rate": 0.0,
+    "left_wins": 0,
+    "right_agent": "graph_pvs",
+    "right_win_rate": 1.0,
+    "right_wins": 6
+  },
+  {
+    "draws": 0,
+    "games": 6,
+    "left_agent": "graph_control",
+    "left_win_rate": 0.0,
+    "left_wins": 0,
+    "right_agent": "beam_alpha_beta",
+    "right_win_rate": 1.0,
+    "right_wins": 6
+  },
+  {
+    "draws": 0,
+    "games": 6,
+    "left_agent": "graph_control",
+    "left_win_rate": 0.0,
+    "left_wins": 0,
+    "right_agent": "beam_pvs",
+    "right_win_rate": 1.0,
+    "right_wins": 6
+  },
+  {
+    "draws": 0,
+    "games": 6,
+    "left_agent": "graph_pvs",
+    "left_win_rate": 0.0,
+    "left_wins": 0,
+    "right_agent": "beam_alpha_beta",
+    "right_win_rate": 1.0,
+    "right_wins": 6
+  },
+  {
+    "draws": 0,
+    "games": 6,
+    "left_agent": "graph_pvs",
+    "left_win_rate": 0.16666666666666666,
+    "left_wins": 1,
+    "right_agent": "beam_pvs",
+    "right_win_rate": 0.8333333333333334,
+    "right_wins": 5
+  },
+  {
+    "draws": 0,
+    "games": 6,
+    "left_agent": "beam_alpha_beta",
+    "left_win_rate": 0.5,
+    "left_wins": 3,
+    "right_agent": "beam_pvs",
+    "right_win_rate": 0.5,
+    "right_wins": 3
+  }
+]

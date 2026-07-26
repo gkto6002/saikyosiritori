@@ -1,0 +1,802 @@
+[
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_alpha_beta_baseline",
+    "dictionary_seed": 0,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_alpha_beta_deep",
+    "dictionary_seed": 0,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_alpha_beta_deep_wide",
+    "dictionary_seed": 0,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_alpha_beta_wide",
+    "dictionary_seed": 0,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_pvs_baseline",
+    "dictionary_seed": 0,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_pvs_deep",
+    "dictionary_seed": 0,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_pvs_deep_wide",
+    "dictionary_seed": 0,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_pvs_wide",
+    "dictionary_seed": 0,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_alpha_beta_baseline",
+    "dictionary_seed": 1,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_alpha_beta_deep",
+    "dictionary_seed": 1,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_alpha_beta_deep_wide",
+    "dictionary_seed": 1,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_alpha_beta_wide",
+    "dictionary_seed": 1,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_pvs_baseline",
+    "dictionary_seed": 1,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_pvs_deep",
+    "dictionary_seed": 1,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_pvs_deep_wide",
+    "dictionary_seed": 1,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_pvs_wide",
+    "dictionary_seed": 1,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_alpha_beta_baseline",
+    "dictionary_seed": 2,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_alpha_beta_deep",
+    "dictionary_seed": 2,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_alpha_beta_deep_wide",
+    "dictionary_seed": 2,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_alpha_beta_wide",
+    "dictionary_seed": 2,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_pvs_baseline",
+    "dictionary_seed": 2,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_pvs_deep",
+    "dictionary_seed": 2,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_pvs_deep_wide",
+    "dictionary_seed": 2,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_pvs_wide",
+    "dictionary_seed": 2,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_alpha_beta_baseline",
+    "dictionary_seed": 3,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_alpha_beta_deep",
+    "dictionary_seed": 3,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_alpha_beta_deep_wide",
+    "dictionary_seed": 3,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_alpha_beta_wide",
+    "dictionary_seed": 3,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_pvs_baseline",
+    "dictionary_seed": 3,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_pvs_deep",
+    "dictionary_seed": 3,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_pvs_deep_wide",
+    "dictionary_seed": 3,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_pvs_wide",
+    "dictionary_seed": 3,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_alpha_beta_baseline",
+    "dictionary_seed": 4,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_alpha_beta_deep",
+    "dictionary_seed": 4,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_alpha_beta_deep_wide",
+    "dictionary_seed": 4,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_alpha_beta_wide",
+    "dictionary_seed": 4,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_pvs_baseline",
+    "dictionary_seed": 4,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_pvs_deep",
+    "dictionary_seed": 4,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_pvs_deep_wide",
+    "dictionary_seed": 4,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_pvs_wide",
+    "dictionary_seed": 4,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_alpha_beta_baseline",
+    "dictionary_seed": 5,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_alpha_beta_deep",
+    "dictionary_seed": 5,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_alpha_beta_deep_wide",
+    "dictionary_seed": 5,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_alpha_beta_wide",
+    "dictionary_seed": 5,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_pvs_baseline",
+    "dictionary_seed": 5,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_pvs_deep",
+    "dictionary_seed": 5,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_pvs_deep_wide",
+    "dictionary_seed": 5,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_pvs_wide",
+    "dictionary_seed": 5,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_alpha_beta_baseline",
+    "dictionary_seed": 6,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_alpha_beta_deep",
+    "dictionary_seed": 6,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_alpha_beta_deep_wide",
+    "dictionary_seed": 6,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_alpha_beta_wide",
+    "dictionary_seed": 6,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_pvs_baseline",
+    "dictionary_seed": 6,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_pvs_deep",
+    "dictionary_seed": 6,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_pvs_deep_wide",
+    "dictionary_seed": 6,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_pvs_wide",
+    "dictionary_seed": 6,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_alpha_beta_baseline",
+    "dictionary_seed": 7,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_alpha_beta_deep",
+    "dictionary_seed": 7,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_alpha_beta_deep_wide",
+    "dictionary_seed": 7,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_alpha_beta_wide",
+    "dictionary_seed": 7,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_pvs_baseline",
+    "dictionary_seed": 7,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_pvs_deep",
+    "dictionary_seed": 7,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_pvs_deep_wide",
+    "dictionary_seed": 7,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_pvs_wide",
+    "dictionary_seed": 7,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_alpha_beta_baseline",
+    "dictionary_seed": 8,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_alpha_beta_deep",
+    "dictionary_seed": 8,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_alpha_beta_deep_wide",
+    "dictionary_seed": 8,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_alpha_beta_wide",
+    "dictionary_seed": 8,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_pvs_baseline",
+    "dictionary_seed": 8,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_pvs_deep",
+    "dictionary_seed": 8,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_pvs_deep_wide",
+    "dictionary_seed": 8,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_pvs_wide",
+    "dictionary_seed": 8,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 2,
+    "config_id": "beam_alpha_beta_baseline",
+    "dictionary_seed": 9,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.0,
+    "hybrid_wins": 0
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_alpha_beta_deep",
+    "dictionary_seed": 9,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_alpha_beta_deep_wide",
+    "dictionary_seed": 9,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_alpha_beta",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_alpha_beta_wide",
+    "dictionary_seed": 9,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_pvs_baseline",
+    "dictionary_seed": 9,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 1,
+    "config_id": "beam_pvs_deep",
+    "dictionary_seed": 9,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 0.5,
+    "hybrid_wins": 1
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_pvs_deep_wide",
+    "dictionary_seed": 9,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  },
+  {
+    "agent": "beam_pvs",
+    "alpha_beta_wins": 0,
+    "config_id": "beam_pvs_wide",
+    "dictionary_seed": 9,
+    "draws": 0,
+    "games": 2,
+    "hybrid_win_rate": 1.0,
+    "hybrid_wins": 2
+  }
+]

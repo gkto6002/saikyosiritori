@@ -1,0 +1,29 @@
+{
+  "commit_id": "c3025850fe74072e338c0dc84f044ce8036e4bee",
+  "config": {
+    "branch_limits": [
+      8,
+      12,
+      16
+    ],
+    "depths": [
+      3,
+      4,
+      5
+    ],
+    "format_version": "full_alpha_beta_comparison_v1",
+    "match_branch_limit": 8,
+    "match_depth": 4,
+    "max_match_time_sec": 600.0,
+    "max_moves": 3000,
+    "positions": "/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/results/search_parameter_tuning/f5a877380b91/fixed_positions.json",
+    "positions_sha256": "051ab27d92dd4ffaa8a44e461db40349e1ac8091160bbb190cda80de0a0a0d1a",
+    "time_limit_sec": 1.0
+  },
+  "format_version": "full_alpha_beta_comparison_v1",
+  "generated_at": "2026-07-25T10:39:04.055309+00:00",
+  "last_resumed_at": "2026-07-25T10:44:14.690327+00:00",
+  "latest_source_fingerprint": "7ceb6212448b80165223213fe4777106c5ab40f2a818542fda6da8f03da5990e",
+  "run_hash": "6e27f4a5f481",
+  "source_fingerprint": "7ceb6212448b80165223213fe4777106c5ab40f2a818542fda6da8f03da5990e"
+}

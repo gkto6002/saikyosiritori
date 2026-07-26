@@ -117,6 +117,16 @@ class SearchStats:
     search_time_sec: float = 0.0
     total_search_time_sec: float = 0.0
     beam_widths_used: dict[int, int] = field(default_factory=dict)
+    beam_candidate_counts_by_ply: dict[int, int] = field(default_factory=dict)
+    beam_selected_counts_by_ply: dict[int, int] = field(default_factory=dict)
+    beam_ordering_calls_by_ply: dict[int, int] = field(default_factory=dict)
+    beam_max_selected_by_ply: dict[int, int] = field(default_factory=dict)
+    graph_ordering_evaluations: int = 0
+    graph_ordering_calls: int = 0
+    graph_ordering_changed_first_count: int = 0
+    graph_ordering_time_sec: float = 0.0
+    graph_root_baseline_first: tuple[int, int] | None = None
+    graph_root_ordered_first: tuple[int, int] | None = None
 
     def as_extra(self) -> dict[str, object]:
         research_rate = (
@@ -148,6 +158,26 @@ class SearchStats:
             "search_time_sec": self.search_time_sec,
             "total_search_time_sec": self.total_search_time_sec,
             "beam_widths_used": dict(sorted(self.beam_widths_used.items())),
+            "beam_candidate_counts_by_ply": dict(
+                sorted(self.beam_candidate_counts_by_ply.items())
+            ),
+            "beam_selected_counts_by_ply": dict(
+                sorted(self.beam_selected_counts_by_ply.items())
+            ),
+            "beam_ordering_calls_by_ply": dict(
+                sorted(self.beam_ordering_calls_by_ply.items())
+            ),
+            "beam_max_selected_by_ply": dict(
+                sorted(self.beam_max_selected_by_ply.items())
+            ),
+            "graph_ordering_evaluations": self.graph_ordering_evaluations,
+            "graph_ordering_calls": self.graph_ordering_calls,
+            "graph_ordering_changed_first_count": (
+                self.graph_ordering_changed_first_count
+            ),
+            "graph_ordering_time_sec": self.graph_ordering_time_sec,
+            "graph_root_baseline_first": self.graph_root_baseline_first,
+            "graph_root_ordered_first": self.graph_root_ordered_first,
         }
 
 

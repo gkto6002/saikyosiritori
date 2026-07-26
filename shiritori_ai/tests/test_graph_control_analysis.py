@@ -15,6 +15,7 @@ from analyze_graph_control_comparison import (  # noqa: E402
     wilson_interval,
 )
 from run_graph_control_comparison import (  # noqa: E402
+    build_comparison_agent,
     expected_jobs,
     experiment_config,
     parse_args,
@@ -95,6 +96,75 @@ class GraphControlComparisonTest(unittest.TestCase):
             ["alpha_beta", "pvs", "graph_control"], config["agents"]
         )
         self.assertEqual(36, len(expected_jobs(config)))
+
+    def test_adaptive_hybrid_profile_excludes_standalone_graph_control(self) -> None:
+        args = parse_args(
+            [
+                "--full",
+                "--adaptive-depth",
+                "--sizes",
+                "10000",
+                "--seeds",
+                "0,1,2",
+            ]
+        )
+        config = experiment_config(
+            False,
+            args.time_limit_sec,
+            sizes=args.sizes,
+            seeds=args.seeds,
+            agents=args.agents,
+            adaptive_depth=args.adaptive_depth,
+        )
+        self.assertEqual("adaptive", config["depth_profile"])
+        self.assertEqual("D10000_adaptive", config["output_scope"])
+        self.assertNotIn("graph_control", config["agents"])
+        self.assertEqual(
+            [
+                "alpha_beta",
+                "pvs",
+                "beam_negamax",
+                "graph_pvs",
+                "beam_alpha_beta",
+                "beam_pvs",
+            ],
+            config["agents"],
+        )
+        self.assertEqual(90, len(expected_jobs(config)))
+
+    def test_adaptive_profile_builds_selected_existing_and_hybrid_depths(self) -> None:
+        config = experiment_config(
+            False,
+            1.0,
+            sizes=(10000,),
+            seeds=(0,),
+            adaptive_depth=True,
+        )
+        expected = {
+            "alpha_beta": (5, 7),
+            "pvs": (5, 7),
+            "beam_negamax": (6, 8),
+            "graph_pvs": (4, 5),
+            "beam_alpha_beta": (8, 9),
+            "beam_pvs": (8, 9),
+        }
+        for name, depths in expected.items():
+            with self.subTest(agent=name):
+                agent = build_comparison_agent(name, config, 0)
+                self.assertTrue(agent.adaptive_depth)
+                self.assertEqual(depths, (agent.initial_depth, agent.max_depth))
+                self.assertEqual(0.6, agent.target_time_sec)
+                self.assertEqual(0.95, agent.depth_decrease_ratio)
+                self.assertEqual(0.6, agent.depth_recovery_ratio)
+                self.assertEqual(2, agent.depth_recovery_turns)
+        self.assertEqual(
+            (12, 8, 4, 2),
+            build_comparison_agent("beam_alpha_beta", config, 0).beam_widths,
+        )
+        self.assertEqual(
+            (12, 8, 4, 2),
+            build_comparison_agent("beam_pvs", config, 0).beam_widths,
+        )
 
     def test_remaining_bins_match_required_boundaries(self) -> None:
         self.assertEqual("80-100%", remaining_bin(0.81))

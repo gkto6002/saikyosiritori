@@ -1,0 +1,22 @@
+[
+  {
+    "draws": 0,
+    "games": 6,
+    "losses": 3,
+    "mean_decision_time_sec": 0.17439945007158794,
+    "target": "full_alpha_beta",
+    "timeout_count": 3,
+    "win_rate": 0.5,
+    "wins": 3
+  },
+  {
+    "draws": 0,
+    "games": 6,
+    "losses": 3,
+    "mean_decision_time_sec": 0.03218375455223607,
+    "target": "selective_alpha_beta",
+    "timeout_count": 0,
+    "win_rate": 0.5,
+    "wins": 3
+  }
+]

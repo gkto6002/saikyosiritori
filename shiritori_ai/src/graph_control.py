@@ -165,6 +165,92 @@ def _destination_concentration(state: AIEdgeState, start_id: int) -> float:
     )
 
 
+def lightweight_ordering_features(
+    state: AIEdgeState,
+    start_id: int,
+    end_id: int,
+    weights: GraphControlWeights = DEFAULT_GRAPH_CONTROL_WEIGHTS,
+) -> dict[str, Any]:
+    """Return cheap GraphControl features after a candidate has been applied.
+
+    Full GraphControl computes reachability and SCCs for every candidate.  That
+    is useful for a one-ply agent, but is too expensive at every PVS node.  This
+    ordering score keeps the local and shallow graph signals: opponent
+    multiplicity, outgoing edge types, two-ply reachability, low-degree/dead
+    destinations, and destination concentration.
+    """
+
+    char_count = state.edge_dictionary.char_count
+    remaining_total = max(1, sum(state.remaining_word_counts))
+    legal = state.remaining_word_counts[end_id]
+    safe = state.remaining_safe_word_counts[end_id]
+    destination_mask = state.destination_masks[end_id]
+    destination_ids = tuple(_iter_bits(destination_mask))
+    two_hop_mask = 0
+    for destination_id in destination_ids:
+        two_hop_mask |= state.destination_masks[destination_id]
+    low_degree_count = sum(
+        state.active_safe_edge_type_counts[destination_id] <= 2
+        for destination_id in destination_ids
+    )
+    dead_end_count = sum(
+        state.active_safe_edge_type_counts[destination_id] == 0
+        for destination_id in destination_ids
+    )
+    destination_count = state.active_edge_type_counts[end_id]
+    concentration = _destination_concentration(state, end_id)
+    destination_denominator = max(1, len(destination_ids))
+    normalized = {
+        "legal_word_count": legal / remaining_total,
+        "safe_word_count": safe / remaining_total,
+        "destination_count": destination_count / max(1, char_count),
+        "depth2_char_count": two_hop_mask.bit_count() / max(1, char_count),
+        "low_out_degree_reach_rate": low_degree_count / destination_denominator,
+        "dead_end_reach_rate": dead_end_count / destination_denominator,
+        "destination_concentration": concentration,
+    }
+    n_id = state.edge_dictionary.char_to_id.get("ん")
+    immediate_loss = end_id == n_id
+    immediate_win = not immediate_loss and legal == 0
+    score = (
+        weights.legal_word_restriction
+        * (1.0 - normalized["legal_word_count"])
+        + weights.safe_word_restriction
+        * (1.0 - normalized["safe_word_count"])
+        + weights.destination_restriction
+        * (1.0 - normalized["destination_count"])
+        + weights.depth2_restriction
+        * (1.0 - normalized["depth2_char_count"])
+        + weights.low_out_degree_reach_rate
+        * normalized["low_out_degree_reach_rate"]
+        + weights.dead_end_reach_rate
+        * normalized["dead_end_reach_rate"]
+        + weights.destination_concentration
+        * normalized["destination_concentration"]
+    )
+    if immediate_loss:
+        score = -1_000_000_000.0
+    elif immediate_win:
+        score = 1_000_000_000.0
+    return {
+        "start_id": start_id,
+        "end_id": end_id,
+        "score": score,
+        "immediate_win": immediate_win,
+        "immediate_loss": immediate_loss,
+        "raw": {
+            "legal_word_count": legal,
+            "safe_word_count": safe,
+            "destination_count": destination_count,
+            "depth2_char_count": two_hop_mask.bit_count(),
+            "low_out_degree_destination_count": low_degree_count,
+            "dead_end_destination_count": dead_end_count,
+            "destination_concentration": concentration,
+        },
+        "normalized": normalized,
+    }
+
+
 def _normalized_score(
     normalized: dict[str, float],
     weights: GraphControlWeights,

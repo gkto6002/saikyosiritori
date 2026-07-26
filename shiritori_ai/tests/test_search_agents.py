@@ -15,6 +15,7 @@ from agents import (  # noqa: E402
     AggressivePVSAgent,
     AlphaBetaAgent,
     BeamNegamaxAgent,
+    FullAlphaBetaAgent,
     MinimaxAgent,
     MonteCarloAgent,
     PVSAgent,
@@ -42,6 +43,7 @@ from search_common import (  # noqa: E402
 SEARCH_AGENT_CLASSES = [
     MinimaxAgent,
     AlphaBetaAgent,
+    FullAlphaBetaAgent,
     BeamNegamaxAgent,
     AggressivePVSAgent,
 ]
@@ -57,6 +59,7 @@ class SearchAgentTest(unittest.TestCase):
         method_names = {
             MinimaxAgent: "_edge_negamax",
             AlphaBetaAgent: "_edge_negamax_alpha_beta",
+            FullAlphaBetaAgent: "_edge_negamax_alpha_beta",
             BeamNegamaxAgent: "_edge_negamax",
             AggressivePVSAgent: "_pvs_edge",
         }
@@ -490,6 +493,44 @@ class SearchAgentTest(unittest.TestCase):
         self.assertLessEqual(shared.extra["nodes_searched"], legacy.extra["nodes_searched"])
         self.assertGreater(shared.extra["root_alpha_updates"], 0)
 
+    def test_full_alpha_beta_has_no_candidate_limit_and_matches_full_minimax(self) -> None:
+        runtime = self.runtime(
+            ["あい", "あう", "あえ", "いあ", "いう", "うあ", "うえ", "えあ"]
+        )
+        full_alpha_beta_agent = FullAlphaBetaAgent(
+            time_limit_sec=10.0,
+            depth=3,
+            adaptive_depth=False,
+        )
+        full_minimax_agent = MinimaxAgent(
+            time_limit_sec=10.0,
+            depth=3,
+            branch_limit=None,
+            adaptive_depth=False,
+        )
+        alpha_beta = full_alpha_beta_agent.choose_edge(
+            AIEdgeState.initial(runtime)
+        )
+        minimax = full_minimax_agent.choose_edge(AIEdgeState.initial(runtime))
+        self.assertIsNone(full_alpha_beta_agent.branch_limit)
+        self.assertEqual(
+            alpha_beta.extra["root_candidate_count"],
+            alpha_beta.extra["selected_root_candidate_count"],
+        )
+        self.assertEqual(
+            (alpha_beta.start_id, alpha_beta.end_id),
+            (minimax.start_id, minimax.end_id),
+        )
+        self.assertEqual(alpha_beta.score, minimax.score)
+        self.assertLessEqual(
+            alpha_beta.extra["nodes_searched"],
+            minimax.extra["nodes_searched"],
+        )
+
+    def test_full_alpha_beta_rejects_branch_limit(self) -> None:
+        with self.assertRaisesRegex(ValueError, "does not accept a branch limit"):
+            FullAlphaBetaAgent(branch_limit=8)
+
     def test_caution_survival_is_candidate_dependent(self) -> None:
         runtime = self.runtime(
             [
@@ -536,6 +577,9 @@ class SearchAgentTest(unittest.TestCase):
         self.assertLessEqual(max(counts) - min(counts), 1)
 
     def test_new_agents_are_available_from_factory(self) -> None:
+        full_alpha_beta = build_agent("full_alpha_beta")
+        self.assertIsInstance(full_alpha_beta, FullAlphaBetaAgent)
+        self.assertIsNone(full_alpha_beta.branch_limit)
         self.assertIsInstance(build_agent("beam_negamax"), BeamNegamaxAgent)
         self.assertIsInstance(build_agent("pvs"), PVSAgent)
         self.assertIsInstance(build_agent("aggressive_pvs"), AggressivePVSAgent)
@@ -566,6 +610,7 @@ class SearchAgentTest(unittest.TestCase):
                 "--runtime",
                 "D100.runtime.json",
                 "--agents",
+                "full_alpha_beta",
                 "beam_negamax",
                 "aggressive_pvs",
                 "--beam-widths",
@@ -573,7 +618,10 @@ class SearchAgentTest(unittest.TestCase):
             ],
         ):
             approx = parse_approx_args()
-        self.assertEqual(approx.agents, ["beam_negamax", "aggressive_pvs"])
+        self.assertEqual(
+            approx.agents,
+            ["full_alpha_beta", "beam_negamax", "aggressive_pvs"],
+        )
         self.assertEqual(approx.beam_widths, (8, 4, 2))
         self.assertEqual(approx.branch_limit, 12)
         self.assertEqual(approx.alpha_beta_depth, 3)

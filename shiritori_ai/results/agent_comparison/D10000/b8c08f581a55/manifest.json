@@ -1,0 +1,96 @@
+{
+  "commit_id": "c3025850fe74072e338c0dc84f044ce8036e4bee",
+  "config": {
+    "agents": [
+      "alpha_beta",
+      "pvs",
+      "beam_negamax",
+      "graph_control",
+      "graph_pvs",
+      "beam_alpha_beta",
+      "beam_pvs"
+    ],
+    "candidate_unit": "directed_edge_type_with_multiplicity",
+    "dictionary_seeds": [
+      0,
+      1,
+      2
+    ],
+    "dictionary_sizes": [
+      10000
+    ],
+    "format_version": "graph_control_comparison_v1",
+    "max_match_time_sec": 300.0,
+    "max_moves": 1000,
+    "mode": "full",
+    "output_scope": "D10000",
+    "settings": {
+      "alpha_beta": {
+        "adaptive_depth": false,
+        "branch_limit": 8,
+        "depth": 5
+      },
+      "beam_alpha_beta": {
+        "adaptive_depth": false,
+        "beam_widths": [
+          8,
+          6,
+          4,
+          2
+        ],
+        "depth": 5
+      },
+      "beam_negamax": {
+        "adaptive_depth": false,
+        "beam_widths": [
+          8,
+          6,
+          4,
+          2
+        ],
+        "depth": 5
+      },
+      "beam_pvs": {
+        "adaptive_depth": false,
+        "beam_widths": [
+          8,
+          6,
+          4,
+          2
+        ],
+        "depth": 5
+      },
+      "graph_control": {
+        "search": "none",
+        "simulation": "none",
+        "tie_break": "score,start_id,end_id"
+      },
+      "graph_pvs": {
+        "adaptive_depth": false,
+        "branch_limit": 8,
+        "depth": 5,
+        "ordering": "lightweight_graph_control"
+      },
+      "minimax": {
+        "adaptive_depth": false,
+        "branch_limit": 8,
+        "depth": 3
+      },
+      "monte_carlo": {
+        "candidate_limit": 20,
+        "max_playout_moves": 200,
+        "playouts_per_move": 10
+      },
+      "pvs": {
+        "adaptive_depth": false,
+        "branch_limit": 8,
+        "depth": 5
+      }
+    },
+    "stochastic_repetitions": 5,
+    "time_limit_sec": 1.0
+  },
+  "experiment_config_hash": "ddb2dd71fecb24bdf668b3fbe6e8b41c0556aee3ec9cc6f831720bb1d371d3b2",
+  "run_hash": "b8c08f581a5598dccbde12a49db169f166086f794f3c691fe139a8dcb46f5d1c",
+  "source_fingerprint": "454ec28ee96f1279da147307baae8de68c3ac4d169e46738549672185232c8bb"
+}

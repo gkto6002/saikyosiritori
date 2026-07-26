@@ -11,7 +11,20 @@ from collections import defaultdict
 from pathlib import Path
 
 
-PREFERRED_AGENT_ORDER = ["random", "greedy", "minimax", "monte_carlo", "alpha_beta"]
+PREFERRED_AGENT_ORDER = [
+    "random",
+    "greedy",
+    "minimax",
+    "monte_carlo",
+    "alpha_beta",
+    "full_alpha_beta",
+    "pvs",
+    "beam_negamax",
+    "graph_control",
+    "graph_pvs",
+    "beam_alpha_beta",
+    "beam_pvs",
+]
 
 
 def read_csv_rows(path: str | Path) -> list[dict[str, str]]:

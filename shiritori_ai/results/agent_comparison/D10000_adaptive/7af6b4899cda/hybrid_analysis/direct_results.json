@@ -1,0 +1,62 @@
+[
+  {
+    "draws": 0,
+    "games": 20,
+    "left_agent": "alpha_beta",
+    "left_win_rate": 0.5,
+    "left_wins": 10,
+    "right_agent": "pvs",
+    "right_win_rate": 0.5,
+    "right_wins": 10
+  },
+  {
+    "draws": 0,
+    "games": 20,
+    "left_agent": "alpha_beta",
+    "left_win_rate": 0.55,
+    "left_wins": 11,
+    "right_agent": "beam_alpha_beta",
+    "right_win_rate": 0.45,
+    "right_wins": 9
+  },
+  {
+    "draws": 0,
+    "games": 20,
+    "left_agent": "alpha_beta",
+    "left_win_rate": 0.55,
+    "left_wins": 11,
+    "right_agent": "beam_pvs",
+    "right_win_rate": 0.45,
+    "right_wins": 9
+  },
+  {
+    "draws": 0,
+    "games": 20,
+    "left_agent": "pvs",
+    "left_win_rate": 0.45,
+    "left_wins": 9,
+    "right_agent": "beam_alpha_beta",
+    "right_win_rate": 0.55,
+    "right_wins": 11
+  },
+  {
+    "draws": 0,
+    "games": 20,
+    "left_agent": "pvs",
+    "left_win_rate": 0.65,
+    "left_wins": 13,
+    "right_agent": "beam_pvs",
+    "right_win_rate": 0.35,
+    "right_wins": 7
+  },
+  {
+    "draws": 0,
+    "games": 20,
+    "left_agent": "beam_alpha_beta",
+    "left_win_rate": 0.5,
+    "left_wins": 10,
+    "right_agent": "beam_pvs",
+    "right_win_rate": 0.5,
+    "right_wins": 10
+  }
+]

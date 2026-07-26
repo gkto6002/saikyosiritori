@@ -15,6 +15,7 @@ from graph_control import (
     GraphControlWeights,
     candidate_summary,
     evaluate_applied_candidate,
+    lightweight_ordering_features,
     topology_features,
     weights_dict,
 )
@@ -46,6 +47,10 @@ if TYPE_CHECKING:
 
 DEFAULT_TIME_LIMIT_SEC = 2.0
 DEFAULT_BEAM_WIDTHS = (12, 8, 4, 2)
+DEFAULT_BEAM_ALPHA_BETA_DEPTH = 8
+DEFAULT_BEAM_ALPHA_BETA_MAX_DEPTH = 9
+DEFAULT_BEAM_PVS_DEPTH = 8
+DEFAULT_BEAM_PVS_MAX_DEPTH = 9
 T = TypeVar("T")
 
 
@@ -1225,6 +1230,18 @@ class AlphaBetaAgent(MinimaxAgent):
         return best
 
 
+class FullAlphaBetaAgent(AlphaBetaAgent):
+    """AlphaBeta that searches every ordered legal candidate at each ply."""
+
+    name = "full_alpha_beta"
+
+    def __init__(self, *args: object, **kwargs: object) -> None:
+        requested_limit = kwargs.pop("branch_limit", None)
+        if requested_limit is not None:
+            raise ValueError("FullAlphaBetaAgent does not accept a branch limit")
+        super().__init__(*args, branch_limit=None, **kwargs)
+
+
 class BeamNegamaxAgent(MinimaxAgent):
     name = "beam_negamax"
 
@@ -1618,6 +1635,456 @@ class AggressivePVSAgent(PVSAgent):
     name = "aggressive_pvs"
 
 
+class _BeamLimitedSearchMixin:
+    """Apply a different candidate width at each search ply."""
+
+    beam_widths: tuple[int, ...]
+
+    def _beam_width(self, ply: int) -> int:
+        return self.beam_widths[min(ply, len(self.beam_widths) - 1)]
+
+    def _edge_ordering_limit(self, ply: int) -> int | None:
+        return self._beam_width(ply)
+
+    def _record_edge_ordering_limit(
+        self,
+        candidate_count: int,
+        selected_count: int,
+        ply: int,
+        stats: SearchStats,
+    ) -> None:
+        width = self._beam_width(ply)
+        stats.beam_widths_used[ply] = width
+        stats.beam_candidate_counts_by_ply[ply] = (
+            stats.beam_candidate_counts_by_ply.get(ply, 0) + candidate_count
+        )
+        stats.beam_selected_counts_by_ply[ply] = (
+            stats.beam_selected_counts_by_ply.get(ply, 0) + selected_count
+        )
+        stats.beam_ordering_calls_by_ply[ply] = (
+            stats.beam_ordering_calls_by_ply.get(ply, 0) + 1
+        )
+        stats.beam_max_selected_by_ply[ply] = max(
+            stats.beam_max_selected_by_ply.get(ply, 0),
+            selected_count,
+        )
+        stats.beam_pruned_move_count += max(0, candidate_count - selected_count)
+
+    def _select_root_candidates(
+        self,
+        candidates: list[T],
+        stats: SearchStats,
+    ) -> list[T]:
+        width = self._beam_width(0)
+        selected = candidates[:width]
+        if len(candidates) > width:
+            self._record_edge_ordering_limit(
+                len(candidates),
+                len(selected),
+                0,
+                stats,
+            )
+        else:
+            stats.beam_widths_used[0] = width
+            stats.beam_max_selected_by_ply[0] = max(
+                stats.beam_max_selected_by_ply.get(0, 0),
+                len(selected),
+            )
+        return selected
+
+    def _limit_beam(
+        self,
+        candidates: list[T],
+        ply: int,
+        stats: SearchStats,
+    ) -> list[T]:
+        width = self._beam_width(ply)
+        selected = candidates[:width]
+        self._record_edge_ordering_limit(
+            len(candidates),
+            len(selected),
+            ply,
+            stats,
+        )
+        return selected
+
+    def _search_extra(
+        self,
+        stats: SearchStats,
+        effective_depth: int,
+        **extra: object,
+    ) -> dict[str, Any]:
+        return super()._search_extra(  # type: ignore[misc]
+            stats,
+            effective_depth,
+            beam_widths=list(self.beam_widths),
+            **extra,
+        )
+
+
+class BeamAlphaBetaAgent(_BeamLimitedSearchMixin, AlphaBetaAgent):
+    """Depth-varying Beam candidate limits followed by AlphaBeta."""
+
+    name = "beam_alpha_beta"
+
+    def __init__(
+        self,
+        time_limit_sec: float = DEFAULT_TIME_LIMIT_SEC,
+        random_seed: int = 0,
+        depth: int = DEFAULT_BEAM_ALPHA_BETA_DEPTH,
+        beam_widths: Sequence[int] = DEFAULT_BEAM_WIDTHS,
+        adaptive_depth: bool = True,
+        min_depth: int = 1,
+        depth_recovery_turns: int = 5,
+        evaluation_config: EvaluationConfig = DEFAULT_EVALUATION_CONFIG,
+        share_root_alpha: bool = True,
+        depth_decrease_ratio: float = 0.9,
+        depth_recovery_ratio: float = 0.5,
+        depth_step: int = 1,
+        timeout_decreases_depth: bool = True,
+        max_depth: int | None = DEFAULT_BEAM_ALPHA_BETA_MAX_DEPTH,
+        target_time_sec: float | None = None,
+    ) -> None:
+        if not beam_widths or any(width <= 0 for width in beam_widths):
+            raise ValueError("beam_widths must contain positive integers")
+        self.beam_widths = tuple(int(width) for width in beam_widths)
+        super().__init__(
+            time_limit_sec=time_limit_sec,
+            random_seed=random_seed,
+            depth=depth,
+            branch_limit=None,
+            adaptive_depth=adaptive_depth,
+            min_depth=min_depth,
+            depth_recovery_turns=depth_recovery_turns,
+            evaluation_config=evaluation_config,
+            share_root_alpha=share_root_alpha,
+            depth_decrease_ratio=depth_decrease_ratio,
+            depth_recovery_ratio=depth_recovery_ratio,
+            depth_step=depth_step,
+            timeout_decreases_depth=timeout_decreases_depth,
+            max_depth=max_depth,
+            target_time_sec=target_time_sec,
+        )
+
+    def _negamax_alpha_beta(
+        self,
+        graph: WordGraph,
+        state: GameState,
+        depth: int,
+        ply: int,
+        alpha: float,
+        beta: float,
+        deadline: float,
+        stats: SearchStats,
+    ) -> float:
+        check_deadline(deadline)
+        stats.nodes_searched += 1
+        moves = self.legal_moves(graph, state)
+        if not moves:
+            return loss_score(ply)
+        if depth <= 0:
+            stats.leaf_evaluations += 1
+            return evaluate_word_position(
+                graph, state, deadline, self.evaluation_config, ply=ply
+            )
+        ordered, _scores, _timed_out = self._ordered_words(
+            graph, state, moves, deadline, allow_partial=False
+        )
+        ordered = self._limit_beam(ordered, ply, stats)
+        best = LOSS_SCORE
+        for index, word_id in enumerate(ordered):
+            check_deadline(deadline)
+            next_state = state_after_safe_move(graph, state, word_id)
+            score = (
+                loss_score(ply)
+                if next_state is None
+                else -self._negamax_alpha_beta(
+                    graph,
+                    next_state,
+                    depth - 1,
+                    ply + 1,
+                    -beta,
+                    -alpha,
+                    deadline,
+                    stats,
+                )
+            )
+            best = max(best, score)
+            alpha = max(alpha, score)
+            if alpha >= beta:
+                stats.cutoff_count += 1
+                stats.pruned_move_count += len(ordered) - index - 1
+                break
+        return best
+
+
+class BeamPVSAgent(_BeamLimitedSearchMixin, PVSAgent):
+    """Depth-varying Beam candidate limits followed by PVS."""
+
+    name = "beam_pvs"
+
+    def __init__(
+        self,
+        time_limit_sec: float = DEFAULT_TIME_LIMIT_SEC,
+        random_seed: int = 0,
+        depth: int = DEFAULT_BEAM_PVS_DEPTH,
+        beam_widths: Sequence[int] = DEFAULT_BEAM_WIDTHS,
+        adaptive_depth: bool = True,
+        min_depth: int = 1,
+        depth_recovery_turns: int = 5,
+        evaluation_config: EvaluationConfig = DEFAULT_EVALUATION_CONFIG,
+        null_window_epsilon: float | None = None,
+        depth_decrease_ratio: float = 0.9,
+        depth_recovery_ratio: float = 0.5,
+        depth_step: int = 1,
+        timeout_decreases_depth: bool = True,
+        max_depth: int | None = DEFAULT_BEAM_PVS_MAX_DEPTH,
+        target_time_sec: float | None = None,
+    ) -> None:
+        if not beam_widths or any(width <= 0 for width in beam_widths):
+            raise ValueError("beam_widths must contain positive integers")
+        self.beam_widths = tuple(int(width) for width in beam_widths)
+        super().__init__(
+            time_limit_sec=time_limit_sec,
+            random_seed=random_seed,
+            depth=depth,
+            branch_limit=None,
+            adaptive_depth=adaptive_depth,
+            min_depth=min_depth,
+            depth_recovery_turns=depth_recovery_turns,
+            evaluation_config=evaluation_config,
+            null_window_epsilon=null_window_epsilon,
+            depth_decrease_ratio=depth_decrease_ratio,
+            depth_recovery_ratio=depth_recovery_ratio,
+            depth_step=depth_step,
+            timeout_decreases_depth=timeout_decreases_depth,
+            max_depth=max_depth,
+            target_time_sec=target_time_sec,
+        )
+
+    def _pvs_word(
+        self,
+        graph: WordGraph,
+        state: GameState,
+        depth: int,
+        ply: int,
+        alpha: float,
+        beta: float,
+        deadline: float,
+        stats: SearchStats,
+    ) -> float:
+        check_deadline(deadline)
+        stats.nodes_searched += 1
+        moves = self.legal_moves(graph, state)
+        if not moves:
+            return loss_score(ply)
+        if depth <= 0:
+            stats.leaf_evaluations += 1
+            return evaluate_word_position(
+                graph, state, deadline, self.evaluation_config, ply=ply
+            )
+        ordered, _scores, _ = self._ordered_words(
+            graph, state, moves, deadline, allow_partial=False
+        )
+        ordered = self._limit_beam(ordered, ply, stats)
+        best = LOSS_SCORE
+        for index, word_id in enumerate(ordered):
+            next_state = state_after_safe_move(graph, state, word_id)
+            if next_state is None:
+                score = loss_score(ply)
+            elif index == 0:
+                score = -self._pvs_word(
+                    graph,
+                    next_state,
+                    depth - 1,
+                    ply + 1,
+                    -beta,
+                    -alpha,
+                    deadline,
+                    stats,
+                )
+            else:
+                upper = self._null_window_upper(alpha)
+                stats.null_window_search_count += 1
+                score = -self._pvs_word(
+                    graph,
+                    next_state,
+                    depth - 1,
+                    ply + 1,
+                    -upper,
+                    -alpha,
+                    deadline,
+                    stats,
+                )
+                if alpha < score < beta:
+                    stats.research_count += 1
+                    score = -self._pvs_word(
+                        graph,
+                        next_state,
+                        depth - 1,
+                        ply + 1,
+                        -beta,
+                        -alpha,
+                        deadline,
+                        stats,
+                    )
+            best = max(best, score)
+            alpha = max(alpha, score)
+            if alpha >= beta:
+                stats.cutoff_count += 1
+                stats.pruned_move_count += len(ordered) - index - 1
+                break
+        return best
+
+
+class GraphPVSAgent(PVSAgent):
+    """Lightweight GraphControl ordering followed by PVS."""
+
+    name = "graph_pvs"
+
+    def __init__(
+        self,
+        time_limit_sec: float = DEFAULT_TIME_LIMIT_SEC,
+        random_seed: int = 0,
+        depth: int = 5,
+        branch_limit: int | None = 8,
+        adaptive_depth: bool = True,
+        min_depth: int = 1,
+        depth_recovery_turns: int = 5,
+        evaluation_config: EvaluationConfig = DEFAULT_EVALUATION_CONFIG,
+        graph_weights: GraphControlWeights = DEFAULT_GRAPH_CONTROL_WEIGHTS,
+        null_window_epsilon: float | None = None,
+        depth_decrease_ratio: float = 0.9,
+        depth_recovery_ratio: float = 0.5,
+        depth_step: int = 1,
+        timeout_decreases_depth: bool = True,
+        max_depth: int | None = None,
+        target_time_sec: float | None = None,
+    ) -> None:
+        self.graph_weights = graph_weights
+        super().__init__(
+            time_limit_sec=time_limit_sec,
+            random_seed=random_seed,
+            depth=depth,
+            branch_limit=branch_limit,
+            adaptive_depth=adaptive_depth,
+            min_depth=min_depth,
+            depth_recovery_turns=depth_recovery_turns,
+            evaluation_config=evaluation_config,
+            null_window_epsilon=null_window_epsilon,
+            depth_decrease_ratio=depth_decrease_ratio,
+            depth_recovery_ratio=depth_recovery_ratio,
+            depth_step=depth_step,
+            timeout_decreases_depth=timeout_decreases_depth,
+            max_depth=max_depth,
+            target_time_sec=target_time_sec,
+        )
+
+    def _ordered_edges(
+        self,
+        state: AIEdgeState,
+        edges: Sequence[tuple[int, int]],
+        deadline: float,
+        allow_partial: bool,
+        stats: SearchStats,
+        ply: int,
+    ) -> tuple[
+        list[tuple[int, int]],
+        dict[tuple[int, int], CandidateEvaluation],
+        bool,
+    ]:
+        ordering_started = time.perf_counter()
+        try:
+            baseline, evaluations, timed_out = _score_edge_candidates(
+                state,
+                edges,
+                deadline,
+                self.evaluation_config,
+                allow_partial,
+                self.aggressive_ordering,
+                stats,
+                candidate_limit=None,
+            )
+            graph_started = time.perf_counter()
+            graph_scores: dict[tuple[int, int], dict[str, Any]] = {}
+            try:
+                for start_id, end_id in baseline:
+                    try:
+                        check_deadline(deadline)
+                        state.apply_edge(start_id, end_id)
+                        try:
+                            graph_scores[(start_id, end_id)] = (
+                                lightweight_ordering_features(
+                                    state,
+                                    start_id,
+                                    end_id,
+                                    self.graph_weights,
+                                )
+                            )
+                        finally:
+                            state.undo_edge()
+                        stats.graph_ordering_evaluations += 1
+                    except SearchTimeout:
+                        if not allow_partial:
+                            raise
+                        timed_out = True
+                        break
+            finally:
+                stats.graph_ordering_time_sec += (
+                    time.perf_counter() - graph_started
+                )
+            if graph_scores:
+                graph_ordered = sorted(
+                    graph_scores,
+                    key=lambda edge: (
+                        not bool(graph_scores[edge]["immediate_win"]),
+                        -float(graph_scores[edge]["score"]),
+                        *_edge_sort_key(
+                            edge,
+                            evaluations[edge],
+                            self.aggressive_ordering,
+                        ),
+                    ),
+                )
+            else:
+                graph_ordered = baseline
+            stats.graph_ordering_calls += 1
+            if baseline and graph_ordered and baseline[0] != graph_ordered[0]:
+                stats.graph_ordering_changed_first_count += 1
+            if ply == 0:
+                stats.graph_root_baseline_first = baseline[0] if baseline else None
+                stats.graph_root_ordered_first = (
+                    graph_ordered[0] if graph_ordered else None
+                )
+            selected = (
+                graph_ordered
+                if self.branch_limit is None
+                else graph_ordered[: self.branch_limit]
+            )
+            if self.branch_limit is not None:
+                stats.pruned_move_count += max(0, len(graph_ordered) - len(selected))
+            return selected, evaluations, timed_out
+        finally:
+            ordering_elapsed = time.perf_counter() - ordering_started
+            stats.ordering_time_sec += ordering_elapsed
+            if ply == 0:
+                stats.root_ordering_time_sec += ordering_elapsed
+
+    def _search_extra(
+        self,
+        stats: SearchStats,
+        effective_depth: int,
+        **extra: object,
+    ) -> dict[str, Any]:
+        return super()._search_extra(
+            stats,
+            effective_depth,
+            graph_ordering_mode="lightweight_local_depth2",
+            graph_control_weights=weights_dict(self.graph_weights),
+            **extra,
+        )
+
+
 class MonteCarloAgent(BaseAgent):
     name = "monte_carlo"
 
@@ -1822,6 +2289,7 @@ def build_agent(
     beam_negamax_depth: int = 4,
     beam_widths: Sequence[int] = DEFAULT_BEAM_WIDTHS,
     aggressive_pvs_depth: int = 3,
+    hybrid_depth: int | None = None,
     adaptive_depth: bool = True,
     min_depth: int = 1,
     depth_recovery_turns: int = 5,
@@ -1846,6 +2314,27 @@ def build_agent(
         "timeout_decreases_depth": timeout_decreases_depth,
         "target_time_sec": target_time_sec,
     }
+    resolved_graph_pvs_depth = (
+        aggressive_pvs_depth if hybrid_depth is None else hybrid_depth
+    )
+    resolved_beam_alpha_beta_depth = (
+        DEFAULT_BEAM_ALPHA_BETA_DEPTH
+        if hybrid_depth is None
+        else hybrid_depth
+    )
+    resolved_beam_alpha_beta_max_depth = (
+        DEFAULT_BEAM_ALPHA_BETA_MAX_DEPTH
+        if hybrid_depth is None and adaptive_max_depth_increment == 0
+        else resolved_beam_alpha_beta_depth + adaptive_max_depth_increment
+    )
+    resolved_beam_pvs_depth = (
+        DEFAULT_BEAM_PVS_DEPTH if hybrid_depth is None else hybrid_depth
+    )
+    resolved_beam_pvs_max_depth = (
+        DEFAULT_BEAM_PVS_MAX_DEPTH
+        if hybrid_depth is None and adaptive_max_depth_increment == 0
+        else resolved_beam_pvs_depth + adaptive_max_depth_increment
+    )
     if agent_name == "random":
         return RandomAgent(**common)
     if agent_name == "greedy":
@@ -1866,6 +2355,12 @@ def build_agent(
             max_depth=alpha_beta_depth + adaptive_max_depth_increment,
             branch_limit=branch_limit,
         )
+    if agent_name == "full_alpha_beta":
+        return FullAlphaBetaAgent(
+            **search_common,
+            depth=alpha_beta_depth,
+            max_depth=alpha_beta_depth + adaptive_max_depth_increment,
+        )
     if agent_name == "beam_negamax":
         return BeamNegamaxAgent(
             **search_common,
@@ -1880,6 +2375,29 @@ def build_agent(
             depth=aggressive_pvs_depth,
             max_depth=aggressive_pvs_depth + adaptive_max_depth_increment,
             branch_limit=branch_limit,
+        )
+    if agent_name == "graph_pvs":
+        return GraphPVSAgent(
+            **search_common,
+            depth=resolved_graph_pvs_depth,
+            max_depth=(
+                resolved_graph_pvs_depth + adaptive_max_depth_increment
+            ),
+            branch_limit=branch_limit,
+        )
+    if agent_name == "beam_alpha_beta":
+        return BeamAlphaBetaAgent(
+            **search_common,
+            depth=resolved_beam_alpha_beta_depth,
+            max_depth=resolved_beam_alpha_beta_max_depth,
+            beam_widths=beam_widths,
+        )
+    if agent_name == "beam_pvs":
+        return BeamPVSAgent(
+            **search_common,
+            depth=resolved_beam_pvs_depth,
+            max_depth=resolved_beam_pvs_max_depth,
+            beam_widths=beam_widths,
         )
     if agent_name == "monte_carlo":
         return MonteCarloAgent(

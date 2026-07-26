@@ -158,11 +158,15 @@ score = attack_score + survival_weight * survival_score
 
 - `minimax`: 標準深度3、候補上限12。
 - `alpha_beta`: 標準深度3、候補上限12でalpha-beta枝刈りを行います。
+- `full_alpha_beta`: 標準深度3。候補上限を設けず、全合法辺を対象にalpha-beta枝刈りを行います。
 - `beam_negamax`: 標準深度4。深さごとに`12,8,4,2`辺へ候補を制限するNegamaxで、alpha-beta枝刈りは行いません。
 - `pvs`: 標準深度3、候補上限12。AlphaBetaと同じ候補集合・評価・順序を使い、最初の候補を通常窓、2本目以降を浮動小数点用null windowで探索し、必要な場合だけ通常窓で再探索します。
 - `aggressive_pvs`: 既存コマンドを壊さないために残した`pvs`の後方互換名です。
+- `graph_pvs`: GraphControlの軽量グラフ特徴で全探索ノードの候補を並べ、PVSを行います。
+- `beam_alpha_beta`: 深さ別Beam幅で候補を制限し、その集合へAlphaBeta枝刈りを行います。D10000追試で採用した標準設定は初期深度8・最大深度9・幅`12,8,4,2`です。
+- `beam_pvs`: 深さ別Beam幅で候補を制限し、その集合へPVSを行います。標準設定は初期深度8・最大深度9・幅`12,8,4,2`です。
 
-4つの探索系AIは、1手中の反復深化を行いません。現在の`current_depth`を1回探索します。ハードタイムアウトまたは制限時間の90%以上を使うと次手の深度を1下げ、50%以下で5回連続完了すると1戻します。80%以上90%未満では回復回数を増やしません。再帰中の時間切れは`SearchTimeout`で上位へ伝播し、`apply_edge`後は`finally`で必ず`undo_edge`します。
+これらの探索系AIは、1手中の反復深化を行いません。現在の`current_depth`を1回探索します。ハードタイムアウトまたは制限時間の90%以上を使うと次手の深度を1下げ、50%以下で5回連続完了すると1戻します。80%以上90%未満では回復回数を増やしません。再帰中の時間切れは`SearchTimeout`で上位へ伝播し、`apply_edge`後は`finally`で必ず`undo_edge`します。
 
 ```bash
 python src/experiments_approx.py \
@@ -352,6 +356,183 @@ python src/experiments_approx.py \
 `--no-timeout-decreases-depth`を指定すると、ハードタイムアウト自体を深度低下の
 条件にしません。ただし、同時に処理時間比が低下閾値以上なら時間比を理由として
 深度が下がります。
+
+## Full AlphaBetaと上位候補制限版の比較
+
+既存の`alpha_beta`は`--branch-limit`で評価上位候補だけを探索する
+Selective AlphaBetaです。`full_alpha_beta`は各plyの全合法辺を対象にし、
+候補数による近似を行わず、AlphaBetaの値に基づく枝刈りだけを使用します。
+どちらも固定深度の場合、探索深度より先は同じ評価関数で推定するため、
+`full_alpha_beta`は完全解析ではありません。
+
+まず、パラメータ調整で保存した同一局面を使い、Fullと上位8・12・16制限を
+深度3・4・5で比較します。Fullがルート全候補を時間内に完了した局面だけを
+手と評価値の参照比較に使用します。
+
+```bash
+python src/run_full_alpha_beta_comparison.py \
+  --positions results/search_parameter_tuning/<D10000-run>/fixed_positions.json \
+  --stage benchmark \
+  --depths 3 4 5 \
+  --branch-limits 8 12 16 \
+  --time-limit-sec 1.0
+```
+
+出力先は`results/full_alpha_beta_comparison/<run-hash>/`です。固定局面ごとの
+JSON Lines・CSV、設定別集計、Full完了率、Fullとの手・評価値一致率、
+値付きグラフ、`report.md`を保存します。完了済み局面は再利用できます。
+
+固定局面の結果から対局可能な深度を選んだ後、Fullと上位8制限を先後入替で
+比較します。最初のコマンドで表示されたrunを`--resume-run`へ渡します。
+
+```bash
+python src/run_full_alpha_beta_comparison.py \
+  --positions results/search_parameter_tuning/<D10000-run>/fixed_positions.json \
+  --stage matches \
+  --depths 3 4 5 \
+  --branch-limits 8 12 16 \
+  --time-limit-sec 1.0 \
+  --match-depth 4 \
+  --match-branch-limit 8 \
+  --match-seeds 0 1 2 \
+  --max-moves 3000 \
+  --max-match-time-sec 600 \
+  --resume-run results/full_alpha_beta_comparison/<run-hash>
+```
+
+通常の近似対局と人間対AIでも`full_alpha_beta`を選択できます。ただし、
+大辞書の序盤は合法辺種類が非常に多いため、深度5で全候補を完了できるとは
+限りません。
+
+## 3種類のハイブリッド探索
+
+`graph_pvs`、`beam_alpha_beta`、`beam_pvs`は既存の辺状態、評価関数、
+apply/undo、タイムアウト、適応深度、探索統計を共有します。GraphPVSは
+全候補でSCCを再計算せず、GraphControlの残存語数、出辺種類、2手到達範囲、
+低出次数・行き止まり率、行先集中度を軽量orderingとして全探索ノードへ
+適用します。Beam系は固定branch limitではなく、`--beam-widths`の値を
+探索plyごとに使います。
+
+D10000の保存局面を使った同一深度比較:
+
+```bash
+.venv/bin/python -u src/run_hybrid_agent_benchmark.py \
+  --positions results/search_parameter_tuning/f5a877380b91/fixed_positions.json \
+  --depth 5 \
+  --branch-limit 8 \
+  --beam-widths 8,6,4,2 \
+  --time-limit-sec 1.0
+```
+
+D10000・3辞書seed・先後入替の対局:
+
+```bash
+.venv/bin/python -u src/run_graph_control_comparison.py \
+  --full \
+  --sizes 10000 \
+  --seeds 0,1,2 \
+  --agents alpha_beta,pvs,beam_negamax,graph_control,graph_pvs,beam_alpha_beta,beam_pvs \
+  --time-limit-sec 1.0
+```
+
+### Beamハイブリッドの深度・幅追試
+
+AlphaBetaを基準に、BeamAlphaBetaとBeamPVSの現行、深度増加、幅増加、
+深度と幅の同時増加を比較します。各変種はD10000のseed 0〜9で
+AlphaBetaと先後入替し、合計160局です。
+
+| 条件 | 初期深度 | 最大深度 | Beam幅 |
+|---|---:|---:|---|
+| baseline | 7 | 8 | 8,6,4,2 |
+| deep | 8 | 9 | 8,6,4,2 |
+| wide | 7 | 8 | 12,8,4,2 |
+| deep_wide | 8 | 9 | 12,8,4,2 |
+
+保存14局面では標準幅D9が両方式ともタイムアウト0だった一方、D10は
+BeamAlphaBeta 7.1%、BeamPVS 42.9%がタイムアウトしました。そのため
+深度増加条件の最大深度は9です。`12,8,6,4`はD8でもほぼ全件
+タイムアウトしたため、本対局の幅増加には上位plyだけを広げる
+`12,8,4,2`を採用します。
+
+```bash
+.venv/bin/python -u src/run_beam_hybrid_followup.py
+```
+
+同じコマンドで途中再開できます。最後に表示されたパスを分析へ渡します。
+
+```bash
+.venv/bin/python src/analyze_beam_hybrid_followup.py \
+  --input results/beam_hybrid_followup/D10000/<run-hash>
+```
+
+分析では変種別・辞書seed別の勝率、先後別勝率、判断時間、探索ノード、
+実効深度、タイムアウト率、PVS再探索率をJSON・CSV・値付きグラフへ保存します。
+
+160局の追試では、`deep_wide`がAlphaBetaに対してBeamAlphaBeta 16勝4敗、
+BeamPVS 14勝6敗で両方式の最良条件となりました。この結果を受け、
+通常の`beam_alpha_beta`と`beam_pvs`の標準設定を初期深度8・最大深度9・
+幅`12,8,4,2`へ更新しています。過去条件を比較する追試ランナー内の
+`baseline`定義は再現性のため変更していません。
+
+適応深度を有効にした次段階の比較では、`graph_control`単体を除外し、
+既存手法はD10000のパラメータ調整で採用した`aggressive`設定を再利用します。
+AlphaBeta/PVSは初期深度5・最大7、BeamNegamaxは初期6・最大8です。
+新手法は実測時間を基に、GraphPVSを初期4・最大5、
+BeamAlphaBeta/BeamPVSを初期8・最大9とします。全手法の目標時間は0.6秒、
+低下閾値は目標時間比0.95、回復閾値は0.6、2手連続で回復です。
+
+```bash
+.venv/bin/python -u src/run_graph_control_comparison.py \
+  --full \
+  --adaptive-depth \
+  --sizes 10000 \
+  --seeds 0,1,2 \
+  --time-limit-sec 1.0
+```
+
+この設定は6手法、3辞書seed、全組合せの先後入替で90局です。出力先は
+`results/agent_comparison/D10000_adaptive/<run-hash>`になります。
+
+対局後のハイブリッド専用集計:
+
+```bash
+.venv/bin/python src/analyze_hybrid_comparison.py \
+  --input results/agent_comparison/D10000_adaptive/<run-hash> \
+  --benchmark results/hybrid_agent_comparison/benchmark/821264dd868d
+```
+
+`--benchmark`には同じD10000保存14局面を深度5で測定した既存結果を渡します。
+適応対局の実効深度は対局ログ側の`effective_depth`と`depth_change_count`で
+別に集計されます。
+
+BeamPVS、BeamAlphaBeta、AlphaBeta、PVSに絞って辞書seedを0〜9へ
+増やす追試では、まず不足しているseed 3〜9の辞書を生成します。
+
+```bash
+.venv/bin/python src/experiment_dictionary.py \
+  --master data/master/master_dictionary.jsonl \
+  --size 10000 \
+  --seeds 3,4,5,6,7,8,9 \
+  --min-length 2 \
+  --max-length 12 \
+  --output data/dictionaries
+```
+
+続いて4手法、10seed、全組合せの先後入替を実行します。決定論的手法だけ
+なので反復は行わず、合計120局です。
+
+```bash
+.venv/bin/python -u src/run_graph_control_comparison.py \
+  --full \
+  --adaptive-depth \
+  --sizes 10000 \
+  --seeds 0,1,2,3,4,5,6,7,8,9 \
+  --agents alpha_beta,pvs,beam_alpha_beta,beam_pvs \
+  --time-limit-sec 1.0
+```
+
+ログには既存項目に加え、Beamのply別候補総数・選択数・最大選択数、
+Graph orderingの評価回数・先頭候補変更回数・所要時間を保存します。
 
 ## 図の作成
 

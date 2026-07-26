@@ -1,0 +1,7 @@
+left_agent,right_agent,games,left_wins,right_wins,draws,left_win_rate,right_win_rate
+alpha_beta,pvs,20,10,10,0,0.5,0.5
+alpha_beta,beam_alpha_beta,20,11,9,0,0.55,0.45
+alpha_beta,beam_pvs,20,11,9,0,0.55,0.45
+pvs,beam_alpha_beta,20,9,11,0,0.45,0.55
+pvs,beam_pvs,20,13,7,0,0.65,0.35
+beam_alpha_beta,beam_pvs,20,10,10,0,0.5,0.5

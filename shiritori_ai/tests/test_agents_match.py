@@ -127,6 +127,12 @@ class AgentsMatchTest(unittest.TestCase):
         self.assertEqual(agent.depth, 3)
         self.assertEqual(AlphaBetaAgent().depth, 3)
 
+    def test_full_alpha_beta_factory_uses_no_branch_limit(self) -> None:
+        agent = build_agent("full_alpha_beta", alpha_beta_depth=4, branch_limit=8)
+        self.assertEqual(agent.name, "full_alpha_beta")
+        self.assertEqual(agent.depth, 4)
+        self.assertIsNone(agent.branch_limit)
+
     def test_default_turn_timeouts(self) -> None:
         self.assertEqual(DEFAULT_TIME_LIMIT_SEC, 2.0)
         self.assertEqual(AI_MATCH_TIME_LIMIT_SEC, 4.0)

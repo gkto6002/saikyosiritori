@@ -1,0 +1,139 @@
+{
+  "commit_id": "c3025850fe74072e338c0dc84f044ce8036e4bee",
+  "config": {
+    "adaptive_profile": {
+      "depth_decrease_ratio": 0.95,
+      "depth_recovery_ratio": 0.6,
+      "depth_recovery_turns": 2,
+      "depth_step": 1,
+      "min_depth": 1,
+      "target_time_ratio": 0.6,
+      "timeout_decreases_depth": true
+    },
+    "alpha_beta": {
+      "branch_limit": 8,
+      "config_id": "alpha_beta_reference",
+      "initial_depth": 5,
+      "max_depth": 7
+    },
+    "candidate_unit": "directed_edge_type_with_multiplicity",
+    "dictionary_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "dictionary_size": 10000,
+    "format_version": "beam_hybrid_followup_v1",
+    "max_match_time_sec": 300.0,
+    "max_moves": 1000,
+    "time_limit_sec": 1.0,
+    "variants": {
+      "beam_alpha_beta_baseline": {
+        "agent": "beam_alpha_beta",
+        "beam_widths": [
+          8,
+          6,
+          4,
+          2
+        ],
+        "config_id": "beam_alpha_beta_baseline",
+        "initial_depth": 7,
+        "max_depth": 8
+      },
+      "beam_alpha_beta_deep": {
+        "agent": "beam_alpha_beta",
+        "beam_widths": [
+          8,
+          6,
+          4,
+          2
+        ],
+        "config_id": "beam_alpha_beta_deep",
+        "initial_depth": 8,
+        "max_depth": 9
+      },
+      "beam_alpha_beta_deep_wide": {
+        "agent": "beam_alpha_beta",
+        "beam_widths": [
+          12,
+          8,
+          4,
+          2
+        ],
+        "config_id": "beam_alpha_beta_deep_wide",
+        "initial_depth": 8,
+        "max_depth": 9
+      },
+      "beam_alpha_beta_wide": {
+        "agent": "beam_alpha_beta",
+        "beam_widths": [
+          12,
+          8,
+          4,
+          2
+        ],
+        "config_id": "beam_alpha_beta_wide",
+        "initial_depth": 7,
+        "max_depth": 8
+      },
+      "beam_pvs_baseline": {
+        "agent": "beam_pvs",
+        "beam_widths": [
+          8,
+          6,
+          4,
+          2
+        ],
+        "config_id": "beam_pvs_baseline",
+        "initial_depth": 7,
+        "max_depth": 8
+      },
+      "beam_pvs_deep": {
+        "agent": "beam_pvs",
+        "beam_widths": [
+          8,
+          6,
+          4,
+          2
+        ],
+        "config_id": "beam_pvs_deep",
+        "initial_depth": 8,
+        "max_depth": 9
+      },
+      "beam_pvs_deep_wide": {
+        "agent": "beam_pvs",
+        "beam_widths": [
+          12,
+          8,
+          4,
+          2
+        ],
+        "config_id": "beam_pvs_deep_wide",
+        "initial_depth": 8,
+        "max_depth": 9
+      },
+      "beam_pvs_wide": {
+        "agent": "beam_pvs",
+        "beam_widths": [
+          12,
+          8,
+          4,
+          2
+        ],
+        "config_id": "beam_pvs_wide",
+        "initial_depth": 7,
+        "max_depth": 8
+      }
+    }
+  },
+  "experiment_config_hash": "0dfbacfcb5f87efe04db0bacd0cc8549169857e1283230885a79be52c1751607",
+  "run_hash": "c86fc7661da63762accba72ce7c1f26df1723fa1a764bcf3fe5f67abe73d5ee2",
+  "source_fingerprint": "b51e30affded14d91de859b1d766d017e925d24e469bfa5bd71e5f31a80e54cd"
+}
