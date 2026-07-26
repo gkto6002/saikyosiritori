@@ -697,6 +697,7 @@ class SearchAgentBase(BaseAgent, AdaptiveDepthMixin):
             candidate_count=len(edges),
             ply=ply,
             stats=stats,
+            evaluations=evaluations,
         )
         return selected, evaluations, timed_out
 
@@ -707,6 +708,7 @@ class SearchAgentBase(BaseAgent, AdaptiveDepthMixin):
         candidate_count: int,
         ply: int,
         stats: SearchStats,
+        evaluations: dict[tuple[int, int], CandidateEvaluation] | None = None,
     ) -> list[tuple[int, int]]:
         """Finalize an ordered edge list according to this agent's policy."""
 
@@ -916,6 +918,7 @@ class MinimaxAgent(SearchAgentBase):
         best_edge = ordered[0]
         best_score = pre_scores[best_edge].total_score
         timed_out = ordering_timed_out
+        root_search_scores: list[dict[str, object]] = []
         search_started = time.perf_counter()
         try:
             for edge in ordered:
@@ -927,6 +930,13 @@ class MinimaxAgent(SearchAgentBase):
                     timed_out = True
                     break
                 stats.completed_root_moves += 1
+                root_search_scores.append(
+                    {
+                        "start_id": edge[0],
+                        "end_id": edge[1],
+                        "score": score,
+                    }
+                )
                 if score > best_score or stats.completed_root_moves == 1:
                     best_score = score
                     best_edge = edge
@@ -956,6 +966,7 @@ class MinimaxAgent(SearchAgentBase):
                 root_candidate_count=len(edges),
                 selected_root_candidate_count=len(ordered),
                 searched_root_candidate_count=stats.completed_root_moves,
+                root_search_scores=root_search_scores,
                 **analysis,
             ),
         )
@@ -2439,6 +2450,8 @@ def build_agent(
         "proof_extension_beam_alpha_beta",
         "dynamic_proof_extension_beam_alpha_beta",
         "integrated_adaptive_hybrid",
+        "score_gap_dynamic_beam_alpha_beta",
+        "selective_proof_alpha_beta",
     }:
         from adaptive_hybrid import (  # Avoid an agents.py import cycle.
             AdaptiveHybridConfig,

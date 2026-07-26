@@ -21,6 +21,8 @@ from adaptive_hybrid import (  # noqa: E402
     IntegratedAdaptiveHybridAgent,
     ProofExtensionBeamAlphaBetaAgent,
     ResearchAdaptiveBeamAgent,
+    ScoreGapDynamicBeamAlphaBetaAgent,
+    SelectiveProofAlphaBetaAgent,
     build_adaptive_hybrid_agent,
     adaptive_hybrid_config_from_args,
     add_adaptive_hybrid_cli_arguments,
@@ -33,6 +35,7 @@ from agents import (  # noqa: E402
     build_agent,
 )
 from exact_solver import AnalysisLimitExceeded, ShiritoriSolver  # noqa: E402
+from search_common import CandidateEvaluation  # noqa: E402
 from runtime_dictionary import RuntimeDictionary  # noqa: E402
 from runtime_state import AIEdgeState  # noqa: E402
 
@@ -257,6 +260,71 @@ class AdaptiveHybridTest(unittest.TestCase):
         self.assertEqual(decision.extra["search_mode"], "dynamic_beam_pvs")
         self.assertTrue(decision.extra["dynamic_beam_width_counts"])
         self.assertIn("research_count", decision.extra)
+
+    def test_score_gap_dynamic_beam_runs_below_root_and_respects_width(self) -> None:
+        decision = ScoreGapDynamicBeamAlphaBetaAgent(
+            depth=4,
+            max_depth=4,
+            time_limit_sec=2.0,
+            adaptive_depth=False,
+            beam_widths=(5, 4, 3, 2),
+            adaptive_config=AdaptiveHybridConfig(
+                score_gap_min_widths=(2, 2, 1, 1),
+                score_gap_max_widths=(6, 5, 3, 2),
+            ),
+        ).choose_edge(AIEdgeState.initial(runtime()))
+        counts = decision.extra["beam_score_gap_counts_by_ply"]
+        self.assertTrue(any(int(ply) >= 1 for ply in counts))
+        for ply, selected in decision.extra[
+            "beam_max_selected_by_ply"
+        ].items():
+            used = [
+                int(key.split(":", 1)[1])
+                for key in decision.extra["dynamic_beam_width_counts"]
+                if key != "previous_best_retained"
+                and int(key.split(":", 1)[0]) == int(ply)
+            ]
+            self.assertLessEqual(int(selected), max(used))
+
+    def test_score_gap_dynamic_beam_retains_previous_best(self) -> None:
+        agent = ScoreGapDynamicBeamAlphaBetaAgent(
+            **self.common(),
+            adaptive_config=AdaptiveHybridConfig(
+                score_gap_wide_threshold=1.0,
+                score_gap_narrow_threshold=2.0,
+                score_gap_min_widths=(2, 2),
+                score_gap_max_widths=(3, 2),
+            ),
+        )
+        edges = [(0, index) for index in range(4)]
+        evaluation = lambda score: CandidateEvaluation(
+            total_score=score,
+            attack_score=score,
+            survival_score=0.0,
+            survival_weight=0.0,
+            immediate_win=False,
+            immediate_loss=False,
+        )
+        evaluations = {
+            edge: evaluation(float(100 - index * 10))
+            for index, edge in enumerate(edges)
+        }
+        agent._previous_root_best = edges[-1]
+        selected = agent._select_ordered_edge_candidates(
+            edges,
+            candidate_count=len(edges),
+            ply=0,
+            stats=SearchStats(),
+            evaluations=evaluations,
+        )
+        self.assertEqual(len(selected), 2)
+        self.assertIn(edges[-1], selected)
+
+    def test_fixed_beam_does_not_use_score_gap_policy(self) -> None:
+        decision = BeamAlphaBetaAgent(**self.common()).choose_edge(
+            AIEdgeState.initial(runtime())
+        )
+        self.assertFalse(decision.extra["beam_score_gap_counts_by_ply"])
 
     def test_research_policy_switches_on_research_or_budget(self) -> None:
         agent = ResearchAdaptiveBeamAgent(**self.common())
@@ -501,6 +569,81 @@ class AdaptiveHybridTest(unittest.TestCase):
             (first.start_id, first.end_id, first.score),
             (second.start_id, second.end_id, second.score),
         )
+
+    def test_selective_proof_chooses_exact_winning_competitive_move(self) -> None:
+        small = RuntimeDictionary.from_readings(
+            ["おえ", "きく", "おく", "えう", "きえ", "えお", "うお", "くえ"]
+        )
+        config = AdaptiveHybridConfig(
+            exact_max_reachable_words=20,
+            exact_max_edge_types=20,
+            exact_max_vertices=20,
+            exact_max_state_estimate=1_000_000,
+            exact_max_states=100_000,
+            exact_time_fraction=0.5,
+            exact_time_cap_sec=1.0,
+            exact_normal_time_reserve_sec=0.0,
+            selective_proof_candidate_limit=3,
+            selective_proof_max_calls=3,
+        )
+        decision = SelectiveProofAlphaBetaAgent(
+            depth=1,
+            max_depth=1,
+            time_limit_sec=2.0,
+            adaptive_depth=False,
+            beam_widths=(50, 50),
+            random_seed=0,
+            adaptive_config=config,
+        ).choose_edge(AIEdgeState.initial(small))
+        outcomes = {
+            (row.start_id, row.end_id): row.is_winning
+            for row in ShiritoriSolver(
+                small.to_edge_dictionary()
+            ).analyze_first_moves(stop_on_first_win=False)
+        }
+        self.assertTrue(outcomes[(decision.start_id, decision.end_id)])
+        self.assertTrue(decision.extra["root_choice_changed_by_exact"])
+        self.assertGreater(
+            decision.extra["exact_nontrivial_success_count"], 0
+        )
+
+    def test_selective_proof_interruption_keeps_normal_result(self) -> None:
+        small = RuntimeDictionary.from_readings(
+            ["おえ", "きく", "おく", "えう", "きえ", "えお", "うお", "くえ"]
+        )
+        common = {
+            "depth": 1,
+            "max_depth": 1,
+            "time_limit_sec": 2.0,
+            "adaptive_depth": False,
+            "beam_widths": (50, 50),
+            "random_seed": 0,
+        }
+        baseline = BeamAlphaBetaAgent(**common).choose_edge(
+            AIEdgeState.initial(small)
+        )
+        config = AdaptiveHybridConfig(
+            exact_max_reachable_words=20,
+            exact_max_edge_types=20,
+            exact_max_vertices=20,
+            exact_max_state_estimate=1_000_000,
+            exact_time_fraction=0.5,
+            exact_time_cap_sec=1.0,
+            exact_normal_time_reserve_sec=0.0,
+        )
+        with patch(
+            "adaptive_hybrid.ShiritoriSolver.solve",
+            side_effect=AnalysisLimitExceeded("timeout"),
+        ):
+            decision = SelectiveProofAlphaBetaAgent(
+                **common, adaptive_config=config
+            ).choose_edge(AIEdgeState.initial(small))
+        self.assertEqual(
+            (decision.start_id, decision.end_id),
+            (baseline.start_id, baseline.end_id),
+        )
+        self.assertEqual(decision.extra["exact_success_count"], 0)
+        self.assertGreater(decision.extra["exact_timeout_count"], 0)
 
     def test_integrated_agent_exposes_exact_and_non_exact_modes(self) -> None:
         exact = IntegratedAdaptiveHybridAgent(

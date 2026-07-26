@@ -1,0 +1,6 @@
+profile,position_count,reference_denominator,reference_match_rate,mean_elapsed_time_sec,mean_nodes_searched,mean_effective_depth,timeout_rate,choice_change_count,improvement_count,regression_count,unknown_change_count,exact_attempt_count,exact_success_count,exact_nontrivial_success_count,exact_choice_change_count
+fixed_beam_alpha_beta,50,49,0.6938775510204082,0.12143631760030985,1669.56,8.0,0.06,0,0,0,0,0,0,0,0
+gap_conservative,50,49,0.4489795918367347,0.0804142275173217,1102.46,8.0,0.0,25,4,16,5,0,0,0,0
+gap_responsive,50,49,0.5510204081632653,0.012158585018478335,182.42,8.0,0.0,26,6,13,7,0,0,0,0
+proof_strict,50,49,0.6938775510204082,0.11961582078132778,1638.58,8.0,0.04,0,0,0,0,5,5,0,0
+proof_moderate,50,49,0.6938775510204082,0.12003153664991259,1628.24,8.0,0.08,0,0,0,0,6,6,0,0

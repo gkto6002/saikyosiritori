@@ -21,6 +21,7 @@ from agents import (
     EvaluationConfig,
     SearchStats,
     SearchTimeout,
+    CandidateEvaluation,
     _safe_edge_fallback,
     check_deadline,
     edge_candidate_analysis,
@@ -65,6 +66,13 @@ class AdaptiveHybridConfig:
     exact_normal_time_reserve_sec: float = 0.10
     frontier_exact_min_legal_edge_types: int = 2
     exact_event_log_limit: int = 200
+    score_gap_wide_threshold: float = 4.0
+    score_gap_narrow_threshold: float = 16.0
+    score_gap_min_widths: tuple[int, ...] = (8, 5, 3, 2)
+    score_gap_max_widths: tuple[int, ...] = (16, 10, 5, 2)
+    selective_proof_candidate_limit: int = 3
+    selective_proof_score_margin: float = 6.0
+    selective_proof_max_calls: int = 3
 
     def __post_init__(self) -> None:
         positive = (
@@ -83,6 +91,8 @@ class AdaptiveHybridConfig:
             self.exact_max_states,
             self.frontier_exact_min_legal_edge_types,
             self.exact_event_log_limit,
+            self.selective_proof_candidate_limit,
+            self.selective_proof_max_calls,
         )
         if any(value <= 0 for value in positive):
             raise ValueError("adaptive hybrid thresholds must be positive")
@@ -108,6 +118,29 @@ class AdaptiveHybridConfig:
             raise ValueError("exact_time_cap_sec must be positive")
         if self.exact_normal_time_reserve_sec < 0:
             raise ValueError("exact_normal_time_reserve_sec must be non-negative")
+        if not (
+            self.score_gap_wide_threshold
+            < self.score_gap_narrow_threshold
+        ):
+            raise ValueError(
+                "score gap thresholds must satisfy wide < narrow"
+            )
+        if (
+            len(self.score_gap_min_widths) != len(self.score_gap_max_widths)
+            or not self.score_gap_min_widths
+            or any(width <= 0 for width in self.score_gap_min_widths)
+            or any(width <= 0 for width in self.score_gap_max_widths)
+            or any(
+                minimum > maximum
+                for minimum, maximum in zip(
+                    self.score_gap_min_widths,
+                    self.score_gap_max_widths,
+                )
+            )
+        ):
+            raise ValueError("invalid score-gap beam width bounds")
+        if self.selective_proof_score_margin < 0:
+            raise ValueError("selective proof score margin must be non-negative")
 
 
 @dataclass(frozen=True)
@@ -272,6 +305,7 @@ class _DynamicBeamMixin:
         candidate_count: int,
         ply: int,
         stats: SearchStats,
+        evaluations: dict[tuple[int, int], CandidateEvaluation] | None = None,
     ) -> list[tuple[int, int]]:
         """Apply the dynamic policy after every edge-ordering call."""
 
@@ -428,6 +462,138 @@ class DynamicBeamAlphaBetaAgent(_DynamicBeamMixin, BeamAlphaBetaAgent):
         )
 
 
+class _ScoreGapDynamicBeamMixin(_DynamicBeamMixin):
+    """Choose each node's beam width from already-computed ordering scores."""
+
+    _previous_root_best: tuple[int, int] | None = None
+
+    def _score_gap_width(
+        self,
+        ordered: Sequence[tuple[int, int]],
+        evaluations: dict[tuple[int, int], CandidateEvaluation],
+        ply: int,
+    ) -> tuple[int, float]:
+        base = self.beam_widths[min(ply, len(self.beam_widths) - 1)]
+        bound_index = min(
+            ply, len(self.adaptive_config.score_gap_min_widths) - 1
+        )
+        minimum = self.adaptive_config.score_gap_min_widths[bound_index]
+        maximum = self.adaptive_config.score_gap_max_widths[bound_index]
+        if len(ordered) < 2:
+            return min(len(ordered), minimum), math.inf
+        first = evaluations[ordered[0]].total_score
+        second = evaluations[ordered[1]].total_score
+        gap = first - second
+        if not math.isfinite(gap):
+            gap = 1_000_000_000.0
+        if gap <= self.adaptive_config.score_gap_wide_threshold:
+            width = maximum
+        elif gap >= self.adaptive_config.score_gap_narrow_threshold:
+            width = minimum
+        else:
+            width = base
+        return min(len(ordered), width), gap
+
+    def _record_score_gap(
+        self,
+        *,
+        gap: float,
+        ply: int,
+        stats: SearchStats,
+    ) -> None:
+        stats.beam_score_gap_sums_by_ply[ply] = (
+            stats.beam_score_gap_sums_by_ply.get(ply, 0.0) + gap
+        )
+        stats.beam_score_gap_counts_by_ply[ply] = (
+            stats.beam_score_gap_counts_by_ply.get(ply, 0) + 1
+        )
+        stats.beam_score_gap_mins_by_ply[ply] = min(
+            stats.beam_score_gap_mins_by_ply.get(ply, math.inf), gap
+        )
+        stats.beam_score_gap_maxs_by_ply[ply] = max(
+            stats.beam_score_gap_maxs_by_ply.get(ply, -math.inf), gap
+        )
+
+    def _select_ordered_edge_candidates(
+        self,
+        ordered: list[tuple[int, int]],
+        *,
+        candidate_count: int,
+        ply: int,
+        stats: SearchStats,
+        evaluations: dict[tuple[int, int], CandidateEvaluation] | None = None,
+    ) -> list[tuple[int, int]]:
+        if not ordered or evaluations is None:
+            return []
+        width, gap = self._score_gap_width(ordered, evaluations, ply)
+        selected = ordered[:width]
+        retained_previous_best = False
+        if (
+            ply == 0
+            and self._previous_root_best in ordered
+            and self._previous_root_best not in selected
+            and selected
+        ):
+            selected = [self._previous_root_best, *selected[:-1]]
+            retained_previous_best = True
+        self._record_score_gap(gap=gap, ply=ply, stats=stats)
+        self._record_dynamic_width(
+            candidate_count, len(selected), width, ply, stats
+        )
+        if retained_previous_best:
+            stats.dynamic_beam_width_counts["previous_best_retained"] = (
+                stats.dynamic_beam_width_counts.get(
+                    "previous_best_retained", 0
+                )
+                + 1
+            )
+        return selected
+
+
+class ScoreGapDynamicBeamAlphaBetaAgent(
+    _ScoreGapDynamicBeamMixin,
+    BeamAlphaBetaAgent,
+):
+    """BeamAlphaBeta widened for close candidates and narrowed for clear ones."""
+
+    name = "score_gap_dynamic_beam_alpha_beta"
+
+    def __init__(
+        self,
+        *args: object,
+        adaptive_config: AdaptiveHybridConfig = AdaptiveHybridConfig(),
+        **kwargs: object,
+    ) -> None:
+        self.adaptive_config = adaptive_config
+        self._previous_root_best = None
+        super().__init__(*args, **kwargs)
+
+    def choose_edge(self, state: AIEdgeState) -> EdgeMoveDecision:
+        scale = position_scale(state)
+        decision = super().choose_edge(state)
+        if decision.start_id is not None and decision.end_id is not None:
+            self._previous_root_best = (
+                decision.start_id,
+                decision.end_id,
+            )
+        return _extra_decision(
+            decision,
+            search_mode=self.name,
+            mode_history=[
+                {
+                    "mode": self.name,
+                    "reason": "top_ordering_score_gap",
+                }
+            ],
+            switch_reason="top_ordering_score_gap",
+            mode_counts={self.name: 1},
+            mode_switch_count=0,
+            previous_root_best=self._previous_root_best,
+            position_scale=asdict(scale),
+            **self._dynamic_extra(),
+        )
+
+
 class DynamicBeamPVSAgent(_DynamicBeamMixin, BeamPVSAgent):
     """PVS with the same candidate-count-dependent beam as AlphaBeta."""
 
@@ -490,6 +656,8 @@ _DICT_SUM_FIELDS = (
     "beam_pruned_counts_by_ply",
     "beam_ordering_calls_by_ply",
     "dynamic_beam_width_counts",
+    "beam_score_gap_sums_by_ply",
+    "beam_score_gap_counts_by_ply",
 )
 
 
@@ -509,6 +677,14 @@ def _merge_stats(total: SearchStats, step: SearchStats) -> None:
     for key, value in step.beam_max_selected_by_ply.items():
         total.beam_max_selected_by_ply[key] = max(
             total.beam_max_selected_by_ply.get(key, 0), value
+        )
+    for key, value in step.beam_score_gap_mins_by_ply.items():
+        total.beam_score_gap_mins_by_ply[key] = min(
+            total.beam_score_gap_mins_by_ply.get(key, math.inf), value
+        )
+    for key, value in step.beam_score_gap_maxs_by_ply.items():
+        total.beam_score_gap_maxs_by_ply[key] = max(
+            total.beam_score_gap_maxs_by_ply.get(key, -math.inf), value
         )
 
 
@@ -1508,6 +1684,280 @@ class ProofExtensionBeamAlphaBetaAgent(
             self._proof_turn_deadline = None
 
 
+class SelectiveProofAlphaBetaAgent(
+    _ExactEndgameMixin,
+    BeamAlphaBetaAgent,
+):
+    """Run normal BeamAlphaBeta, then prove only competitive root candidates."""
+
+    name = "selective_proof_alpha_beta"
+
+    def __init__(
+        self,
+        *args: object,
+        adaptive_config: AdaptiveHybridConfig = AdaptiveHybridConfig(),
+        **kwargs: object,
+    ) -> None:
+        self.adaptive_config = adaptive_config
+        self._selective_normal_deadline: float | None = None
+        super().__init__(*args, **kwargs)
+
+    def _deadline(self) -> float:
+        if self._selective_normal_deadline is not None:
+            return self._selective_normal_deadline
+        return super()._deadline()
+
+    def _proof_candidates(
+        self,
+        decision: EdgeMoveDecision,
+    ) -> list[tuple[tuple[int, int], float]]:
+        rows = [
+            (
+                (int(row["start_id"]), int(row["end_id"])),
+                float(row["score"]),
+            )
+            for row in decision.extra.get("root_search_scores", [])
+        ]
+        rows.sort(key=lambda item: (-item[1], item[0][0], item[0][1]))
+        if not rows:
+            return []
+        best_score = rows[0][1]
+        competitive = [
+            item
+            for item in rows
+            if item[1]
+            >= best_score - self.adaptive_config.selective_proof_score_margin
+        ]
+        limit = self.adaptive_config.selective_proof_candidate_limit
+        return (competitive if len(competitive) >= 2 else rows)[:limit]
+
+    def _prove_root_candidate(
+        self,
+        state: AIEdgeState,
+        edge: tuple[int, int],
+        normal_score: float,
+        budget: float,
+    ) -> dict[str, object]:
+        started = time.perf_counter()
+        state.apply_edge(*edge)
+        try:
+            scale = position_scale(
+                state, self.adaptive_config.exact_max_state_estimate
+            )
+            common = {
+                "location": "root_candidate",
+                "ply": 1,
+                "target_candidate": list(edge),
+                "normal_score": normal_score,
+                "multiple_root_candidates": True,
+                **asdict(scale),
+            }
+            if edge_is_terminal(state, edge[1]):
+                return {
+                    **common,
+                    "status": "complete",
+                    "result": "loss",
+                    "exact_score": LOSS_SCORE + 1.0,
+                    "score_difference": LOSS_SCORE + 1.0 - normal_score,
+                    "searched_states": 0,
+                    "elapsed_time_sec": time.perf_counter() - started,
+                    "time_budget_sec": budget,
+                    "trivial": True,
+                }
+            eligible, reason = self._exact_eligible(scale)
+            if not eligible:
+                return {
+                    **common,
+                    "status": "ineligible",
+                    "reason": reason,
+                    "result": "unknown",
+                    "exact_score": None,
+                    "score_difference": None,
+                    "searched_states": 0,
+                    "elapsed_time_sec": time.perf_counter() - started,
+                    "time_budget_sec": budget,
+                    "trivial": False,
+                }
+            if state.required_char_id is None:
+                raise AssertionError("candidate successor must require a char")
+            solver = ShiritoriSolver(
+                self._residual_dictionary(state),
+                max_states=self.adaptive_config.exact_max_states,
+                timeout_sec=budget,
+            )
+            try:
+                opponent_is_winning = solver.solve(state.required_char_id)
+            except AnalysisLimitExceeded as exc:
+                return {
+                    **common,
+                    "status": "interrupted",
+                    "limit_reason": exc.reason,
+                    "result": "unknown",
+                    "exact_score": None,
+                    "score_difference": None,
+                    "searched_states": solver.count_states(),
+                    "elapsed_time_sec": time.perf_counter() - started,
+                    "time_budget_sec": budget,
+                    "trivial": False,
+                }
+            root_is_winning = not opponent_is_winning
+            exact_score = (
+                WIN_SCORE - 1.0
+                if root_is_winning
+                else LOSS_SCORE + 1.0
+            )
+            return {
+                **common,
+                "status": "complete",
+                "result": "win" if root_is_winning else "loss",
+                "exact_score": exact_score,
+                "score_difference": exact_score - normal_score,
+                "searched_states": solver.count_states(),
+                "elapsed_time_sec": time.perf_counter() - started,
+                "time_budget_sec": budget,
+                "trivial": solver.count_states() <= 1,
+            }
+        finally:
+            state.undo_edge()
+
+    def choose_edge(self, state: AIEdgeState) -> EdgeMoveDecision:
+        turn_started = time.perf_counter()
+        total_deadline = turn_started + self.time_limit_sec
+        exact_limit = min(
+            self.adaptive_config.exact_time_cap_sec,
+            self.time_limit_sec * self.adaptive_config.exact_time_fraction,
+        )
+        self._selective_normal_deadline = total_deadline - exact_limit
+        try:
+            normal = BeamAlphaBetaAgent.choose_edge(self, state)
+        finally:
+            self._selective_normal_deadline = None
+
+        candidates = self._proof_candidates(normal)
+        events: list[dict[str, object]] = []
+        exact_elapsed = 0.0
+        for edge, score in candidates[
+            : self.adaptive_config.selective_proof_max_calls
+        ]:
+            remaining = min(
+                exact_limit - exact_elapsed,
+                total_deadline - time.perf_counter(),
+            )
+            if remaining <= 0:
+                events.append(
+                    {
+                        "location": "root_candidate",
+                        "ply": 1,
+                        "target_candidate": list(edge),
+                        "normal_score": score,
+                        "status": "interrupted",
+                        "limit_reason": "no_exact_time_budget",
+                        "result": "unknown",
+                        "multiple_root_candidates": len(candidates) > 1,
+                    }
+                )
+                break
+            event = self._prove_root_candidate(
+                state, edge, score, remaining
+            )
+            events.append(event)
+            exact_elapsed += float(event.get("elapsed_time_sec", 0.0))
+
+        exact_results = {
+            tuple(int(value) for value in event["target_candidate"]): str(
+                event["result"]
+            )
+            for event in events
+            if event.get("status") == "complete"
+        }
+        baseline = (
+            (normal.start_id, normal.end_id)
+            if normal.start_id is not None and normal.end_id is not None
+            else None
+        )
+        # Incomplete and ineligible analyses are observational only.  Preserve
+        # the normal result unless a completed proof establishes a strict
+        # win/loss priority.
+        selected = baseline
+        ranked = self._proof_candidates(normal)
+        proven_wins = [
+            edge
+            for edge, _score in ranked
+            if exact_results.get(edge) == "win"
+        ]
+        if proven_wins:
+            selected = proven_wins[0]
+        elif baseline is not None and exact_results.get(baseline) == "loss":
+            selected = next(
+                (
+                    edge
+                    for edge, _score in ranked
+                    if exact_results.get(edge) != "loss"
+                ),
+                baseline,
+            )
+        elapsed = time.perf_counter() - turn_started
+        completed = [
+            event for event in events if event.get("status") == "complete"
+        ]
+        nontrivial = [
+            event for event in completed if not event.get("trivial")
+        ]
+        interrupted = [
+            event for event in events if event.get("status") == "interrupted"
+        ]
+        extra = {
+            **normal.extra,
+            "search_mode": self.name,
+            "selective_proof": True,
+            "normal_search_elapsed_time_sec": normal.elapsed_time_sec,
+            "exact_call_events": events,
+            "exact_attempt_count": len(
+                [
+                    event
+                    for event in events
+                    if event.get("status") != "ineligible"
+                ]
+            ),
+            "exact_success_count": len(completed),
+            "exact_nontrivial_success_count": len(nontrivial),
+            "exact_trivial_success_count": len(completed) - len(nontrivial),
+            "exact_limit_count": len(interrupted),
+            "exact_timeout_count": sum(
+                str(event.get("limit_reason", "")).startswith("timeout")
+                for event in interrupted
+            ),
+            "exact_total_time_sec": exact_elapsed,
+            "exact_time_budget_sec": exact_limit,
+            "selective_proof_candidate_count": len(candidates),
+            "selective_proof_candidates": [
+                [edge[0], edge[1]] for edge, _score in candidates
+            ],
+            "root_choice_changed_by_exact": selected != baseline,
+            "normal_root_choice": list(baseline) if baseline else None,
+            "exact_root_choice": list(selected) if selected else None,
+        }
+        return EdgeMoveDecision(
+            selected[0] if selected else None,
+            selected[1] if selected else None,
+            elapsed,
+            normal.timed_out,
+            (
+                next(
+                    (
+                        float(event["exact_score"])
+                        for event in completed
+                        if tuple(event["target_candidate"]) == selected
+                    ),
+                    normal.score,
+                )
+                if selected
+                else normal.score
+            ),
+            extra,
+        )
+
+
 class DynamicProofExtensionBeamAlphaBetaAgent(
     _DynamicBeamMixin,
     ProofExtensionBeamAlphaBetaAgent,
@@ -1560,6 +2010,8 @@ ADAPTIVE_HYBRID_AGENT_NAMES = (
     "proof_extension_beam_alpha_beta",
     "dynamic_proof_extension_beam_alpha_beta",
     "integrated_adaptive_hybrid",
+    "score_gap_dynamic_beam_alpha_beta",
+    "selective_proof_alpha_beta",
 )
 
 
@@ -1581,6 +2033,10 @@ def build_adaptive_hybrid_agent(
             DynamicProofExtensionBeamAlphaBetaAgent
         ),
         "integrated_adaptive_hybrid": IntegratedAdaptiveHybridAgent,
+        "score_gap_dynamic_beam_alpha_beta": (
+            ScoreGapDynamicBeamAlphaBetaAgent
+        ),
+        "selective_proof_alpha_beta": SelectiveProofAlphaBetaAgent,
     }
     try:
         cls = classes[name]
@@ -1719,6 +2175,41 @@ def add_adaptive_hybrid_cli_arguments(
         type=int,
         default=defaults.exact_event_log_limit,
     )
+    parser.add_argument(
+        "--score-gap-wide-threshold",
+        type=float,
+        default=defaults.score_gap_wide_threshold,
+    )
+    parser.add_argument(
+        "--score-gap-narrow-threshold",
+        type=float,
+        default=defaults.score_gap_narrow_threshold,
+    )
+    parser.add_argument(
+        "--score-gap-min-widths",
+        type=positive_int_csv,
+        default=defaults.score_gap_min_widths,
+    )
+    parser.add_argument(
+        "--score-gap-max-widths",
+        type=positive_int_csv,
+        default=defaults.score_gap_max_widths,
+    )
+    parser.add_argument(
+        "--selective-proof-candidate-limit",
+        type=int,
+        default=defaults.selective_proof_candidate_limit,
+    )
+    parser.add_argument(
+        "--selective-proof-score-margin",
+        type=float,
+        default=defaults.selective_proof_score_margin,
+    )
+    parser.add_argument(
+        "--selective-proof-max-calls",
+        type=int,
+        default=defaults.selective_proof_max_calls,
+    )
 
 
 def adaptive_hybrid_config_from_args(
@@ -1749,4 +2240,13 @@ def adaptive_hybrid_config_from_args(
             args.frontier_exact_min_legal_edge_types
         ),
         exact_event_log_limit=args.exact_event_log_limit,
+        score_gap_wide_threshold=args.score_gap_wide_threshold,
+        score_gap_narrow_threshold=args.score_gap_narrow_threshold,
+        score_gap_min_widths=tuple(args.score_gap_min_widths),
+        score_gap_max_widths=tuple(args.score_gap_max_widths),
+        selective_proof_candidate_limit=(
+            args.selective_proof_candidate_limit
+        ),
+        selective_proof_score_margin=args.selective_proof_score_margin,
+        selective_proof_max_calls=args.selective_proof_max_calls,
     )

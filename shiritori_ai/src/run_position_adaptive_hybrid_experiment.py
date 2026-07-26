@@ -164,8 +164,15 @@ def selected_profile(path: Path) -> tuple[str, AdaptiveHybridConfig]:
     if name not in PROFILES:
         raise ValueError(f"unknown selected profile: {name}")
     stored = data.get("config")
-    if stored and isinstance(stored.get("ply_width_caps"), list):
-        stored = {**stored, "ply_width_caps": tuple(stored["ply_width_caps"])}
+    if stored:
+        stored = dict(stored)
+        for field_name in (
+            "ply_width_caps",
+            "score_gap_min_widths",
+            "score_gap_max_widths",
+        ):
+            if isinstance(stored.get(field_name), list):
+                stored[field_name] = tuple(stored[field_name])
     config = AdaptiveHybridConfig(**stored) if stored else PROFILES[name]
     return name, config
 

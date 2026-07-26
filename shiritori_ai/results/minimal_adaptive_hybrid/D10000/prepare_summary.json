@@ -1,0 +1,10 @@
+{
+  "exact_truth_attempt_count": 30,
+  "exact_truth_count": 0,
+  "exact_truth_incomplete_count": 30,
+  "extracted_candidate_count": 510,
+  "format_version": "minimal_adaptive_hybrid_v1",
+  "mixed_exact_truth_count": 0,
+  "saved_position_count": 50,
+  "source_log": "/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/results/position_adaptive_hybrid_v2/tune/D10000/07a64484d43c/raw_matches.jsonl"
+}

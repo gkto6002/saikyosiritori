@@ -123,6 +123,10 @@ class SearchStats:
     beam_ordering_calls_by_ply: dict[int, int] = field(default_factory=dict)
     beam_max_selected_by_ply: dict[int, int] = field(default_factory=dict)
     dynamic_beam_width_counts: dict[str, int] = field(default_factory=dict)
+    beam_score_gap_sums_by_ply: dict[int, float] = field(default_factory=dict)
+    beam_score_gap_counts_by_ply: dict[int, int] = field(default_factory=dict)
+    beam_score_gap_mins_by_ply: dict[int, float] = field(default_factory=dict)
+    beam_score_gap_maxs_by_ply: dict[int, float] = field(default_factory=dict)
     graph_ordering_evaluations: int = 0
     graph_ordering_calls: int = 0
     graph_ordering_changed_first_count: int = 0
@@ -177,6 +181,18 @@ class SearchStats:
             ),
             "dynamic_beam_width_counts": dict(
                 sorted(self.dynamic_beam_width_counts.items())
+            ),
+            "beam_score_gap_sums_by_ply": dict(
+                sorted(self.beam_score_gap_sums_by_ply.items())
+            ),
+            "beam_score_gap_counts_by_ply": dict(
+                sorted(self.beam_score_gap_counts_by_ply.items())
+            ),
+            "beam_score_gap_mins_by_ply": dict(
+                sorted(self.beam_score_gap_mins_by_ply.items())
+            ),
+            "beam_score_gap_maxs_by_ply": dict(
+                sorted(self.beam_score_gap_maxs_by_ply.items())
             ),
             "graph_ordering_evaluations": self.graph_ordering_evaluations,
             "graph_ordering_calls": self.graph_ordering_calls,
