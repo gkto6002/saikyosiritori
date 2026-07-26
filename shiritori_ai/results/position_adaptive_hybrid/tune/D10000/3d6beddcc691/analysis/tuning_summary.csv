@@ -1,0 +1,4 @@
+profile,new_agent_games,new_agent_wins,new_agent_win_rate,mean_decision_time_sec,timeout_count,fallback_count
+conservative,60,17,0.2833333333333333,0.356390915658712,289,0
+balanced,60,23,0.38333333333333336,0.362118479619161,298,0
+aggressive,60,20,0.3333333333333333,0.34730030969510106,287,0

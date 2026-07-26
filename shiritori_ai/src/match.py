@@ -185,7 +185,18 @@ def simulate_match(
                 "null_window_searches": decision.extra.get("null_window_searches", ""),
                 "research_count": decision.extra.get("research_count", ""),
                 "research_rate": decision.extra.get("research_rate", ""),
+                "search_mode": decision.extra.get("search_mode", ""),
+                "mode_history": decision.extra.get("mode_history", ""),
+                "switch_reason": decision.extra.get("switch_reason", ""),
+                "mode_counts": decision.extra.get("mode_counts", ""),
+                "mode_switch_count": decision.extra.get("mode_switch_count", ""),
                 "beam_widths_used": decision.extra.get("beam_widths_used", ""),
+                "dynamic_beam_width_counts": decision.extra.get(
+                    "dynamic_beam_width_counts", ""
+                ),
+                "dynamic_beam_config": decision.extra.get(
+                    "dynamic_beam_config", ""
+                ),
                 "beam_candidate_counts_by_ply": decision.extra.get("beam_candidate_counts_by_ply", ""),
                 "beam_selected_counts_by_ply": decision.extra.get("beam_selected_counts_by_ply", ""),
                 "beam_ordering_calls_by_ply": decision.extra.get("beam_ordering_calls_by_ply", ""),
@@ -196,6 +207,34 @@ def simulate_match(
                 "graph_ordering_time_sec": decision.extra.get("graph_ordering_time_sec", ""),
                 "graph_root_baseline_first": decision.extra.get("graph_root_baseline_first", ""),
                 "graph_root_ordered_first": decision.extra.get("graph_root_ordered_first", ""),
+                "completed_iterative_depth": decision.extra.get(
+                    "completed_iterative_depth", ""
+                ),
+                "predicted_next_depth_time_sec": decision.extra.get(
+                    "predicted_next_depth_time_sec", ""
+                ),
+                "position_scale": decision.extra.get("position_scale", ""),
+                "exact_gate": decision.extra.get("exact_gate", ""),
+                "exact_attempt_count": decision.extra.get(
+                    "exact_attempt_count", ""
+                ),
+                "exact_success_count": decision.extra.get(
+                    "exact_success_count", ""
+                ),
+                "exact_timeout_count": decision.extra.get(
+                    "exact_timeout_count", ""
+                ),
+                "exact_limit_count": decision.extra.get(
+                    "exact_limit_count", ""
+                ),
+                "exact_state_count": decision.extra.get(
+                    "exact_state_count", ""
+                ),
+                "exact_result": decision.extra.get("exact_result", ""),
+                "exact_time_budget_sec": decision.extra.get(
+                    "exact_time_budget_sec", ""
+                ),
+                "fallback_count": decision.extra.get("fallback_count", ""),
                 "evaluated_moves": decision.extra.get("evaluated_moves", ""),
                 "decision_extra": decision.extra,
             }
@@ -377,7 +416,18 @@ def simulate_runtime_match(
                 "null_window_searches": decision.extra.get("null_window_searches", ""),
                 "research_count": decision.extra.get("research_count", ""),
                 "research_rate": decision.extra.get("research_rate", ""),
+                "search_mode": decision.extra.get("search_mode", ""),
+                "mode_history": decision.extra.get("mode_history", ""),
+                "switch_reason": decision.extra.get("switch_reason", ""),
+                "mode_counts": decision.extra.get("mode_counts", ""),
+                "mode_switch_count": decision.extra.get("mode_switch_count", ""),
                 "beam_widths_used": decision.extra.get("beam_widths_used", ""),
+                "dynamic_beam_width_counts": decision.extra.get(
+                    "dynamic_beam_width_counts", ""
+                ),
+                "dynamic_beam_config": decision.extra.get(
+                    "dynamic_beam_config", ""
+                ),
                 "beam_candidate_counts_by_ply": decision.extra.get("beam_candidate_counts_by_ply", ""),
                 "beam_selected_counts_by_ply": decision.extra.get("beam_selected_counts_by_ply", ""),
                 "beam_ordering_calls_by_ply": decision.extra.get("beam_ordering_calls_by_ply", ""),
@@ -388,6 +438,34 @@ def simulate_runtime_match(
                 "graph_ordering_time_sec": decision.extra.get("graph_ordering_time_sec", ""),
                 "graph_root_baseline_first": decision.extra.get("graph_root_baseline_first", ""),
                 "graph_root_ordered_first": decision.extra.get("graph_root_ordered_first", ""),
+                "completed_iterative_depth": decision.extra.get(
+                    "completed_iterative_depth", ""
+                ),
+                "predicted_next_depth_time_sec": decision.extra.get(
+                    "predicted_next_depth_time_sec", ""
+                ),
+                "position_scale": decision.extra.get("position_scale", ""),
+                "exact_gate": decision.extra.get("exact_gate", ""),
+                "exact_attempt_count": decision.extra.get(
+                    "exact_attempt_count", ""
+                ),
+                "exact_success_count": decision.extra.get(
+                    "exact_success_count", ""
+                ),
+                "exact_timeout_count": decision.extra.get(
+                    "exact_timeout_count", ""
+                ),
+                "exact_limit_count": decision.extra.get(
+                    "exact_limit_count", ""
+                ),
+                "exact_state_count": decision.extra.get(
+                    "exact_state_count", ""
+                ),
+                "exact_result": decision.extra.get("exact_result", ""),
+                "exact_time_budget_sec": decision.extra.get(
+                    "exact_time_budget_sec", ""
+                ),
+                "fallback_count": decision.extra.get("fallback_count", ""),
                 "evaluated_moves": decision.extra.get("evaluated_moves", ""),
                 "decision_extra": decision.extra,
             }

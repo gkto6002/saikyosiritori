@@ -8,6 +8,11 @@ import time
 from pathlib import Path
 
 from agents import DEFAULT_BEAM_WIDTHS, DEFAULT_TIME_LIMIT_SEC, build_agent
+from adaptive_hybrid import (
+    ADAPTIVE_HYBRID_AGENT_NAMES,
+    adaptive_hybrid_config_from_args,
+    add_adaptive_hybrid_cli_arguments,
+)
 from dataset import parse_jmdict, read_csv_records, select_records
 from runtime_dictionary import RuntimeDictionary
 from runtime_state import HumanRuntimeState
@@ -77,6 +82,7 @@ def parse_args() -> argparse.Namespace:
             "graph_pvs",
             "beam_alpha_beta",
             "beam_pvs",
+            *ADAPTIVE_HYBRID_AGENT_NAMES,
         ],
         default="greedy",
     )
@@ -119,6 +125,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--monte-carlo-candidates", type=int, default=20)
     parser.add_argument("--monte-carlo-playouts", type=int, default=10)
     parser.add_argument("--monte-carlo-max-moves", type=int, default=200)
+    add_adaptive_hybrid_cli_arguments(parser)
     args = parser.parse_args()
     if args.hybrid_depth is not None and args.hybrid_depth <= 0:
         parser.error("--hybrid-depth must be positive")
@@ -158,6 +165,7 @@ def main() -> None:
         monte_carlo_candidates=args.monte_carlo_candidates,
         monte_carlo_playouts=args.monte_carlo_playouts,
         monte_carlo_max_moves=args.monte_carlo_max_moves,
+        adaptive_hybrid_config=adaptive_hybrid_config_from_args(args),
     )
 
     last_word: str | None = None

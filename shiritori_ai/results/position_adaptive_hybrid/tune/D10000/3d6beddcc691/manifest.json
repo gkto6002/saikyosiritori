@@ -1,0 +1,118 @@
+{
+  "commit_id": "d7ab76ddfa00239c45957f8a2264fcc8f4efe898",
+  "config": {
+    "adaptive_config": null,
+    "agents": [
+      "alpha_beta",
+      "beam_alpha_beta",
+      "beam_pvs",
+      "branch_switch_alpha_beta",
+      "dynamic_beam_alpha_beta",
+      "dynamic_beam_pvs",
+      "research_adaptive_beam",
+      "endgame_exact_hybrid",
+      "integrated_adaptive_hybrid"
+    ],
+    "candidate_unit": "directed_edge_type_with_multiplicity",
+    "dictionary_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "dictionary_size": 10000,
+    "expected_match_count": 180,
+    "final_pairs": null,
+    "fixed_positions": null,
+    "format_version": "position_adaptive_hybrid_v1",
+    "max_match_time_sec": 300.0,
+    "max_moves": 1000,
+    "profile_name": null,
+    "stage": "tune",
+    "time_limit_sec": 1.0,
+    "tuning_profiles": {
+      "aggressive": {
+        "branch_switch_threshold": 8,
+        "exact_max_edge_types": 22,
+        "exact_max_reachable_words": 40,
+        "exact_max_state_estimate": 500000,
+        "exact_max_states": 500000,
+        "exact_max_vertices": 14,
+        "exact_time_cap_sec": 0.25,
+        "exact_time_fraction": 0.25,
+        "high_beam_width": 8,
+        "high_branch_threshold": 36,
+        "iterative_start_depth": 7,
+        "medium_beam_width": 12,
+        "medium_branch_threshold": 18,
+        "next_depth_safety_ratio": 0.9,
+        "no_prune_threshold": 4,
+        "ply_width_caps": [
+          12,
+          8,
+          4,
+          2
+        ],
+        "pvs_research_rate_threshold": 0.06,
+        "pvs_time_growth_limit": 3.0,
+        "very_high_beam_width": 6
+      },
+      "balanced": {
+        "branch_switch_threshold": 12,
+        "exact_max_edge_types": 18,
+        "exact_max_reachable_words": 32,
+        "exact_max_state_estimate": 200000,
+        "exact_max_states": 200000,
+        "exact_max_vertices": 12,
+        "exact_time_cap_sec": 0.2,
+        "exact_time_fraction": 0.2,
+        "high_beam_width": 8,
+        "high_branch_threshold": 48,
+        "iterative_start_depth": 7,
+        "medium_beam_width": 12,
+        "medium_branch_threshold": 24,
+        "next_depth_safety_ratio": 0.8,
+        "no_prune_threshold": 6,
+        "ply_width_caps": [
+          12,
+          8,
+          4,
+          2
+        ],
+        "pvs_research_rate_threshold": 0.04,
+        "pvs_time_growth_limit": 3.0,
+        "very_high_beam_width": 6
+      },
+      "conservative": {
+        "branch_switch_threshold": 16,
+        "exact_max_edge_types": 14,
+        "exact_max_reachable_words": 24,
+        "exact_max_state_estimate": 80000,
+        "exact_max_states": 80000,
+        "exact_max_vertices": 10,
+        "exact_time_cap_sec": 0.15,
+        "exact_time_fraction": 0.15,
+        "high_beam_width": 10,
+        "high_branch_threshold": 50,
+        "iterative_start_depth": 7,
+        "medium_beam_width": 12,
+        "medium_branch_threshold": 30,
+        "next_depth_safety_ratio": 0.75,
+        "no_prune_threshold": 8,
+        "ply_width_caps": [
+          12,
+          8,
+          4,
+          2
+        ],
+        "pvs_research_rate_threshold": 0.03,
+        "pvs_time_growth_limit": 3.0,
+        "very_high_beam_width": 8
+      }
+    }
+  },
+  "experiment_config_hash": "2f01dfdf19b0f16158714660cf781185c79c4f9500d946201995b5169342095f",
+  "run_hash": "3d6beddcc6914a543b2dac517d4d3517c909eb0f789ef686fbcdd4821c6af5cc",
+  "source_fingerprint": "0e2a353cf636b87b9d894c0bc8c6c36eabfe34874873788f671c13af60a9a07d"
+}

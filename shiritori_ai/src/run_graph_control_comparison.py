@@ -35,6 +35,12 @@ AGENTS = (
     "graph_pvs",
     "beam_alpha_beta",
     "beam_pvs",
+    "branch_switch_alpha_beta",
+    "dynamic_beam_alpha_beta",
+    "dynamic_beam_pvs",
+    "research_adaptive_beam",
+    "endgame_exact_hybrid",
+    "integrated_adaptive_hybrid",
 )
 DEFAULT_AGENTS = (
     "random",
@@ -229,6 +235,19 @@ def experiment_config(
             "adaptive_depth": False,
         },
     }
+    for adaptive_name in (
+        "branch_switch_alpha_beta",
+        "dynamic_beam_alpha_beta",
+        "dynamic_beam_pvs",
+        "research_adaptive_beam",
+        "endgame_exact_hybrid",
+        "integrated_adaptive_hybrid",
+    ):
+        fixed_settings[adaptive_name] = {
+            "depth": 8,
+            "beam_widths": [12, 8, 4, 2],
+            "adaptive_depth": False,
+        }
     if adaptive_depth:
         adaptive_common = {
             "adaptive_depth": True,
@@ -307,6 +326,21 @@ def experiment_config(
                 },
             }
         )
+        for adaptive_name in (
+            "branch_switch_alpha_beta",
+            "dynamic_beam_alpha_beta",
+            "dynamic_beam_pvs",
+            "research_adaptive_beam",
+            "endgame_exact_hybrid",
+            "integrated_adaptive_hybrid",
+        ):
+            fixed_settings[adaptive_name] = {
+                **adaptive_common,
+                "initial_depth": 8,
+                "max_depth": 9,
+                "beam_widths": [12, 8, 4, 2],
+                "selection_basis": "position_adaptive_hybrid_stage2",
+            }
     return {
         "format_version": "graph_control_comparison_v1",
         "mode": "quick" if quick else "full",

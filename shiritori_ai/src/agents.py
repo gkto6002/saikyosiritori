@@ -2299,6 +2299,7 @@ def build_agent(
     timeout_decreases_depth: bool = True,
     adaptive_max_depth_increment: int = 0,
     target_time_sec: float | None = None,
+    adaptive_hybrid_config: object | None = None,
 ) -> BaseAgent:
     if adaptive_max_depth_increment < 0:
         raise ValueError("adaptive_max_depth_increment must be non-negative")
@@ -2397,6 +2398,32 @@ def build_agent(
             **search_common,
             depth=resolved_beam_pvs_depth,
             max_depth=resolved_beam_pvs_max_depth,
+            beam_widths=beam_widths,
+        )
+    if agent_name in {
+        "branch_switch_alpha_beta",
+        "dynamic_beam_alpha_beta",
+        "dynamic_beam_pvs",
+        "research_adaptive_beam",
+        "endgame_exact_hybrid",
+        "integrated_adaptive_hybrid",
+    }:
+        from adaptive_hybrid import (  # Avoid an agents.py import cycle.
+            AdaptiveHybridConfig,
+            build_adaptive_hybrid_agent,
+        )
+
+        config = (
+            adaptive_hybrid_config
+            if isinstance(adaptive_hybrid_config, AdaptiveHybridConfig)
+            else AdaptiveHybridConfig()
+        )
+        return build_adaptive_hybrid_agent(
+            agent_name,
+            adaptive_config=config,
+            **search_common,
+            depth=resolved_beam_alpha_beta_depth,
+            max_depth=resolved_beam_alpha_beta_max_depth,
             beam_widths=beam_widths,
         )
     if agent_name == "monte_carlo":

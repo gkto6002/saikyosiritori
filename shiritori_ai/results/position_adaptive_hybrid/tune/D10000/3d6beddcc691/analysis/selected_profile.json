@@ -1,0 +1,39 @@
+{
+  "config": {
+    "branch_switch_threshold": 12,
+    "exact_max_edge_types": 18,
+    "exact_max_reachable_words": 32,
+    "exact_max_state_estimate": 200000,
+    "exact_max_states": 200000,
+    "exact_max_vertices": 12,
+    "exact_time_cap_sec": 0.2,
+    "exact_time_fraction": 0.2,
+    "high_beam_width": 8,
+    "high_branch_threshold": 48,
+    "iterative_start_depth": 7,
+    "medium_beam_width": 12,
+    "medium_branch_threshold": 24,
+    "next_depth_safety_ratio": 0.8,
+    "no_prune_threshold": 6,
+    "ply_width_caps": [
+      12,
+      8,
+      4,
+      2
+    ],
+    "pvs_research_rate_threshold": 0.04,
+    "pvs_time_growth_limit": 3.0,
+    "very_high_beam_width": 6
+  },
+  "selected_profile": "balanced",
+  "selection_metrics": {
+    "fallback_count": 0,
+    "mean_decision_time_sec": 0.362118479619161,
+    "new_agent_games": 60,
+    "new_agent_win_rate": 0.38333333333333336,
+    "new_agent_wins": 23,
+    "profile": "balanced",
+    "timeout_count": 298
+  },
+  "selection_rule": "max aggregate win rate vs beam_alpha_beta, then fewer timeouts, then lower mean decision time"
+}

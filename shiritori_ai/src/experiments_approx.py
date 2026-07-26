@@ -11,6 +11,11 @@ from dataclasses import asdict
 from pathlib import Path
 
 from agents import DEFAULT_BEAM_WIDTHS, build_agent
+from adaptive_hybrid import (
+    ADAPTIVE_HYBRID_AGENT_NAMES,
+    adaptive_hybrid_config_from_args,
+    add_adaptive_hybrid_cli_arguments,
+)
 from dataset import ReadingRecord, parse_jmdict, read_csv_records, select_records, write_json, write_records_csv
 from dictionary_stats import DICTIONARY_CHAR_TOTAL_FIELDS, edge_dictionary_char_total_rows
 from match import MatchResult, append_jsonl, simulate_runtime_match
@@ -126,7 +131,26 @@ MATCH_FLOW_FIELDS = [
     "null_window_searches",
     "research_count",
     "research_rate",
+    "search_mode",
+    "mode_history",
+    "switch_reason",
+    "mode_counts",
+    "mode_switch_count",
     "beam_widths_used",
+    "dynamic_beam_width_counts",
+    "dynamic_beam_config",
+    "completed_iterative_depth",
+    "predicted_next_depth_time_sec",
+    "position_scale",
+    "exact_gate",
+    "exact_attempt_count",
+    "exact_success_count",
+    "exact_timeout_count",
+    "exact_limit_count",
+    "exact_state_count",
+    "exact_result",
+    "exact_time_budget_sec",
+    "fallback_count",
     "evaluated_moves",
     "chain_so_far",
 ]
@@ -177,6 +201,7 @@ AGENT_NAMES = [
     "graph_pvs",
     "beam_alpha_beta",
     "beam_pvs",
+    *ADAPTIVE_HYBRID_AGENT_NAMES,
 ]
 
 
@@ -424,11 +449,60 @@ def build_match_flow_rows(
                 "null_window_searches": turn.get("null_window_searches", ""),
                 "research_count": turn.get("research_count", ""),
                 "research_rate": turn.get("research_rate", ""),
+                "search_mode": turn.get("search_mode", ""),
+                "mode_history": json.dumps(
+                    turn.get("mode_history", ""),
+                    ensure_ascii=False,
+                    sort_keys=True,
+                ) if turn.get("mode_history", "") != "" else "",
+                "switch_reason": turn.get("switch_reason", ""),
+                "mode_counts": json.dumps(
+                    turn.get("mode_counts", ""),
+                    ensure_ascii=False,
+                    sort_keys=True,
+                ) if turn.get("mode_counts", "") != "" else "",
+                "mode_switch_count": turn.get("mode_switch_count", ""),
                 "beam_widths_used": json.dumps(
                     turn.get("beam_widths_used", ""),
                     ensure_ascii=False,
                     sort_keys=True,
                 ) if turn.get("beam_widths_used", "") != "" else "",
+                "dynamic_beam_width_counts": json.dumps(
+                    turn.get("dynamic_beam_width_counts", ""),
+                    ensure_ascii=False,
+                    sort_keys=True,
+                ) if turn.get("dynamic_beam_width_counts", "") != "" else "",
+                "dynamic_beam_config": json.dumps(
+                    turn.get("dynamic_beam_config", ""),
+                    ensure_ascii=False,
+                    sort_keys=True,
+                ) if turn.get("dynamic_beam_config", "") != "" else "",
+                "completed_iterative_depth": turn.get(
+                    "completed_iterative_depth", ""
+                ),
+                "predicted_next_depth_time_sec": turn.get(
+                    "predicted_next_depth_time_sec", ""
+                ),
+                "position_scale": json.dumps(
+                    turn.get("position_scale", ""),
+                    ensure_ascii=False,
+                    sort_keys=True,
+                ) if turn.get("position_scale", "") != "" else "",
+                "exact_gate": json.dumps(
+                    turn.get("exact_gate", ""),
+                    ensure_ascii=False,
+                    sort_keys=True,
+                ) if turn.get("exact_gate", "") != "" else "",
+                "exact_attempt_count": turn.get("exact_attempt_count", ""),
+                "exact_success_count": turn.get("exact_success_count", ""),
+                "exact_timeout_count": turn.get("exact_timeout_count", ""),
+                "exact_limit_count": turn.get("exact_limit_count", ""),
+                "exact_state_count": turn.get("exact_state_count", ""),
+                "exact_result": turn.get("exact_result", ""),
+                "exact_time_budget_sec": turn.get(
+                    "exact_time_budget_sec", ""
+                ),
+                "fallback_count": turn.get("fallback_count", ""),
                 "evaluated_moves": turn.get("evaluated_moves", ""),
                 "chain_so_far": " -> ".join(chain),
             }
@@ -666,6 +740,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--monte-carlo-candidates", type=int, default=20)
     parser.add_argument("--monte-carlo-playouts", type=int, default=10)
     parser.add_argument("--monte-carlo-max-moves", type=int, default=200)
+    add_adaptive_hybrid_cli_arguments(parser)
     parser.add_argument("--pool-multiplier", type=int, default=1)
     parser.add_argument("--min-length", type=int, default=2)
     parser.add_argument("--max-length", type=int, default=12)
@@ -807,6 +882,9 @@ def main() -> None:
                     monte_carlo_candidates=args.monte_carlo_candidates,
                     monte_carlo_playouts=args.monte_carlo_playouts,
                     monte_carlo_max_moves=args.monte_carlo_max_moves,
+                    adaptive_hybrid_config=adaptive_hybrid_config_from_args(
+                        args
+                    ),
                 )
                 second_agent = build_agent(
                     second_name,
@@ -831,6 +909,9 @@ def main() -> None:
                     monte_carlo_candidates=args.monte_carlo_candidates,
                     monte_carlo_playouts=args.monte_carlo_playouts,
                     monte_carlo_max_moves=args.monte_carlo_max_moves,
+                    adaptive_hybrid_config=adaptive_hybrid_config_from_args(
+                        args
+                    ),
                 )
                 result = simulate_runtime_match(
                     runtime=runtime.to_edge_dictionary(),

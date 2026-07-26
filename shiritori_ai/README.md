@@ -534,6 +534,29 @@ BeamPVS、BeamAlphaBeta、AlphaBeta、PVSに絞って辞書seedを0〜9へ
 ログには既存項目に加え、Beamのply別候補総数・選択数・最大選択数、
 Graph orderingの評価回数・先頭候補変更回数・所要時間を保存します。
 
+## 盤面適応型ハイブリッド
+
+第二段階の盤面適応型として、分岐数切替、動的Beam幅AlphaBeta/PVS、
+PVS再探索適応、終盤完全解析、これらの統合型を追加しています。
+既存AIの標準設定は変更していません。D10000本実験は、調整用seedと
+最終評価用seedを分離した専用ランナーで実行します。
+
+```bash
+.venv/bin/python -u src/run_position_adaptive_hybrid_experiment.py \
+  --stage tune
+```
+
+実験設計、再開方法、最終評価と集計の正確なコマンドは
+[`docs/agent_optimization/position_adaptive_hybrid_report.md`](docs/agent_optimization/position_adaptive_hybrid_report.md)
+を参照してください。人間対AI・通常の近似実験CLIでも、新6手法を
+`--agent`で指定できます。
+
+D10000・180局の実験では固定BeamAlphaBetaを上回る十分な証拠が得られず、
+440局の追加評価は行わず完了としました。標準エージェントと設定は変更しません。
+結果は
+[`docs/agent_optimization/position_adaptive_hybrid_experiment_result.md`](docs/agent_optimization/position_adaptive_hybrid_experiment_result.md)
+に記録しています。
+
 ## 図の作成
 
 ```bash
