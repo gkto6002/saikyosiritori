@@ -692,8 +692,28 @@ class SearchAgentBase(BaseAgent, AdaptiveDepthMixin):
             stats.ordering_time_sec += ordering_elapsed
             if ply == 0:
                 stats.root_ordering_time_sec += ordering_elapsed
-        self._record_edge_ordering_limit(len(edges), len(ordered), ply, stats)
-        return ordered, evaluations, timed_out
+        selected = self._select_ordered_edge_candidates(
+            ordered,
+            candidate_count=len(edges),
+            ply=ply,
+            stats=stats,
+        )
+        return selected, evaluations, timed_out
+
+    def _select_ordered_edge_candidates(
+        self,
+        ordered: list[tuple[int, int]],
+        *,
+        candidate_count: int,
+        ply: int,
+        stats: SearchStats,
+    ) -> list[tuple[int, int]]:
+        """Finalize an ordered edge list according to this agent's policy."""
+
+        self._record_edge_ordering_limit(
+            candidate_count, len(ordered), ply, stats
+        )
+        return ordered
 
     def _edge_ordering_limit(self, ply: int) -> int | None:
         return self.branch_limit
@@ -714,6 +734,34 @@ class SearchAgentBase(BaseAgent, AdaptiveDepthMixin):
         stats: SearchStats,
     ) -> list[T]:
         return candidates
+
+    def _evaluate_edge_leaf(
+        self,
+        state: AIEdgeState,
+        deadline: float,
+        ply: int,
+        stats: SearchStats,
+    ) -> float:
+        """Evaluate a depth-limited edge node.
+
+        Proof-extension agents override this hook; ordinary agents keep the
+        existing heuristic evaluation unchanged.
+        """
+
+        stats.leaf_evaluations += 1
+        evaluation_started = time.perf_counter()
+        try:
+            return _evaluate_edge_position(
+                state,
+                deadline,
+                self.evaluation_config,
+                ply=ply,
+                stats=stats,
+            )
+        finally:
+            stats.evaluation_time_sec += (
+                time.perf_counter() - evaluation_started
+            )
 
 
 class MinimaxAgent(SearchAgentBase):
@@ -834,7 +882,6 @@ class MinimaxAgent(SearchAgentBase):
         ordered, pre_scores, ordering_timed_out = self._ordered_edges(
             state, edges, deadline, allow_partial=True, stats=stats, ply=0
         )
-        ordered = self._select_root_candidates(ordered, stats)
         if not ordered:
             fallback = _safe_edge_fallback(state, edges)
             assert fallback is not None
@@ -996,14 +1043,7 @@ class MinimaxAgent(SearchAgentBase):
         if not edges:
             return loss_score(ply)
         if depth <= 0:
-            stats.leaf_evaluations += 1
-            evaluation_started = time.perf_counter()
-            try:
-                return _evaluate_edge_position(
-                    state, deadline, self.evaluation_config, ply=ply, stats=stats
-                )
-            finally:
-                stats.evaluation_time_sec += time.perf_counter() - evaluation_started
+            return self._evaluate_edge_leaf(state, deadline, ply, stats)
         ordered, _scores, _timed_out = self._ordered_edges(
             state, edges, deadline, allow_partial=False, stats=stats, ply=ply
         )
@@ -1191,14 +1231,7 @@ class AlphaBetaAgent(MinimaxAgent):
         if not edges:
             return loss_score(ply)
         if depth <= 0:
-            stats.leaf_evaluations += 1
-            evaluation_started = time.perf_counter()
-            try:
-                return _evaluate_edge_position(
-                    state, deadline, self.evaluation_config, ply=ply, stats=stats
-                )
-            finally:
-                stats.evaluation_time_sec += time.perf_counter() - evaluation_started
+            return self._evaluate_edge_leaf(state, deadline, ply, stats)
         ordered, _scores, _timed_out = self._ordered_edges(
             state, edges, deadline, allow_partial=False, stats=stats, ply=ply
         )
@@ -1361,14 +1394,7 @@ class BeamNegamaxAgent(MinimaxAgent):
         if not edges:
             return loss_score(ply)
         if depth <= 0:
-            stats.leaf_evaluations += 1
-            evaluation_started = time.perf_counter()
-            try:
-                return _evaluate_edge_position(
-                    state, deadline, self.evaluation_config, ply=ply, stats=stats
-                )
-            finally:
-                stats.evaluation_time_sec += time.perf_counter() - evaluation_started
+            return self._evaluate_edge_leaf(state, deadline, ply, stats)
         ordered, _scores, _ = self._ordered_edges(
             state, edges, deadline, allow_partial=False, stats=stats, ply=ply
         )
@@ -1668,7 +1694,11 @@ class _BeamLimitedSearchMixin:
             stats.beam_max_selected_by_ply.get(ply, 0),
             selected_count,
         )
-        stats.beam_pruned_move_count += max(0, candidate_count - selected_count)
+        pruned = max(0, candidate_count - selected_count)
+        stats.beam_pruned_counts_by_ply[ply] = (
+            stats.beam_pruned_counts_by_ply.get(ply, 0) + pruned
+        )
+        stats.beam_pruned_move_count += pruned
 
     def _select_root_candidates(
         self,
@@ -2406,6 +2436,8 @@ def build_agent(
         "dynamic_beam_pvs",
         "research_adaptive_beam",
         "endgame_exact_hybrid",
+        "proof_extension_beam_alpha_beta",
+        "dynamic_proof_extension_beam_alpha_beta",
         "integrated_adaptive_hybrid",
     }:
         from adaptive_hybrid import (  # Avoid an agents.py import cycle.

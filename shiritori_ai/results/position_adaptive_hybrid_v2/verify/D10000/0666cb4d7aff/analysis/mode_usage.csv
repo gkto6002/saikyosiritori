@@ -1,0 +1,4 @@
+agent,search_mode,decision_count,mean_legal_edge_types,mean_legal_word_count,mean_safe_word_count,mean_reachable_word_count,mean_decision_time_sec,mean_nodes,research_rate
+beam_alpha_beta,unreported,135,0.0,0.0,0.0,0.0,0.17744158518518519,2190.6666666666665,0.0
+dynamic_beam_alpha_beta,dynamic_beam_alpha_beta,75,48.17333333333333,178.0,152.34666666666666,9620.28,0.24462132,2554.72,0.0
+dynamic_beam_pvs,dynamic_beam_pvs,62,53.516129032258064,202.19354838709677,172.1451612903226,9571.90322580645,0.18026172580645158,2084.8064516129034,0.02064896755162242

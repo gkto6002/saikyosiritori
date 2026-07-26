@@ -33,17 +33,41 @@ from runtime_dictionary import RuntimeDictionary
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_RUNTIME_DIR = PROJECT_ROOT / "data/dictionaries"
-DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "results/position_adaptive_hybrid"
+DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "results/position_adaptive_hybrid_v2"
 DEFAULT_POSITIONS = (
     PROJECT_ROOT
     / "results/search_parameter_tuning/f5a877380b91/fixed_positions.json"
 )
-FORMAT_VERSION = "position_adaptive_hybrid_v1"
+FORMAT_VERSION = "position_adaptive_hybrid_v2"
 BASELINES = ("alpha_beta", "beam_alpha_beta", "beam_pvs")
 NEW_AGENTS = ADAPTIVE_HYBRID_AGENT_NAMES
 ALL_AGENTS = BASELINES + NEW_AGENTS
+VERIFY_AGENTS = (
+    "dynamic_beam_alpha_beta",
+    "dynamic_beam_pvs",
+)
+TUNING_AGENTS = (
+    "alpha_beta",
+    "beam_pvs",
+    "dynamic_beam_alpha_beta",
+    "dynamic_beam_pvs",
+    "endgame_exact_hybrid",
+    "proof_extension_beam_alpha_beta",
+    "research_adaptive_beam",
+    "dynamic_proof_extension_beam_alpha_beta",
+)
+TUNING_BASELINES = ("alpha_beta", "beam_pvs")
+TUNABLE_AGENTS = tuple(
+    agent for agent in TUNING_AGENTS if agent not in TUNING_BASELINES
+)
+FINAL_AGENTS = (
+    "dynamic_beam_alpha_beta",
+    "proof_extension_beam_alpha_beta",
+    "dynamic_proof_extension_beam_alpha_beta",
+)
+VERIFY_SEEDS = (0,)
 TUNE_SEEDS = tuple(range(5))
-FINAL_SEEDS = tuple(range(10, 30))
+FINAL_SEEDS = tuple(range(10, 40))
 
 
 def tuning_profiles() -> dict[str, AdaptiveHybridConfig]:
@@ -68,22 +92,6 @@ def tuning_profiles() -> dict[str, AdaptiveHybridConfig]:
             exact_time_cap_sec=0.15,
         ),
         "balanced": balanced,
-        "aggressive": replace(
-            balanced,
-            branch_switch_threshold=8,
-            no_prune_threshold=4,
-            medium_branch_threshold=18,
-            high_branch_threshold=36,
-            pvs_research_rate_threshold=0.06,
-            next_depth_safety_ratio=0.90,
-            exact_max_reachable_words=40,
-            exact_max_edge_types=22,
-            exact_max_vertices=14,
-            exact_max_state_estimate=500_000,
-            exact_max_states=500_000,
-            exact_time_fraction=0.25,
-            exact_time_cap_sec=0.25,
-        ),
     }
 
 
@@ -108,7 +116,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--stage",
-        choices=("tune", "final", "fixed"),
+        choices=("verify", "tune", "final", "fixed"),
         required=True,
     )
     parser.add_argument("--dictionary-size", type=int, default=10000)
@@ -123,6 +131,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--match-limit", type=int)
     parser.add_argument("--position-limit", type=int)
     parser.add_argument(
+        "--confirm-d10000",
+        action="store_true",
+        help="required safety switch when dictionary-size is 10000 or larger",
+    )
+    parser.add_argument(
         "--analyze",
         action="store_true",
         help="run the matching analyzer after this invocation",
@@ -136,6 +149,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         parser.error("--match-limit must be positive")
     if args.position_limit is not None and args.position_limit <= 0:
         parser.error("--position-limit must be positive")
+    if args.dictionary_size >= 10000 and not args.confirm_d10000:
+        parser.error(
+            "D10000以上の実験には --confirm-d10000 が必要です"
+        )
     if args.stage in {"final", "fixed"} and args.selection_from is None:
         parser.error("--selection-from is required for final/fixed stages")
     return args
@@ -156,36 +173,48 @@ def selected_profile(path: Path) -> tuple[str, AdaptiveHybridConfig]:
 def stage_seeds(args: argparse.Namespace) -> tuple[int, ...]:
     if args.seeds is not None:
         return tuple(args.seeds)
+    if args.stage == "verify":
+        return VERIFY_SEEDS
     return TUNE_SEEDS if args.stage == "tune" else FINAL_SEEDS
+
+
+def verify_jobs(
+    seeds: tuple[int, ...],
+) -> list[tuple[int, str, str]]:
+    return [
+        (seed, first, second)
+        for seed in seeds
+        for agent in VERIFY_AGENTS
+        for first, second in (
+            ("beam_alpha_beta", agent),
+            (agent, "beam_alpha_beta"),
+        )
+    ]
 
 
 def tuning_jobs(
     seeds: tuple[int, ...],
 ) -> list[tuple[int, str, str, bool]]:
-    return [
+    baseline_jobs = [
+        (seed, "balanced", agent, adaptive_first)
+        for seed in seeds
+        for agent in TUNING_BASELINES
+        for adaptive_first in (True, False)
+    ]
+    profile_jobs = [
         (seed, profile, agent, adaptive_first)
         for seed in seeds
         for profile in PROFILES
-        for agent in NEW_AGENTS
+        for agent in TUNABLE_AGENTS
         for adaptive_first in (True, False)
     ]
+    return baseline_jobs + profile_jobs
 
 
 def final_pairs() -> tuple[tuple[str, str], ...]:
-    anchor_pairs = tuple(
-        (agent, "beam_alpha_beta")
-        for agent in (
-            "alpha_beta",
-            "beam_pvs",
-            *NEW_AGENTS,
-        )
+    return tuple(
+        (agent, "beam_alpha_beta") for agent in FINAL_AGENTS
     )
-    hypothesis_pairs = (
-        ("dynamic_beam_alpha_beta", "dynamic_beam_pvs"),
-        ("research_adaptive_beam", "beam_pvs"),
-        ("integrated_adaptive_hybrid", "endgame_exact_hybrid"),
-    )
-    return anchor_pairs + hypothesis_pairs
 
 
 def final_jobs(
@@ -282,7 +311,9 @@ def experiment_config(
 ) -> dict[str, Any]:
     seeds = stage_seeds(args)
     expected = (
-        len(tuning_jobs(seeds))
+        len(verify_jobs(seeds))
+        if args.stage == "verify"
+        else len(tuning_jobs(seeds))
         if args.stage == "tune"
         else len(final_jobs(seeds))
         if args.stage == "final"
@@ -369,7 +400,12 @@ def run_matches(
     output, _manifest, commit_id, fingerprint, config_hash = _run_identity(
         args, config
     )
-    if args.stage == "tune":
+    if args.stage == "verify":
+        normalized_jobs = [
+            (seed, "balanced", first, second)
+            for seed, first, second in verify_jobs(stage_seeds(args))
+        ]
+    elif args.stage == "tune":
         jobs = tuning_jobs(stage_seeds(args))
         normalized_jobs = [
             (
@@ -385,7 +421,12 @@ def run_matches(
             (seed, profile_name or "selected", first, second)
             for seed, first, second in final_jobs(stage_seeds(args))
         ]
-    estimated_hours = len(normalized_jobs) * 45.0 / 3600.0
+    estimated_seconds_per_match = min(
+        45.0, float(args.max_match_time_sec)
+    )
+    estimated_hours = (
+        len(normalized_jobs) * estimated_seconds_per_match / 3600.0
+    )
     print(
         f"expected matches: {len(normalized_jobs)} "
         f"(rough estimate: {estimated_hours:.1f} hours at 45 sec/match)",
@@ -416,7 +457,7 @@ def run_matches(
         runtime = RuntimeDictionary.load(path)
         selected_config = (
             PROFILES[profile]
-            if args.stage == "tune"
+            if args.stage in {"verify", "tune"}
             else adaptive_config
         )
         assert selected_config is not None
@@ -572,7 +613,15 @@ def run_fixed(
             "mode_counts",
             "mode_switch_count",
             "completed_iterative_depth",
+            "iterative_start_depth",
+            "iterative_target_depth",
+            "depth_control",
             "dynamic_beam_width_counts",
+            "beam_candidate_counts_by_ply",
+            "beam_selected_counts_by_ply",
+            "beam_pruned_counts_by_ply",
+            "beam_ordering_calls_by_ply",
+            "beam_max_selected_by_ply",
             "position_scale",
             "exact_gate",
             "exact_attempt_count",
@@ -581,6 +630,16 @@ def run_fixed(
             "exact_limit_count",
             "exact_state_count",
             "exact_result",
+            "exact_call_events",
+            "exact_root_call_count",
+            "exact_frontier_call_count",
+            "exact_trivial_success_count",
+            "exact_nontrivial_success_count",
+            "exact_memo_hit_count",
+            "exact_total_time_sec",
+            "exact_fallback_count",
+            "root_selected_move_had_exact_proof",
+            "root_choice_changed_by_exact",
             "fallback_count",
         ):
             row[field] = decision.extra.get(field, "")
@@ -622,7 +681,7 @@ def run_fixed(
 def main() -> None:
     try:
         args = parse_args()
-        if args.stage == "tune":
+        if args.stage in {"verify", "tune"}:
             output = run_matches(
                 args,
                 profile_name=None,

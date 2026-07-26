@@ -1,0 +1,37 @@
+{
+  "commit_id": "c4ad512b37cbf598c6a8063c964e5a371ba9d9fd",
+  "config": {
+    "adaptive_config": null,
+    "agents": [
+      "alpha_beta",
+      "beam_alpha_beta",
+      "beam_pvs",
+      "branch_switch_alpha_beta",
+      "dynamic_beam_alpha_beta",
+      "dynamic_beam_pvs",
+      "research_adaptive_beam",
+      "endgame_exact_hybrid",
+      "proof_extension_beam_alpha_beta",
+      "dynamic_proof_extension_beam_alpha_beta",
+      "integrated_adaptive_hybrid"
+    ],
+    "candidate_unit": "directed_edge_type_with_multiplicity",
+    "dictionary_seeds": [
+      0
+    ],
+    "dictionary_size": 10000,
+    "expected_match_count": 4,
+    "final_pairs": null,
+    "fixed_positions": null,
+    "format_version": "position_adaptive_hybrid_v2",
+    "max_match_time_sec": 300.0,
+    "max_moves": 1000,
+    "profile_name": null,
+    "stage": "verify",
+    "time_limit_sec": 1.0,
+    "tuning_profiles": null
+  },
+  "experiment_config_hash": "05156df89bc60c3770cb8c53aca901baedc4eeacbe4a19d1d3876f96394d9d13",
+  "run_hash": "0666cb4d7aff3a04fef000372df3892fd343dd0dea2aa56179f71306cf00541e",
+  "source_fingerprint": "88c90c090688c0b0fd5bef8f8aab01497b7e583a448eaed959d068c43777a586"
+}

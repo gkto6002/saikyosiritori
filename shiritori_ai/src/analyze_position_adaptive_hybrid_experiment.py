@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import random
 import statistics
 from collections import Counter, defaultdict
 from dataclasses import asdict
@@ -57,6 +58,44 @@ def _two_sided_binomial_p(left_wins: int, right_wins: int) -> float:
         math.comb(decisive, k) for k in range(tail + 1)
     ) / (2**decisive)
     return min(1.0, 2 * probability)
+
+
+def _seed_cluster_bootstrap(
+    matches: list[dict[str, Any]],
+    agent: str,
+    *,
+    samples: int = 5000,
+) -> tuple[int, float, float, float]:
+    """Bootstrap paired match scores by dictionary seed, not by game."""
+
+    grouped: dict[int, list[float]] = defaultdict(list)
+    for index, match in enumerate(matches):
+        side = "first" if match["first_agent"] == agent else "second"
+        winner = match.get("winner")
+        score = 1.0 if winner == side else 0.5 if winner == "draw" else 0.0
+        seed = match.get(
+            "dictionary_seed", match.get("match_seed", index)
+        )
+        grouped[int(seed)].append(score)
+    seed_scores = [
+        statistics.fmean(values) for _seed, values in sorted(grouped.items())
+    ]
+    if not seed_scores:
+        return 0, 0.0, 0.0, 0.0
+    rng = random.Random(f"seed-cluster-bootstrap:{agent}")
+    bootstrap = sorted(
+        statistics.fmean(
+            seed_scores[rng.randrange(len(seed_scores))]
+            for _ in seed_scores
+        )
+        for _ in range(samples)
+    )
+    return (
+        len(seed_scores),
+        statistics.fmean(seed_scores),
+        bootstrap[int(0.025 * (samples - 1))],
+        bootstrap[int(0.975 * (samples - 1))],
+    )
 
 
 def _agent_turns(
@@ -174,10 +213,16 @@ def summarize_agent(
 
 def adaptive_detail_rows(
     matches: list[dict[str, Any]],
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+) -> tuple[
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+]:
     mode_groups: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
     widths: Counter[tuple[str, str]] = Counter()
     exact_rows: list[dict[str, Any]] = []
+    ply_totals: Counter[tuple[str, int, str]] = Counter()
     for match in matches:
         for turn in match.get("history", []):
             agent = str(turn.get("agent", ""))
@@ -187,7 +232,26 @@ def adaptive_detail_rows(
                 turn.get("dynamic_beam_width_counts") or {}
             ).items():
                 widths[(agent, str(key))] += int(value)
-            if _number(turn.get("exact_attempt_count")):
+            for field, output_name in (
+                ("beam_candidate_counts_by_ply", "candidate_count"),
+                ("beam_selected_counts_by_ply", "selected_count"),
+                ("beam_pruned_counts_by_ply", "pruned_count"),
+                ("beam_ordering_calls_by_ply", "ordering_calls"),
+            ):
+                for ply, value in (turn.get(field) or {}).items():
+                    ply_totals[(agent, int(ply), output_name)] += int(value)
+            events = turn.get("exact_call_events") or []
+            for event_index, event in enumerate(events):
+                exact_rows.append(
+                    {
+                        "match_id": match.get("match_id", ""),
+                        "turn": turn.get("turn", ""),
+                        "agent": agent,
+                        "event_index": event_index,
+                        **event,
+                    }
+                )
+            if _number(turn.get("exact_attempt_count")) and not events:
                 scale = turn.get("position_scale") or {}
                 exact_rows.append(
                     {
@@ -263,7 +327,27 @@ def adaptive_detail_rows(
         {"agent": agent, "ply_and_width": key, "use_count": count}
         for (agent, key), count in sorted(widths.items())
     ]
-    return mode_rows, width_rows, exact_rows
+    ply_rows = []
+    ply_keys = sorted(
+        {(agent, ply) for agent, ply, _field in ply_totals}
+    )
+    for agent, ply in ply_keys:
+        ply_rows.append(
+            {
+                "agent": agent,
+                "ply": ply,
+                **{
+                    field: ply_totals[(agent, ply, field)]
+                    for field in (
+                        "candidate_count",
+                        "selected_count",
+                        "pruned_count",
+                        "ordering_calls",
+                    )
+                },
+            }
+        )
+    return mode_rows, width_rows, exact_rows, ply_rows
 
 
 def direct_results(matches: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -287,6 +371,9 @@ def direct_results(matches: list[dict[str, Any]]) -> list[dict[str, Any]]:
         )
         decisive = left_wins + right_wins
         low, high = _wilson(left_wins, decisive)
+        cluster_count, cluster_score, cluster_low, cluster_high = (
+            _seed_cluster_bootstrap(values, left)
+        )
         rows.append(
             {
                 "left_agent": left,
@@ -303,6 +390,10 @@ def direct_results(matches: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "two_sided_binomial_p": _two_sided_binomial_p(
                     left_wins, right_wins
                 ),
+                "seed_cluster_count": cluster_count,
+                "left_mean_seed_score": cluster_score,
+                "seed_bootstrap_ci95_low": cluster_low,
+                "seed_bootstrap_ci95_high": cluster_high,
             }
         )
     return rows
@@ -516,6 +607,12 @@ def fixed_agreement(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "paired_positions": len(paired),
                 "same_move_count": same,
                 "same_move_rate": same / len(paired) if paired else 0.0,
+                "exact_changed_move_count": sum(
+                    (row.get("start_id"), row.get("end_id"))
+                    != baseline[str(row["position_id"])]
+                    and int(_number(row.get("exact_success_count"))) > 0
+                    for row in paired
+                ),
             }
         )
     return output
@@ -649,7 +746,7 @@ def analyze(run_dir: Path, output: Path | None = None) -> Path:
     agent_rows = [summarize_agent(matches, name) for name in names]
     direct = direct_results(matches)
     anchor = anchor_results(matches)
-    mode_rows, width_rows, exact_rows = adaptive_detail_rows(matches)
+    mode_rows, width_rows, exact_rows, ply_rows = adaptive_detail_rows(matches)
     write_csv(
         destination / "agent_summary.csv",
         [
@@ -665,6 +762,7 @@ def analyze(run_dir: Path, output: Path | None = None) -> Path:
     write_csv(destination / "vs_beam_alpha_beta.csv", anchor)
     write_csv(destination / "mode_usage.csv", mode_rows)
     write_csv(destination / "dynamic_beam_width_usage.csv", width_rows)
+    write_csv(destination / "beam_by_ply.csv", ply_rows)
     write_csv(destination / "exact_attempts.csv", exact_rows)
     (destination / "agent_summary.json").write_text(
         json.dumps(agent_rows, ensure_ascii=False, indent=2, sort_keys=True)

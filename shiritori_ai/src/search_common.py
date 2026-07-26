@@ -119,6 +119,7 @@ class SearchStats:
     beam_widths_used: dict[int, int] = field(default_factory=dict)
     beam_candidate_counts_by_ply: dict[int, int] = field(default_factory=dict)
     beam_selected_counts_by_ply: dict[int, int] = field(default_factory=dict)
+    beam_pruned_counts_by_ply: dict[int, int] = field(default_factory=dict)
     beam_ordering_calls_by_ply: dict[int, int] = field(default_factory=dict)
     beam_max_selected_by_ply: dict[int, int] = field(default_factory=dict)
     dynamic_beam_width_counts: dict[str, int] = field(default_factory=dict)
@@ -164,6 +165,9 @@ class SearchStats:
             ),
             "beam_selected_counts_by_ply": dict(
                 sorted(self.beam_selected_counts_by_ply.items())
+            ),
+            "beam_pruned_counts_by_ply": dict(
+                sorted(self.beam_pruned_counts_by_ply.items())
             ),
             "beam_ordering_calls_by_ply": dict(
                 sorted(self.beam_ordering_calls_by_ply.items())

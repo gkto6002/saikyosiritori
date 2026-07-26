@@ -1,0 +1,15 @@
+profile,agent,reference_agent,games,wins,reference_wins,draws,decisive_win_rate,ci95_low,ci95_high,two_sided_binomial_p
+conservative,dynamic_beam_alpha_beta,beam_alpha_beta,10,3,7,0,0.3,0.10779126740630099,0.6032218525388546,0.34375
+conservative,dynamic_beam_pvs,beam_alpha_beta,10,4,6,0,0.4,0.16818032970623614,0.6873262302663417,0.75390625
+conservative,dynamic_proof_extension_beam_alpha_beta,beam_alpha_beta,10,5,5,0,0.5,0.236593090512564,0.7634069094874361,1.0
+conservative,endgame_exact_hybrid,beam_alpha_beta,10,5,5,0,0.5,0.236593090512564,0.7634069094874361,1.0
+conservative,proof_extension_beam_alpha_beta,beam_alpha_beta,10,5,5,0,0.5,0.236593090512564,0.7634069094874361,1.0
+conservative,research_adaptive_beam,beam_alpha_beta,10,6,4,0,0.6,0.31267376973365824,0.8318196702937638,0.75390625
+balanced,alpha_beta,beam_alpha_beta,10,3,7,0,0.3,0.10779126740630099,0.6032218525388546,0.34375
+balanced,beam_pvs,beam_alpha_beta,10,3,7,0,0.3,0.10779126740630099,0.6032218525388546,0.34375
+balanced,dynamic_beam_alpha_beta,beam_alpha_beta,10,2,8,0,0.2,0.05668215145437519,0.5098375284633583,0.109375
+balanced,dynamic_beam_pvs,beam_alpha_beta,10,2,8,0,0.2,0.05668215145437519,0.5098375284633583,0.109375
+balanced,dynamic_proof_extension_beam_alpha_beta,beam_alpha_beta,10,4,6,0,0.4,0.16818032970623614,0.6873262302663417,0.75390625
+balanced,endgame_exact_hybrid,beam_alpha_beta,10,6,4,0,0.6,0.31267376973365824,0.8318196702937638,0.75390625
+balanced,proof_extension_beam_alpha_beta,beam_alpha_beta,10,3,7,0,0.3,0.10779126740630099,0.6032218525388546,0.34375
+balanced,research_adaptive_beam,beam_alpha_beta,10,1,9,0,0.1,0.017876213095072896,0.4041500267952385,0.021484375

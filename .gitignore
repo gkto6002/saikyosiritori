@@ -12,3 +12,5 @@ shiritori_ai/results/agent_comparison/full/
 shiritori_ai/results/agent_comparison/**/raw_matches.jsonl
 shiritori_ai/results/agent_comparison/**/graph_control_candidate_details.jsonl
 shiritori_ai/results/position_adaptive_hybrid/**/raw_matches.jsonl
+shiritori_ai/results/position_adaptive_hybrid_v2/**/raw_matches.jsonl
+shiritori_ai/results/position_adaptive_hybrid_v2/**/fixed_runs.jsonl

@@ -1,0 +1,107 @@
+{
+  "commit_id": "c4ad512b37cbf598c6a8063c964e5a371ba9d9fd",
+  "config": {
+    "adaptive_config": {
+      "branch_switch_threshold": 16,
+      "exact_event_log_limit": 200,
+      "exact_max_edge_types": 14,
+      "exact_max_reachable_words": 24,
+      "exact_max_state_estimate": 80000,
+      "exact_max_states": 80000,
+      "exact_max_vertices": 10,
+      "exact_normal_time_reserve_sec": 0.1,
+      "exact_time_cap_sec": 0.15,
+      "exact_time_fraction": 0.15,
+      "frontier_exact_min_legal_edge_types": 2,
+      "high_beam_width": 10,
+      "high_branch_threshold": 50,
+      "iterative_start_depth": 7,
+      "medium_beam_width": 12,
+      "medium_branch_threshold": 30,
+      "next_depth_safety_ratio": 0.75,
+      "no_prune_threshold": 8,
+      "ply_width_caps": [
+        12,
+        8,
+        4,
+        2
+      ],
+      "pvs_research_rate_threshold": 0.03,
+      "pvs_time_growth_limit": 3.0,
+      "very_high_beam_width": 8
+    },
+    "agents": [
+      "alpha_beta",
+      "beam_alpha_beta",
+      "beam_pvs",
+      "branch_switch_alpha_beta",
+      "dynamic_beam_alpha_beta",
+      "dynamic_beam_pvs",
+      "research_adaptive_beam",
+      "endgame_exact_hybrid",
+      "proof_extension_beam_alpha_beta",
+      "dynamic_proof_extension_beam_alpha_beta",
+      "integrated_adaptive_hybrid"
+    ],
+    "candidate_unit": "directed_edge_type_with_multiplicity",
+    "dictionary_seeds": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39
+    ],
+    "dictionary_size": 10000,
+    "expected_match_count": 180,
+    "final_pairs": [
+      [
+        "dynamic_beam_alpha_beta",
+        "beam_alpha_beta"
+      ],
+      [
+        "proof_extension_beam_alpha_beta",
+        "beam_alpha_beta"
+      ],
+      [
+        "dynamic_proof_extension_beam_alpha_beta",
+        "beam_alpha_beta"
+      ]
+    ],
+    "fixed_positions": null,
+    "format_version": "position_adaptive_hybrid_v2",
+    "max_match_time_sec": 300.0,
+    "max_moves": 1000,
+    "profile_name": "conservative",
+    "stage": "final",
+    "time_limit_sec": 1.0,
+    "tuning_profiles": null
+  },
+  "experiment_config_hash": "a2fd631b89ac053968bf45b3f5e33df8ddeb7fac2f192393e3f07336f5068baf",
+  "run_hash": "fcaa915a415e5a46b992f029a03fc4ba2b89edc6f8fda0b1d2392db9b0afb4b2",
+  "source_fingerprint": "88c90c090688c0b0fd5bef8f8aab01497b7e583a448eaed959d068c43777a586"
+}

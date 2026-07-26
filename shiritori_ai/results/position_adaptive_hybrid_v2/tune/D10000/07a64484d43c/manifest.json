@@ -1,0 +1,100 @@
+{
+  "commit_id": "c4ad512b37cbf598c6a8063c964e5a371ba9d9fd",
+  "config": {
+    "adaptive_config": null,
+    "agents": [
+      "alpha_beta",
+      "beam_alpha_beta",
+      "beam_pvs",
+      "branch_switch_alpha_beta",
+      "dynamic_beam_alpha_beta",
+      "dynamic_beam_pvs",
+      "research_adaptive_beam",
+      "endgame_exact_hybrid",
+      "proof_extension_beam_alpha_beta",
+      "dynamic_proof_extension_beam_alpha_beta",
+      "integrated_adaptive_hybrid"
+    ],
+    "candidate_unit": "directed_edge_type_with_multiplicity",
+    "dictionary_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "dictionary_size": 10000,
+    "expected_match_count": 140,
+    "final_pairs": null,
+    "fixed_positions": null,
+    "format_version": "position_adaptive_hybrid_v2",
+    "max_match_time_sec": 300.0,
+    "max_moves": 1000,
+    "profile_name": null,
+    "stage": "tune",
+    "time_limit_sec": 1.0,
+    "tuning_profiles": {
+      "balanced": {
+        "branch_switch_threshold": 12,
+        "exact_event_log_limit": 200,
+        "exact_max_edge_types": 18,
+        "exact_max_reachable_words": 32,
+        "exact_max_state_estimate": 200000,
+        "exact_max_states": 200000,
+        "exact_max_vertices": 12,
+        "exact_normal_time_reserve_sec": 0.1,
+        "exact_time_cap_sec": 0.2,
+        "exact_time_fraction": 0.2,
+        "frontier_exact_min_legal_edge_types": 2,
+        "high_beam_width": 8,
+        "high_branch_threshold": 48,
+        "iterative_start_depth": 7,
+        "medium_beam_width": 12,
+        "medium_branch_threshold": 24,
+        "next_depth_safety_ratio": 0.8,
+        "no_prune_threshold": 6,
+        "ply_width_caps": [
+          12,
+          8,
+          4,
+          2
+        ],
+        "pvs_research_rate_threshold": 0.04,
+        "pvs_time_growth_limit": 3.0,
+        "very_high_beam_width": 6
+      },
+      "conservative": {
+        "branch_switch_threshold": 16,
+        "exact_event_log_limit": 200,
+        "exact_max_edge_types": 14,
+        "exact_max_reachable_words": 24,
+        "exact_max_state_estimate": 80000,
+        "exact_max_states": 80000,
+        "exact_max_vertices": 10,
+        "exact_normal_time_reserve_sec": 0.1,
+        "exact_time_cap_sec": 0.15,
+        "exact_time_fraction": 0.15,
+        "frontier_exact_min_legal_edge_types": 2,
+        "high_beam_width": 10,
+        "high_branch_threshold": 50,
+        "iterative_start_depth": 7,
+        "medium_beam_width": 12,
+        "medium_branch_threshold": 30,
+        "next_depth_safety_ratio": 0.75,
+        "no_prune_threshold": 8,
+        "ply_width_caps": [
+          12,
+          8,
+          4,
+          2
+        ],
+        "pvs_research_rate_threshold": 0.03,
+        "pvs_time_growth_limit": 3.0,
+        "very_high_beam_width": 8
+      }
+    }
+  },
+  "experiment_config_hash": "5766e8fdd7c39ad4218d87c72fc8011af538332539064d61768baefded5bb1cb",
+  "run_hash": "07a64484d43cc75771bc2ece1418916d0a50d14a27e460aa9e22bf6529b6257e",
+  "source_fingerprint": "88c90c090688c0b0fd5bef8f8aab01497b7e583a448eaed959d068c43777a586"
+}

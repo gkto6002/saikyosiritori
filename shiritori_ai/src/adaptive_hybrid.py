@@ -62,6 +62,9 @@ class AdaptiveHybridConfig:
     exact_max_states: int = 200_000
     exact_time_fraction: float = 0.20
     exact_time_cap_sec: float = 0.20
+    exact_normal_time_reserve_sec: float = 0.10
+    frontier_exact_min_legal_edge_types: int = 2
+    exact_event_log_limit: int = 200
 
     def __post_init__(self) -> None:
         positive = (
@@ -78,6 +81,8 @@ class AdaptiveHybridConfig:
             self.exact_max_vertices,
             self.exact_max_state_estimate,
             self.exact_max_states,
+            self.frontier_exact_min_legal_edge_types,
+            self.exact_event_log_limit,
         )
         if any(value <= 0 for value in positive):
             raise ValueError("adaptive hybrid thresholds must be positive")
@@ -101,6 +106,8 @@ class AdaptiveHybridConfig:
             raise ValueError("exact_time_fraction must be in (0, 1]")
         if self.exact_time_cap_sec <= 0:
             raise ValueError("exact_time_cap_sec must be positive")
+        if self.exact_normal_time_reserve_sec < 0:
+            raise ValueError("exact_normal_time_reserve_sec must be non-negative")
 
 
 @dataclass(frozen=True)
@@ -223,7 +230,7 @@ class _DynamicBeamMixin:
         stats: SearchStats,
     ) -> None:
         # _ordered_edges receives the full list; actual dynamic pruning is
-        # recorded by _select_root_candidates / _limit_beam below.
+        # recorded by _select_ordered_edge_candidates below.
         return None
 
     def _record_dynamic_width(
@@ -252,9 +259,28 @@ class _DynamicBeamMixin:
         stats.dynamic_beam_width_counts[key] = (
             stats.dynamic_beam_width_counts.get(key, 0) + 1
         )
-        stats.beam_pruned_move_count += max(
-            0, candidate_count - selected_count
+        pruned = max(0, candidate_count - selected_count)
+        stats.beam_pruned_counts_by_ply[ply] = (
+            stats.beam_pruned_counts_by_ply.get(ply, 0) + pruned
         )
+        stats.beam_pruned_move_count += pruned
+
+    def _select_ordered_edge_candidates(
+        self,
+        ordered: list[tuple[int, int]],
+        *,
+        candidate_count: int,
+        ply: int,
+        stats: SearchStats,
+    ) -> list[tuple[int, int]]:
+        """Apply the dynamic policy after every edge-ordering call."""
+
+        width = self._dynamic_width(candidate_count, ply)
+        selected = ordered[:width]
+        self._record_dynamic_width(
+            candidate_count, len(selected), width, ply, stats
+        )
+        return selected
 
     def _select_root_candidates(
         self,
@@ -461,6 +487,7 @@ _SUM_FIELDS = (
 _DICT_SUM_FIELDS = (
     "beam_candidate_counts_by_ply",
     "beam_selected_counts_by_ply",
+    "beam_pruned_counts_by_ply",
     "beam_ordering_calls_by_ply",
     "dynamic_beam_width_counts",
 )
@@ -552,17 +579,16 @@ class ResearchAdaptiveBeamAgent(DynamicBeamPVSAgent):
         deadline: float,
     ) -> tuple[tuple[int, int], float, SearchStats, bool]:
         stats = SearchStats()
-        ordered, pre_scores, ordering_timed_out = self._ordered_edges(
-            state,
-            edges,
-            deadline,
-            allow_partial=True,
-            stats=stats,
-            ply=0,
-        )
         self._force_full_search = mode == "alpha_beta_full"
         try:
-            ordered = self._select_root_candidates(ordered, stats)
+            ordered, pre_scores, ordering_timed_out = self._ordered_edges(
+                state,
+                edges,
+                deadline,
+                allow_partial=True,
+                stats=stats,
+                ply=0,
+            )
             if not ordered:
                 fallback = _safe_edge_fallback(state, edges)
                 assert fallback is not None
@@ -616,7 +642,7 @@ class ResearchAdaptiveBeamAgent(DynamicBeamPVSAgent):
         previous_mode: str,
         previous_stats: SearchStats,
         previous_time: float,
-        older_time: float | None,
+        prior_completed_time: float | None,
         remaining_time: float,
     ) -> tuple[str, str, float]:
         research_rate = (
@@ -626,8 +652,9 @@ class ResearchAdaptiveBeamAgent(DynamicBeamPVSAgent):
             else 0.0
         )
         growth = (
-            previous_time / older_time
-            if older_time is not None and older_time > 0
+            previous_time / prior_completed_time
+            if prior_completed_time is not None
+            and prior_completed_time > 0
             else 2.0
         )
         growth = max(1.0, growth)
@@ -657,7 +684,8 @@ class ResearchAdaptiveBeamAgent(DynamicBeamPVSAgent):
         deadline = started + self.time_limit_sec
         target_depth = self._effective_depth()
         start_depth = min(
-            target_depth, self.adaptive_config.iterative_start_depth
+            self.adaptive_config.iterative_start_depth,
+            max(1, target_depth - 1),
         )
         edges = state.available_edges()
         if not edges:
@@ -677,7 +705,6 @@ class ResearchAdaptiveBeamAgent(DynamicBeamPVSAgent):
         )
         mode, reason = self._initial_mode(scale)
         previous_time: float | None = None
-        older_time: float | None = None
         fallback_count = 0
         timed_out = False
         predicted_next_time = 0.0
@@ -689,6 +716,7 @@ class ResearchAdaptiveBeamAgent(DynamicBeamPVSAgent):
                 fallback_count += int(completed_depth > 0)
                 break
             depth_started = time.perf_counter()
+            depth_started_offset = depth_started - started
             try:
                 edge, score, stats, complete = self._run_depth(
                     state, edges, depth, mode, deadline
@@ -699,9 +727,16 @@ class ResearchAdaptiveBeamAgent(DynamicBeamPVSAgent):
                 mode_history.append(
                     {
                         "depth": depth,
+                        "effective_depth": depth,
                         "mode": mode,
                         "reason": reason,
                         "status": "timeout",
+                        "completed": False,
+                        "started_offset_sec": depth_started_offset,
+                        "finished_offset_sec": time.perf_counter() - started,
+                        "elapsed_time_sec": (
+                            time.perf_counter() - depth_started
+                        ),
                     }
                 )
                 break
@@ -710,6 +745,30 @@ class ResearchAdaptiveBeamAgent(DynamicBeamPVSAgent):
             if not complete:
                 timed_out = True
                 fallback_count += int(completed_depth > 0)
+                mode_history.append(
+                    {
+                        "depth": depth,
+                        "effective_depth": depth,
+                        "mode": mode,
+                        "reason": reason,
+                        "status": "incomplete",
+                        "completed": False,
+                        "started_offset_sec": depth_started_offset,
+                        "finished_offset_sec": time.perf_counter() - started,
+                        "elapsed_time_sec": duration,
+                        "nodes_searched": stats.nodes_searched,
+                        "null_window_search_count": (
+                            stats.null_window_search_count
+                        ),
+                        "research_count": stats.research_count,
+                        "research_rate": (
+                            stats.research_count
+                            / stats.null_window_search_count
+                            if stats.null_window_search_count
+                            else 0.0
+                        ),
+                    }
+                )
                 break
             best_edge, best_score = edge, score
             completed_depth = depth
@@ -721,9 +780,13 @@ class ResearchAdaptiveBeamAgent(DynamicBeamPVSAgent):
             )
             history_item: dict[str, object] = {
                 "depth": depth,
+                "effective_depth": depth,
                 "mode": mode,
                 "reason": reason,
                 "status": "complete",
+                "completed": True,
+                "started_offset_sec": depth_started_offset,
+                "finished_offset_sec": time.perf_counter() - started,
                 "elapsed_time_sec": duration,
                 "nodes_searched": stats.nodes_searched,
                 "null_window_search_count": stats.null_window_search_count,
@@ -736,14 +799,13 @@ class ResearchAdaptiveBeamAgent(DynamicBeamPVSAgent):
                     mode,
                     stats,
                     duration,
-                    older_time,
+                    previous_time,
                     max(0.0, deadline - time.perf_counter()),
                 )
                 history_item["next_mode"] = next_mode
                 history_item["next_reason"] = next_reason
                 history_item["predicted_next_time_sec"] = predicted_next_time
                 mode, reason = next_mode, next_reason
-                older_time = previous_time
                 previous_time = duration
 
         elapsed = time.perf_counter() - started
@@ -777,6 +839,9 @@ class ResearchAdaptiveBeamAgent(DynamicBeamPVSAgent):
             root_candidate_count=len(edges),
             searched_root_candidate_count=total_stats.completed_root_moves,
             completed_iterative_depth=completed_depth,
+            iterative_start_depth=start_depth,
+            iterative_target_depth=target_depth,
+            depth_control="single_internal_iterative_deepening",
             search_mode=final_mode,
             mode_history=mode_history,
             switch_reason=(
@@ -1025,6 +1090,437 @@ class EndgameExactHybridAgent(_ExactEndgameMixin, BeamAlphaBetaAgent):
         )
 
 
+class ProofExtensionBeamAlphaBetaAgent(
+    _ExactEndgameMixin,
+    BeamAlphaBetaAgent,
+):
+    """Fixed BeamAlphaBeta with bounded exact proofs at depth frontiers."""
+
+    name = "proof_extension_beam_alpha_beta"
+
+    def __init__(
+        self,
+        *args: object,
+        adaptive_config: AdaptiveHybridConfig = AdaptiveHybridConfig(),
+        **kwargs: object,
+    ) -> None:
+        self.adaptive_config = adaptive_config
+        self._last_exact_gate: dict[str, object] = {}
+        self._proof_events: list[dict[str, object]] = []
+        self._proof_cache: dict[
+            tuple[int, tuple[int, ...]], bool
+        ] = {}
+        self._proof_exact_elapsed = 0.0
+        self._proof_counters: dict[str, int] = {}
+        self._proof_ineligible_reasons: dict[str, int] = {}
+        self._active_root_edge: tuple[int, int] | None = None
+        self._proof_root_edges: set[tuple[int, int]] = set()
+        self._proof_turn_deadline: float | None = None
+        super().__init__(*args, **kwargs)
+
+    def _deadline(self) -> float:
+        if self._proof_turn_deadline is not None:
+            return self._proof_turn_deadline
+        return super()._deadline()
+
+    def _reset_proof_context(self) -> None:
+        self._proof_events = []
+        self._proof_cache = {}
+        self._proof_exact_elapsed = 0.0
+        self._proof_counters = {
+            "root_attempts": 0,
+            "frontier_attempts": 0,
+            "completed": 0,
+            "interrupted": 0,
+            "ineligible": 0,
+            "trivial_successes": 0,
+            "nontrivial_successes": 0,
+            "cache_hits": 0,
+            "fallbacks": 0,
+            "timeouts": 0,
+        }
+        self._proof_ineligible_reasons = {}
+        self._active_root_edge = None
+        self._proof_root_edges = set()
+
+    def _record_proof_event(self, event: dict[str, object]) -> None:
+        if len(self._proof_events) < self.adaptive_config.exact_event_log_limit:
+            self._proof_events.append(event)
+
+    def _proof_budget(self, deadline: float) -> float:
+        total_limit = min(
+            self.adaptive_config.exact_time_cap_sec,
+            self.time_limit_sec * self.adaptive_config.exact_time_fraction,
+        )
+        available_total = total_limit - self._proof_exact_elapsed
+        available_turn = (
+            deadline
+            - time.perf_counter()
+            - self.adaptive_config.exact_normal_time_reserve_sec
+        )
+        return max(0.0, min(available_total, available_turn))
+
+    def _frontier_eligible(
+        self,
+        state: AIEdgeState,
+    ) -> tuple[PositionScale | None, str]:
+        if state.required_char_id is None:
+            return None, "no_required_char"
+        required = state.required_char_id
+        legal_types = state.active_edge_type_counts[required]
+        if (
+            legal_types
+            < self.adaptive_config.frontier_exact_min_legal_edge_types
+        ):
+            return None, "too_few_legal_edge_types"
+        if (
+            state.remaining_word_counts[required]
+            > self.adaptive_config.exact_max_reachable_words
+        ):
+            return None, "too_many_immediate_words"
+        scale = position_scale(
+            state, self.adaptive_config.exact_max_state_estimate
+        )
+        eligible, reason = self._exact_eligible(scale)
+        return (scale if eligible else None), reason
+
+    def _frontier_exact_score(
+        self,
+        state: AIEdgeState,
+        *,
+        deadline: float,
+        ply: int,
+        normal_score: float,
+    ) -> float | None:
+        scale, reason = self._frontier_eligible(state)
+        if scale is None:
+            self._proof_counters["ineligible"] += 1
+            self._proof_ineligible_reasons[reason] = (
+                self._proof_ineligible_reasons.get(reason, 0) + 1
+            )
+            return None
+        budget = self._proof_budget(deadline)
+        if budget <= 0:
+            self._proof_counters["ineligible"] += 1
+            self._proof_ineligible_reasons["no_exact_time_budget"] = (
+                self._proof_ineligible_reasons.get(
+                    "no_exact_time_budget", 0
+                )
+                + 1
+            )
+            return None
+        assert state.required_char_id is not None
+        self._proof_counters["frontier_attempts"] += 1
+        key = (state.required_char_id, tuple(state.edge_counts))
+        started = time.perf_counter()
+        if key in self._proof_cache:
+            is_winning = self._proof_cache[key]
+            self._proof_counters["cache_hits"] += 1
+            exact_score = (
+                WIN_SCORE - float(ply)
+                if is_winning
+                else LOSS_SCORE + float(ply)
+            )
+            self._record_proof_event(
+                {
+                    "location": "frontier",
+                    "ply": ply,
+                    "normal_search_depth": 0,
+                    "status": "cache_hit",
+                    "result": "win" if is_winning else "loss",
+                    "normal_score": normal_score,
+                    "exact_score": exact_score,
+                    "score_difference": exact_score - normal_score,
+                    "memo_hit": True,
+                    "multiple_legal_edges": scale.legal_edge_types > 1,
+                    "trivial": False,
+                    **asdict(scale),
+                }
+            )
+            if self._active_root_edge is not None:
+                self._proof_root_edges.add(self._active_root_edge)
+            return exact_score
+
+        solver = ShiritoriSolver(
+            self._residual_dictionary(state),
+            max_states=self.adaptive_config.exact_max_states,
+            timeout_sec=budget,
+        )
+        try:
+            is_winning = solver.solve(state.required_char_id)
+        except AnalysisLimitExceeded as exc:
+            elapsed = time.perf_counter() - started
+            self._proof_exact_elapsed += elapsed
+            self._proof_counters["interrupted"] += 1
+            if exc.reason.startswith("timeout"):
+                self._proof_counters["timeouts"] += 1
+            self._proof_counters["fallbacks"] += 1
+            self._record_proof_event(
+                {
+                    "location": "frontier",
+                    "ply": ply,
+                    "normal_search_depth": 0,
+                    "status": "interrupted",
+                    "limit_reason": exc.reason,
+                    "result": "unknown",
+                    "normal_score": normal_score,
+                    "exact_score": None,
+                    "score_difference": None,
+                    "searched_states": solver.count_states(),
+                    "elapsed_time_sec": elapsed,
+                    "time_budget_sec": budget,
+                    "memo_hit": False,
+                    "multiple_legal_edges": scale.legal_edge_types > 1,
+                    "trivial": solver.count_states() <= 1,
+                    "fallback": "heuristic_evaluation",
+                    **asdict(scale),
+                }
+            )
+            return None
+
+        elapsed = time.perf_counter() - started
+        self._proof_exact_elapsed += elapsed
+        self._proof_cache[key] = is_winning
+        self._proof_counters["completed"] += 1
+        trivial = solver.count_states() <= 1
+        counter = "trivial_successes" if trivial else "nontrivial_successes"
+        self._proof_counters[counter] += 1
+        exact_score = (
+            WIN_SCORE - float(ply)
+            if is_winning
+            else LOSS_SCORE + float(ply)
+        )
+        if self._active_root_edge is not None:
+            self._proof_root_edges.add(self._active_root_edge)
+        self._record_proof_event(
+            {
+                "location": "frontier",
+                "ply": ply,
+                "normal_search_depth": 0,
+                "status": "complete",
+                "result": "win" if is_winning else "loss",
+                "normal_score": normal_score,
+                "exact_score": exact_score,
+                "score_difference": exact_score - normal_score,
+                "searched_states": solver.count_states(),
+                "elapsed_time_sec": elapsed,
+                "time_budget_sec": budget,
+                "memo_hit": False,
+                "multiple_legal_edges": scale.legal_edge_types > 1,
+                "trivial": trivial,
+                "fallback": "none",
+                **asdict(scale),
+            }
+        )
+        return exact_score
+
+    def _evaluate_edge_leaf(
+        self,
+        state: AIEdgeState,
+        deadline: float,
+        ply: int,
+        stats: SearchStats,
+    ) -> float:
+        normal_score = super()._evaluate_edge_leaf(
+            state, deadline, ply, stats
+        )
+        exact_score = self._frontier_exact_score(
+            state,
+            deadline=deadline,
+            ply=ply,
+            normal_score=normal_score,
+        )
+        return normal_score if exact_score is None else exact_score
+
+    def _score_edge(
+        self,
+        state: AIEdgeState,
+        start_id: int,
+        end_id: int,
+        depth: int,
+        deadline: float,
+        stats: SearchStats,
+    ) -> float:
+        self._active_root_edge = (start_id, end_id)
+        try:
+            return super()._score_edge(
+                state, start_id, end_id, depth, deadline, stats
+            )
+        finally:
+            self._active_root_edge = None
+
+    def _proof_extra(
+        self,
+        decision: EdgeMoveDecision,
+    ) -> EdgeMoveDecision:
+        selected = (
+            (decision.start_id, decision.end_id)
+            if decision.start_id is not None and decision.end_id is not None
+            else None
+        )
+        return _extra_decision(
+            decision,
+            proof_extension=True,
+            exact_call_events=self._proof_events,
+            exact_root_call_count=self._proof_counters["root_attempts"],
+            exact_frontier_call_count=self._proof_counters[
+                "frontier_attempts"
+            ],
+            exact_attempt_count=(
+                self._proof_counters["root_attempts"]
+                + self._proof_counters["frontier_attempts"]
+            ),
+            exact_success_count=self._proof_counters["completed"],
+            exact_limit_count=self._proof_counters["interrupted"],
+            exact_timeout_count=self._proof_counters["timeouts"],
+            exact_ineligible_count=self._proof_counters["ineligible"],
+            exact_ineligible_reason_counts=dict(
+                sorted(self._proof_ineligible_reasons.items())
+            ),
+            exact_trivial_success_count=self._proof_counters[
+                "trivial_successes"
+            ],
+            exact_nontrivial_success_count=self._proof_counters[
+                "nontrivial_successes"
+            ],
+            exact_memo_hit_count=self._proof_counters["cache_hits"],
+            exact_total_time_sec=self._proof_exact_elapsed,
+            exact_fallback_count=self._proof_counters["fallbacks"],
+            root_selected_move_had_exact_proof=(
+                selected in self._proof_root_edges if selected else False
+            ),
+            root_choice_changed_by_exact=None,
+            root_choice_change_requires_paired_baseline=True,
+        )
+
+    def choose_edge(self, state: AIEdgeState) -> EdgeMoveDecision:
+        self._reset_proof_context()
+        started = time.perf_counter()
+        self._proof_turn_deadline = started + self.time_limit_sec
+        try:
+            scale = position_scale(
+                state, self.adaptive_config.exact_max_state_estimate
+            )
+            eligible, reason = self._exact_eligible(scale)
+            root_eligible = (
+                eligible
+                and scale.legal_edge_types
+                >= self.adaptive_config.frontier_exact_min_legal_edge_types
+            )
+            if root_eligible:
+                self._proof_counters["root_attempts"] += 1
+                exact = self._try_exact(state, scale, started)
+                if exact is not None and exact.extra.get(
+                    "exact_success_count"
+                ):
+                    self._proof_counters["completed"] += 1
+                    states = int(exact.extra.get("exact_state_count", 0))
+                    trivial = states <= 1
+                    self._proof_counters[
+                        "trivial_successes"
+                        if trivial
+                        else "nontrivial_successes"
+                    ] += 1
+                    self._proof_exact_elapsed += exact.elapsed_time_sec
+                    self._record_proof_event(
+                        {
+                            "location": "root",
+                            "ply": 0,
+                            "normal_search_depth": self._effective_depth(),
+                            "status": "complete",
+                            "result": exact.extra.get("exact_result", ""),
+                            "searched_states": states,
+                            "elapsed_time_sec": exact.elapsed_time_sec,
+                            "memo_hit": False,
+                            "multiple_legal_edges": (
+                                scale.legal_edge_types > 1
+                            ),
+                            "trivial": trivial,
+                            "normal_score": None,
+                            "exact_score": exact.score,
+                            "score_difference": None,
+                            "fallback": "none",
+                            **asdict(scale),
+                        }
+                    )
+                    return self._proof_extra(exact)
+                if exact is not None:
+                    was_timeout = bool(
+                        exact.extra.get("exact_timeout_count")
+                    )
+                    self._proof_counters["interrupted"] += 1
+                    self._proof_counters["timeouts"] += int(was_timeout)
+                    self._proof_counters["fallbacks"] += 1
+                    self._proof_exact_elapsed += exact.elapsed_time_sec
+                    self._record_proof_event(
+                        {
+                            "location": "root",
+                            "ply": 0,
+                            "normal_search_depth": self._effective_depth(),
+                            "status": "interrupted",
+                            "result": "unknown",
+                            "searched_states": int(
+                                exact.extra.get("exact_state_count", 0)
+                            ),
+                            "elapsed_time_sec": exact.elapsed_time_sec,
+                            "time_budget_sec": exact.extra.get(
+                                "exact_time_budget_sec", 0.0
+                            ),
+                            "memo_hit": False,
+                            "multiple_legal_edges": (
+                                scale.legal_edge_types > 1
+                            ),
+                            "trivial": False,
+                            "normal_score": None,
+                            "exact_score": None,
+                            "score_difference": None,
+                            "fallback": "beam_alpha_beta",
+                            **asdict(scale),
+                        }
+                    )
+            else:
+                gate_reason = (
+                    reason
+                    if not eligible
+                    else "too_few_root_legal_edge_types"
+                )
+                self._proof_counters["ineligible"] += 1
+                self._proof_ineligible_reasons[gate_reason] = (
+                    self._proof_ineligible_reasons.get(gate_reason, 0) + 1
+                )
+            decision = BeamAlphaBetaAgent.choose_edge(self, state)
+            decision = _extra_decision(
+                decision,
+                search_mode="proof_extension_beam_alpha_beta",
+                mode_counts={"proof_extension_beam_alpha_beta": 1},
+                exact_gate={
+                    "eligible": root_eligible,
+                    "reason": (
+                        reason
+                        if root_eligible or not eligible
+                        else "too_few_root_legal_edge_types"
+                    ),
+                    **asdict(scale),
+                },
+            )
+            return self._proof_extra(decision)
+        finally:
+            self._proof_turn_deadline = None
+
+
+class DynamicProofExtensionBeamAlphaBetaAgent(
+    _DynamicBeamMixin,
+    ProofExtensionBeamAlphaBetaAgent,
+):
+    """Corrected dynamic BeamAlphaBeta plus frontier exact proofs."""
+
+    name = "dynamic_proof_extension_beam_alpha_beta"
+
+    def choose_edge(self, state: AIEdgeState) -> EdgeMoveDecision:
+        decision = super().choose_edge(state)
+        return _extra_decision(decision, **self._dynamic_extra())
+
+
 class IntegratedAdaptiveHybridAgent(
     _ExactEndgameMixin,
     ResearchAdaptiveBeamAgent,
@@ -1061,6 +1557,8 @@ ADAPTIVE_HYBRID_AGENT_NAMES = (
     "dynamic_beam_pvs",
     "research_adaptive_beam",
     "endgame_exact_hybrid",
+    "proof_extension_beam_alpha_beta",
+    "dynamic_proof_extension_beam_alpha_beta",
     "integrated_adaptive_hybrid",
 )
 
@@ -1078,6 +1576,10 @@ def build_adaptive_hybrid_agent(
         "dynamic_beam_pvs": DynamicBeamPVSAgent,
         "research_adaptive_beam": ResearchAdaptiveBeamAgent,
         "endgame_exact_hybrid": EndgameExactHybridAgent,
+        "proof_extension_beam_alpha_beta": ProofExtensionBeamAlphaBetaAgent,
+        "dynamic_proof_extension_beam_alpha_beta": (
+            DynamicProofExtensionBeamAlphaBetaAgent
+        ),
         "integrated_adaptive_hybrid": IntegratedAdaptiveHybridAgent,
     }
     try:
@@ -1202,6 +1704,21 @@ def add_adaptive_hybrid_cli_arguments(
         type=float,
         default=defaults.exact_time_cap_sec,
     )
+    parser.add_argument(
+        "--exact-normal-time-reserve-sec",
+        type=float,
+        default=defaults.exact_normal_time_reserve_sec,
+    )
+    parser.add_argument(
+        "--frontier-exact-min-legal-edge-types",
+        type=int,
+        default=defaults.frontier_exact_min_legal_edge_types,
+    )
+    parser.add_argument(
+        "--exact-event-log-limit",
+        type=int,
+        default=defaults.exact_event_log_limit,
+    )
 
 
 def adaptive_hybrid_config_from_args(
@@ -1227,4 +1744,9 @@ def adaptive_hybrid_config_from_args(
         exact_max_states=args.exact_max_states,
         exact_time_fraction=args.exact_time_fraction,
         exact_time_cap_sec=args.exact_time_cap_sec,
+        exact_normal_time_reserve_sec=args.exact_normal_time_reserve_sec,
+        frontier_exact_min_legal_edge_types=(
+            args.frontier_exact_min_legal_edge_types
+        ),
+        exact_event_log_limit=args.exact_event_log_limit,
     )

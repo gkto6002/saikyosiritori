@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import contextlib
+import io
 import sys
 import tempfile
 import unittest
@@ -24,29 +26,61 @@ from run_position_adaptive_hybrid_experiment import (  # noqa: E402
     FINAL_SEEDS,
     NEW_AGENTS,
     PROFILES,
+    TUNING_AGENTS,
+    TUNING_BASELINES,
+    TUNABLE_AGENTS,
     TUNE_SEEDS,
+    VERIFY_SEEDS,
     final_jobs,
     final_pairs,
+    parse_args,
     selected_profile,
     tuning_jobs,
+    verify_jobs,
 )
 
 
 class PositionAdaptiveExperimentTest(unittest.TestCase):
+    def test_d10000_requires_explicit_confirmation(self) -> None:
+        with contextlib.redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit):
+                parse_args(["--stage", "verify", "--dictionary-size", "10000"])
+        args = parse_args(
+            [
+                "--stage",
+                "verify",
+                "--dictionary-size",
+                "10000",
+                "--confirm-d10000",
+            ]
+        )
+        self.assertTrue(args.confirm_d10000)
+
     def test_tuning_and_final_design_counts_and_seed_split(self) -> None:
-        self.assertEqual(len(tuning_jobs(TUNE_SEEDS)), 180)
-        self.assertEqual(len(final_pairs()), 11)
-        self.assertEqual(len(final_jobs(FINAL_SEEDS)), 440)
+        self.assertEqual(len(verify_jobs(VERIFY_SEEDS)), 4)
+        self.assertEqual(len(tuning_jobs(TUNE_SEEDS)), 140)
+        self.assertEqual(len(final_pairs()), 3)
+        self.assertEqual(len(final_jobs(FINAL_SEEDS)), 180)
         self.assertTrue(set(TUNE_SEEDS).isdisjoint(FINAL_SEEDS))
         for seed in TUNE_SEEDS:
             for profile in PROFILES:
-                for agent in NEW_AGENTS:
+                for agent in TUNABLE_AGENTS:
                     relevant = [
                         job
                         for job in tuning_jobs((seed,))
                         if job[1] == profile and job[2] == agent
                     ]
                     self.assertEqual(len(relevant), 2)
+            for agent in TUNING_BASELINES:
+                relevant = [
+                    job
+                    for job in tuning_jobs((seed,))
+                    if job[2] == agent
+                ]
+                self.assertEqual(len(relevant), 2)
+                self.assertTrue(
+                    all(job[1] == "balanced" for job in relevant)
+                )
 
     def test_profile_selection_prefers_win_rate_then_safety(self) -> None:
         rows = [
@@ -109,6 +143,7 @@ class PositionAdaptiveExperimentTest(unittest.TestCase):
         )
         self.assertEqual(rows[0]["left_wins"], 2)
         self.assertEqual(rows[0]["right_wins"], 0)
+        self.assertEqual(rows[0]["seed_cluster_count"], 2)
 
     def test_anchor_results_orient_challenger_in_both_seats(self) -> None:
         rows = anchor_results(

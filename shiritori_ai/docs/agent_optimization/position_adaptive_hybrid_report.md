@@ -1,5 +1,11 @@
 # 盤面適応型ハイブリッド（第二段階）
 
+> [!IMPORTANT]
+> この文書はコミット`c4ad512`時点の修正前計画である。動的Beamの
+> 再帰幅不適用を直したv2の設計・コマンドは
+> [`position_adaptive_hybrid_v2_report.md`](position_adaptive_hybrid_v2_report.md)
+> を参照する。修正前と修正後の結果は混ぜない。
+>
 > 実験状態: D10000・180局で完了。予定していた440局の独立最終評価は
 > 実行しない。結果と採用判断は
 > [`position_adaptive_hybrid_experiment_result.md`](position_adaptive_hybrid_experiment_result.md)

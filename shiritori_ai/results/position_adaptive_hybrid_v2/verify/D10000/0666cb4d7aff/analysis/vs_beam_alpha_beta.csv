@@ -1,0 +1,3 @@
+agent,reference_agent,games,wins,reference_wins,draws,decisive_win_rate,ci95_low,ci95_high,two_sided_binomial_p
+dynamic_beam_alpha_beta,beam_alpha_beta,2,0,2,0,0.0,0.0,0.6576197724933469,0.5
+dynamic_beam_pvs,beam_alpha_beta,2,0,2,0,0.0,0.0,0.6576197724933469,0.5

@@ -1,0 +1,4 @@
+agent,games,wins,losses,draws,win_rate,win_rate_ci95_low,win_rate_ci95_high,first_win_rate,second_win_rate,decision_count,mean_decision_time_sec,max_decision_time_sec,timeout_count,mean_nodes,mean_effective_depth,depth_change_count,mode_switch_count,fallback_count,exact_attempt_count,exact_success_count,exact_timeout_count,exact_limit_count,null_window_search_count,research_count,beam_pruned_move_count
+beam_alpha_beta,4,4,0,0,1.0,0.5101091635454027,1.0,1.0,1.0,135,0.17744158518518519,0.517313,0,2190.6666666666665,8.940740740740742,4,0,0,0,0,0,0,0,0,3620402
+dynamic_beam_alpha_beta,2,0,2,0,0.0,0.0,0.6576197724933469,0.0,0.0,75,0.24462132,0.841542,0,2554.72,8.733333333333333,12,0,0,0,0,0,0,0,0,2211376
+dynamic_beam_pvs,2,0,2,0,0.0,0.0,0.6576197724933469,0.0,0.0,62,0.18026172580645158,0.729619,0,2084.8064516129034,8.774193548387096,8,0,0,0,0,0,0,49494,1022,1665882

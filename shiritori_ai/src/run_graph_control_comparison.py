@@ -40,6 +40,8 @@ AGENTS = (
     "dynamic_beam_pvs",
     "research_adaptive_beam",
     "endgame_exact_hybrid",
+    "proof_extension_beam_alpha_beta",
+    "dynamic_proof_extension_beam_alpha_beta",
     "integrated_adaptive_hybrid",
 )
 DEFAULT_AGENTS = (
@@ -241,6 +243,8 @@ def experiment_config(
         "dynamic_beam_pvs",
         "research_adaptive_beam",
         "endgame_exact_hybrid",
+        "proof_extension_beam_alpha_beta",
+        "dynamic_proof_extension_beam_alpha_beta",
         "integrated_adaptive_hybrid",
     ):
         fixed_settings[adaptive_name] = {
@@ -332,6 +336,8 @@ def experiment_config(
             "dynamic_beam_pvs",
             "research_adaptive_beam",
             "endgame_exact_hybrid",
+            "proof_extension_beam_alpha_beta",
+            "dynamic_proof_extension_beam_alpha_beta",
             "integrated_adaptive_hybrid",
         ):
             fixed_settings[adaptive_name] = {
