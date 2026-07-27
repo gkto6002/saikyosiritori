@@ -595,6 +595,30 @@ python src/human_cli.py \
 
 BeamNegamaxまたはAggressivePVSと対戦する場合は、`--agent beam_negamax --beam-widths 12,8,4,2`または`--agent aggressive_pvs --aggressive-pvs-depth 3 --branch-limit 12`を指定します。
 
+4文字以下の全名詞候補と、終局を促すBeamAlphaBetaで対戦する場合:
+
+```bash
+python src/human_cli.py \
+  --runtime data/dictionaries/D48899_L2-4_seed0.runtime.json \
+  --agent decisive_beam_alpha_beta \
+  --human-first \
+  --show-candidates \
+  --time-limit-sec 1.0 \
+  --target-time-sec 0.7 \
+  --max-moves 200 \
+  --adjudicate-max-moves
+```
+
+`decisive_beam_alpha_beta`は相手の安全な語数・辺種類・移動先種類を
+強く減らす順序で固定BeamAlphaBetaを行い、残余グラフが十分小さい候補だけ
+完全解析します。完全解析内では相手の残存選択肢が少ない辺から探索しますが、
+評価値で枝を捨てないため、完了した解析の厳密性は維持されます。
+`--max-moves`へ達した場合、`--adjudicate-max-moves`は次手番側から見た局面評価で
+勝者を決めます。これは完全解析結果ではなく、長時間対局を必ず終了させるための
+明示的な近似判定です。
+AIの候補手について完全解析が完了し、強制勝ちが証明された場合は、その勝ち手を
+表示した時点でAI勝利として対局を終了します。
+
 人間対AIだけは具体語の重複判定と画面表示が必要なため、`HumanRuntimeState`がword IDを保持します。AIの思考中はコピーした辺専用状態だけを渡し、AIが辺を確定した後に、その辺の未使用単語を一語だけ割り当てて表示します。人間の入力は読み仮名で受け取り、辞書と同じ正規化を行います。不正な手は理由を表示して再入力を求めます。
 人間対AIでは、AIの1手ごとの標準タイムアウトは `2.0` 秒です。
 

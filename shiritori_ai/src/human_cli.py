@@ -7,7 +7,12 @@ import json
 import time
 from pathlib import Path
 
-from agents import DEFAULT_BEAM_WIDTHS, DEFAULT_TIME_LIMIT_SEC, build_agent
+from agents import (
+    DEFAULT_BEAM_WIDTHS,
+    DEFAULT_TIME_LIMIT_SEC,
+    build_agent,
+    evaluate_edge_position,
+)
 from adaptive_hybrid import (
     ADAPTIVE_HYBRID_AGENT_NAMES,
     adaptive_hybrid_config_from_args,
@@ -89,6 +94,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--human-first", action="store_true")
     parser.add_argument("--time-limit-sec", type=float, default=DEFAULT_TIME_LIMIT_SEC)
     parser.add_argument("--show-candidates", action="store_true")
+    parser.add_argument(
+        "--max-moves",
+        type=int,
+        help="stop the game after this many moves",
+    )
+    parser.add_argument(
+        "--adjudicate-max-moves",
+        action="store_true",
+        help="award a winner from the edge evaluation at --max-moves",
+    )
     parser.add_argument("--history-output", default="results/human/human_match_history.json")
     parser.add_argument("--minimax-depth", type=int, default=3)
     parser.add_argument("--alpha-beta-depth", type=int, default=3)
@@ -131,6 +146,10 @@ def parse_args() -> argparse.Namespace:
         parser.error("--hybrid-depth must be positive")
     if args.adaptive_max_depth_increment < 0:
         parser.error("--adaptive-max-depth-increment must be non-negative")
+    if args.max_moves is not None and args.max_moves <= 0:
+        parser.error("--max-moves must be positive")
+    if args.adjudicate_max_moves and args.max_moves is None:
+        parser.error("--adjudicate-max-moves requires --max-moves")
     if args.target_time_sec is not None and (
         args.target_time_sec <= 0 or args.target_time_sec > args.time_limit_sec
     ):
@@ -176,11 +195,30 @@ def main() -> None:
     human_turn = args.human_first
     winner = ""
     reason = ""
+    adjudication_score: float | None = None
+    exact_winning_word: str | None = None
 
     print(f"辞書サイズ: {runtime.word_count}")
     print(f"AI: {ai.name}")
 
     while True:
+        if args.max_moves is not None and len(history) >= args.max_moves:
+            if args.adjudicate_max_moves:
+                adjudication_score = evaluate_edge_position(
+                    state.edge_search_state()
+                )
+                next_player = "human" if human_turn else "AI"
+                previous_player = "AI" if human_turn else "human"
+                winner = (
+                    next_player
+                    if adjudication_score >= 0.0
+                    else previous_player
+                )
+                reason = "max_moves_adjudication"
+            else:
+                winner = "draw"
+                reason = "max_moves_reached"
+            break
         print()
         current_char = (
             None
@@ -199,6 +237,7 @@ def main() -> None:
         decision_extra: dict[str, object] = {}
         decision_timed_out = False
         decision_score: float | None = None
+        exact_forced_win = False
         if human_turn:
             if args.show_candidates:
                 show_candidates(state)
@@ -223,8 +262,15 @@ def main() -> None:
             decision_extra = decision.extra
             decision_timed_out = decision.timed_out
             decision_score = decision.score
+            exact_forced_win = decision.extra.get("exact_forced_win") is True
             print(f"AIの手: {runtime.word_readings[word_id]}")
             print(f"AI思考時間: {decision.elapsed_time_sec:.6f} 秒")
+            if exact_forced_win:
+                exact_winning_word = runtime.word_readings[word_id]
+                print(
+                    "完全解析成功: "
+                    f"{exact_winning_word} はAIの強制勝ち手です。"
+                )
             player = "ai"
 
         assert word_id is not None
@@ -247,6 +293,10 @@ def main() -> None:
             winner = "AI" if human_turn else "human"
             reason = "ended_with_n"
             break
+        if exact_forced_win:
+            winner = "AI"
+            reason = "exact_forced_win"
+            break
 
         human_turn = not human_turn
 
@@ -255,6 +305,8 @@ def main() -> None:
     print(f"手数: {len(history)}")
     print(f"使用単語数: {len(state.used_word_ids)}")
     print(f"敗因: {reason}")
+    if adjudication_score is not None:
+        print(f"最大手数時の局面評価: {adjudication_score:.3f}")
     print(f"AI合計思考時間: {ai_total_time:.6f} 秒")
     print(f"AI平均思考時間: {(ai_total_time / ai_move_count) if ai_move_count else 0.0:.6f} 秒")
     print("使用単語列:", " -> ".join(row["word"] for row in history))
@@ -268,6 +320,8 @@ def main() -> None:
                 "turn_count": len(history),
                 "used_word_count": len(state.used_word_ids),
                 "loss_reason": reason,
+                "adjudication_score": adjudication_score,
+                "exact_winning_word": exact_winning_word,
                 "ai_total_time_sec": ai_total_time,
                 "ai_average_time_sec": (ai_total_time / ai_move_count) if ai_move_count else 0.0,
                 "ai_max_time_sec": ai_max_time,

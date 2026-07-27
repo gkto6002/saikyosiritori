@@ -119,6 +119,22 @@ class ShiritoriSolverTest(unittest.TestCase):
                 char,
             )
 
+    def test_mobility_ordering_preserves_result_and_can_reduce_states(self) -> None:
+        runtime = RuntimeDictionary.from_readings(
+            ["ああ", "あい", "あう", "あえ", "いあ"]
+        )
+        required = runtime.char_to_id["あ"]
+        natural = ShiritoriSolver(
+            runtime.to_edge_dictionary(), move_ordering="natural"
+        )
+        ordered = ShiritoriSolver(
+            runtime.to_edge_dictionary(),
+            move_ordering="opponent_mobility",
+        )
+        self.assertEqual(natural.solve(required), ordered.solve(required))
+        self.assertLess(ordered.count_states(), natural.count_states())
+        self.assertGreater(ordered.ordering_evaluation_count, 0)
+
     def test_exact_experiment_defaults_auto_size_until_all_seed_timeouts(self) -> None:
         with patch.object(sys, "argv", ["experiments_exact.py", "--records", "dummy.csv"]):
             args = parse_exact_args()

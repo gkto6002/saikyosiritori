@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import contextlib
+import io
+import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -12,6 +16,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "src"))
 from agents import (  # noqa: E402
     AlphaBetaAgent,
     DEFAULT_TIME_LIMIT_SEC,
+    EdgeMoveDecision,
     GameState,
     GreedyAgent,
     MinimaxAgent,
@@ -36,6 +41,7 @@ from dictionary_stats import (  # noqa: E402
 )
 from game import WordGraph, normalize_game_char  # noqa: E402
 from human_cli import parse_args as parse_human_args  # noqa: E402
+from human_cli import main as human_main  # noqa: E402
 from match import simulate_match  # noqa: E402
 from runtime_dictionary import RuntimeDictionary  # noqa: E402
 from visualize import build_pairwise_agent_result_rows, summarize_agents_from_matches  # noqa: E402
@@ -150,6 +156,21 @@ class AgentsMatchTest(unittest.TestCase):
         with patch.object(
             sys,
             "argv",
+            [
+                "human_cli.py",
+                "--runtime",
+                "dictionary.json",
+                "--max-moves",
+                "200",
+                "--adjudicate-max-moves",
+            ],
+        ):
+            human_args = parse_human_args()
+        self.assertEqual(human_args.max_moves, 200)
+        self.assertTrue(human_args.adjudicate_max_moves)
+        with patch.object(
+            sys,
+            "argv",
             ["experiments_approx.py", "--runtime-dir", "data/dictionaries"],
         ):
             self.assertEqual(parse_approx_args().runtime_dir, "data/dictionaries")
@@ -159,6 +180,54 @@ class AgentsMatchTest(unittest.TestCase):
             ["experiments_approx.py", "--runtime", "D10000.runtime.json"],
         ):
             self.assertEqual(parse_approx_args().runtime, ["D10000.runtime.json"])
+
+    def test_human_match_stops_when_ai_proves_forced_win(self) -> None:
+        runtime = RuntimeDictionary.from_readings(["あい", "いあ"])
+
+        class ProvenWinAgent:
+            name = "decisive_beam_alpha_beta"
+
+            def choose_edge(self, state):
+                start_id = runtime.char_to_id["あ"]
+                end_id = runtime.char_to_id["い"]
+                return EdgeMoveDecision(
+                    start_id,
+                    end_id,
+                    0.01,
+                    False,
+                    1_000_000.0,
+                    {
+                        "exact_forced_win": True,
+                        "exact_forced_win_edge": [start_id, end_id],
+                    },
+                )
+
+        with tempfile.TemporaryDirectory() as temporary:
+            history_path = Path(temporary) / "history.json"
+            argv = [
+                "human_cli.py",
+                "--runtime",
+                "unused.runtime.json",
+                "--agent",
+                "decisive_beam_alpha_beta",
+                "--history-output",
+                str(history_path),
+            ]
+            with (
+                patch.object(sys, "argv", argv),
+                patch("human_cli.load_runtime", return_value=runtime),
+                patch("human_cli.build_agent", return_value=ProvenWinAgent()),
+                contextlib.redirect_stdout(io.StringIO()) as output,
+            ):
+                human_main()
+
+            result = json.loads(history_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(result["winner"], "AI")
+        self.assertEqual(result["loss_reason"], "exact_forced_win")
+        self.assertEqual(result["exact_winning_word"], "あい")
+        self.assertEqual(result["turn_count"], 1)
+        self.assertIn("完全解析成功", output.getvalue())
 
     def test_alpha_beta_depth_can_be_configured_independently(self) -> None:
         agent = build_agent("alpha_beta", minimax_depth=3, alpha_beta_depth=2)

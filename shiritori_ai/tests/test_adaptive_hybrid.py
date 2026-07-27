@@ -17,6 +17,7 @@ from adaptive_hybrid import (  # noqa: E402
     DynamicBeamAlphaBetaAgent,
     DynamicBeamPVSAgent,
     DynamicProofExtensionBeamAlphaBetaAgent,
+    DecisiveBeamAlphaBetaAgent,
     EndgameExactHybridAgent,
     IntegratedAdaptiveHybridAgent,
     ProofExtensionBeamAlphaBetaAgent,
@@ -644,6 +645,46 @@ class AdaptiveHybridTest(unittest.TestCase):
         )
         self.assertEqual(decision.extra["exact_success_count"], 0)
         self.assertGreater(decision.extra["exact_timeout_count"], 0)
+
+    def test_decisive_agent_uses_mobility_ordered_exact_search(self) -> None:
+        small = RuntimeDictionary.from_readings(
+            ["おえ", "きく", "おく", "えう", "きえ", "えお", "うお", "くえ"]
+        )
+        decision = DecisiveBeamAlphaBetaAgent(
+            depth=1,
+            max_depth=1,
+            time_limit_sec=2.0,
+            adaptive_depth=False,
+            beam_widths=(50, 50),
+            adaptive_config=AdaptiveHybridConfig(
+                exact_max_reachable_words=20,
+                exact_max_edge_types=20,
+                exact_max_vertices=20,
+                exact_max_state_estimate=1_000_000,
+                exact_max_states=100_000,
+                exact_time_fraction=0.5,
+                exact_time_cap_sec=1.0,
+                exact_normal_time_reserve_sec=0.0,
+            ),
+        ).choose_edge(AIEdgeState.initial(small))
+        complete = [
+            event
+            for event in decision.extra["exact_call_events"]
+            if event["status"] == "complete" and not event["trivial"]
+        ]
+        self.assertTrue(complete)
+        self.assertTrue(
+            all(
+                event["exact_move_ordering"] == "opponent_mobility"
+                for event in complete
+            )
+        )
+        self.assertTrue(decision.extra["terminal_pressure"])
+        self.assertTrue(decision.extra["exact_forced_win"])
+        self.assertEqual(
+            decision.extra["exact_forced_win_edge"],
+            [decision.start_id, decision.end_id],
+        )
 
     def test_integrated_agent_exposes_exact_and_non_exact_modes(self) -> None:
         exact = IntegratedAdaptiveHybridAgent(

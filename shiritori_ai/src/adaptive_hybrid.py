@@ -1731,6 +1731,17 @@ class SelectiveProofAlphaBetaAgent(
         limit = self.adaptive_config.selective_proof_candidate_limit
         return (competitive if len(competitive) >= 2 else rows)[:limit]
 
+    def _build_selective_solver(
+        self,
+        state: AIEdgeState,
+        budget: float,
+    ) -> ShiritoriSolver:
+        return ShiritoriSolver(
+            self._residual_dictionary(state),
+            max_states=self.adaptive_config.exact_max_states,
+            timeout_sec=budget,
+        )
+
     def _prove_root_candidate(
         self,
         state: AIEdgeState,
@@ -1780,11 +1791,7 @@ class SelectiveProofAlphaBetaAgent(
                 }
             if state.required_char_id is None:
                 raise AssertionError("candidate successor must require a char")
-            solver = ShiritoriSolver(
-                self._residual_dictionary(state),
-                max_states=self.adaptive_config.exact_max_states,
-                timeout_sec=budget,
-            )
+            solver = self._build_selective_solver(state, budget)
             try:
                 opponent_is_winning = solver.solve(state.required_char_id)
             except AnalysisLimitExceeded as exc:
@@ -1816,6 +1823,10 @@ class SelectiveProofAlphaBetaAgent(
                 "elapsed_time_sec": time.perf_counter() - started,
                 "time_budget_sec": budget,
                 "trivial": solver.count_states() <= 1,
+                "exact_move_ordering": solver.move_ordering,
+                "exact_ordering_evaluation_count": (
+                    solver.ordering_evaluation_count
+                ),
             }
         finally:
             state.undo_edge()
@@ -1936,6 +1947,14 @@ class SelectiveProofAlphaBetaAgent(
             "root_choice_changed_by_exact": selected != baseline,
             "normal_root_choice": list(baseline) if baseline else None,
             "exact_root_choice": list(selected) if selected else None,
+            "exact_forced_win": (
+                selected is not None and selected in proven_wins
+            ),
+            "exact_forced_win_edge": (
+                list(selected)
+                if selected is not None and selected in proven_wins
+                else None
+            ),
         }
         return EdgeMoveDecision(
             selected[0] if selected else None,
@@ -1955,6 +1974,71 @@ class SelectiveProofAlphaBetaAgent(
                 else normal.score
             ),
             extra,
+        )
+
+
+DECISIVE_EVALUATION_CONFIG = replace(
+    DEFAULT_EVALUATION_CONFIG,
+    attack_legal_word_weight=16.0,
+    attack_safe_word_weight=12.0,
+    attack_safe_edge_type_weight=14.0,
+    attack_safe_end_type_weight=12.0,
+    attack_danger_word_weight=4.0,
+)
+DECISIVE_ADAPTIVE_CONFIG = replace(
+    AdaptiveHybridConfig(),
+    exact_max_reachable_words=48,
+    exact_max_edge_types=24,
+    exact_max_vertices=14,
+    exact_max_state_estimate=200_000,
+    exact_max_states=200_000,
+    exact_time_fraction=0.25,
+    exact_time_cap_sec=0.5,
+    selective_proof_score_margin=8.0,
+    selective_proof_candidate_limit=3,
+    selective_proof_max_calls=3,
+)
+
+
+class DecisiveBeamAlphaBetaAgent(SelectiveProofAlphaBetaAgent):
+    """Terminal-pressure BeamAlphaBeta with mobility-ordered exact proofs."""
+
+    name = "decisive_beam_alpha_beta"
+
+    def __init__(
+        self,
+        *args: object,
+        adaptive_config: AdaptiveHybridConfig = DECISIVE_ADAPTIVE_CONFIG,
+        evaluation_config: EvaluationConfig = DECISIVE_EVALUATION_CONFIG,
+        **kwargs: object,
+    ) -> None:
+        super().__init__(
+            *args,
+            adaptive_config=adaptive_config,
+            evaluation_config=evaluation_config,
+            **kwargs,
+        )
+
+    def _build_selective_solver(
+        self,
+        state: AIEdgeState,
+        budget: float,
+    ) -> ShiritoriSolver:
+        return ShiritoriSolver(
+            self._residual_dictionary(state),
+            max_states=self.adaptive_config.exact_max_states,
+            timeout_sec=budget,
+            move_ordering="opponent_mobility",
+        )
+
+    def choose_edge(self, state: AIEdgeState) -> EdgeMoveDecision:
+        decision = super().choose_edge(state)
+        return _extra_decision(
+            decision,
+            search_mode=self.name,
+            terminal_pressure=True,
+            exact_move_ordering="opponent_mobility",
+            decisive_evaluation_config=asdict(self.evaluation_config),
         )
 
 
@@ -2012,6 +2096,7 @@ ADAPTIVE_HYBRID_AGENT_NAMES = (
     "integrated_adaptive_hybrid",
     "score_gap_dynamic_beam_alpha_beta",
     "selective_proof_alpha_beta",
+    "decisive_beam_alpha_beta",
 )
 
 
@@ -2022,6 +2107,11 @@ def build_adaptive_hybrid_agent(
     **kwargs: Any,
 ):
     config = adaptive_config or AdaptiveHybridConfig()
+    if (
+        name == "decisive_beam_alpha_beta"
+        and config == AdaptiveHybridConfig()
+    ):
+        config = DECISIVE_ADAPTIVE_CONFIG
     classes = {
         "branch_switch_alpha_beta": BranchSwitchAlphaBetaAgent,
         "dynamic_beam_alpha_beta": DynamicBeamAlphaBetaAgent,
@@ -2037,6 +2127,7 @@ def build_adaptive_hybrid_agent(
             ScoreGapDynamicBeamAlphaBetaAgent
         ),
         "selective_proof_alpha_beta": SelectiveProofAlphaBetaAgent,
+        "decisive_beam_alpha_beta": DecisiveBeamAlphaBetaAgent,
     }
     try:
         cls = classes[name]

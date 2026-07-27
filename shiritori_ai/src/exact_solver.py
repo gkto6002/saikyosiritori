@@ -41,13 +41,20 @@ class ShiritoriSolver:
         edge_dictionary: EdgeDictionary,
         max_states: int | None = None,
         timeout_sec: float | None = None,
+        move_ordering: str = "natural",
     ) -> None:
+        if move_ordering not in {"natural", "opponent_mobility"}:
+            raise ValueError(
+                "move_ordering must be natural or opponent_mobility"
+            )
         self.edge_dictionary = edge_dictionary
         self.max_states = max_states
         self.timeout_sec = timeout_sec
+        self.move_ordering = move_ordering
         self.memo: dict[tuple[int, int], bool] = {}
         self.best_edge: dict[tuple[int, int], int | None] = {}
         self.searched_state_count = 0
+        self.ordering_evaluation_count = 0
         self.last_first_move_results: list[FirstMoveResult] = []
         self._started_at: float | None = None
 
@@ -90,6 +97,7 @@ class ShiritoriSolver:
         self.memo.clear()
         self.best_edge.clear()
         self.searched_state_count = 0
+        self.ordering_evaluation_count = 0
         self.last_first_move_results = []
         self._started_at = None
 
@@ -129,6 +137,51 @@ class ShiritoriSolver:
             for compact_edge_id in self.edges_by_start[required_char_id]
         )
 
+    def _ordered_available_edges(
+        self,
+        required_char_id: int,
+        edge_usage_code: int,
+    ) -> list[int]:
+        available = [
+            compact_edge_id
+            for compact_edge_id in self.edges_by_start[required_char_id]
+            if self.remaining_edge_count(
+                compact_edge_id, edge_usage_code
+            )
+            > 0
+            and self.edge_end_ids[compact_edge_id]
+            != self.terminal_char_id
+        ]
+        if self.move_ordering == "natural" or len(available) < 2:
+            return available
+
+        def mobility_key(compact_edge_id: int) -> tuple[int, int, int, int]:
+            next_code = (
+                edge_usage_code
+                + self.edge_usage_multipliers[compact_edge_id]
+            )
+            end_id = self.edge_end_ids[compact_edge_id]
+            safe_words = 0
+            safe_types = 0
+            all_words = 0
+            for reply_id in self.edges_by_start[end_id]:
+                remaining = self.remaining_edge_count(reply_id, next_code)
+                if remaining <= 0:
+                    continue
+                all_words += remaining
+                if self.edge_end_ids[reply_id] != self.terminal_char_id:
+                    safe_words += remaining
+                    safe_types += 1
+            self.ordering_evaluation_count += 1
+            return (
+                safe_words,
+                safe_types,
+                all_words,
+                self.edge_indices[compact_edge_id],
+            )
+
+        return sorted(available, key=mobility_key)
+
     def solve(self, required_char_id: int, edge_usage_code: int = 0) -> bool:
         """Return True if the player to move is winning from this position."""
 
@@ -139,12 +192,10 @@ class ShiritoriSolver:
         self._check_limits()
         self.searched_state_count += 1
 
-        for compact_edge_id in self.edges_by_start[required_char_id]:
-            if self.remaining_edge_count(compact_edge_id, edge_usage_code) <= 0:
-                continue
+        for compact_edge_id in self._ordered_available_edges(
+            required_char_id, edge_usage_code
+        ):
             end_id = self.edge_end_ids[compact_edge_id]
-            if end_id == self.terminal_char_id:
-                continue
             next_code = edge_usage_code + self.edge_usage_multipliers[compact_edge_id]
             opponent_is_winning = self.solve(end_id, next_code)
             if not opponent_is_winning:

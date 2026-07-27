@@ -1,0 +1,33 @@
+{
+  "complete": true,
+  "final4": {
+    "actual_count": 120,
+    "complete": true,
+    "duplicate_count": 0,
+    "expected_count": 120,
+    "invalid_move_count": 0,
+    "match_timeout_count": 0,
+    "max_moves_count": 0,
+    "missing_scalar_value_count": 0,
+    "unique_count": 120
+  },
+  "fixed_comparison": {
+    "actual_count": 300,
+    "complete": true,
+    "duplicate_count": 0,
+    "expected_count": 300,
+    "unique_count": 300
+  },
+  "initial6": {
+    "actual_count": 90,
+    "complete": true,
+    "duplicate_count": 0,
+    "expected_count": 90,
+    "invalid_move_count": 0,
+    "match_timeout_count": 0,
+    "max_moves_count": 0,
+    "missing_scalar_value_count": 0,
+    "unique_count": 90
+  },
+  "updated_at": "2026-07-27T00:38:34.555368+00:00"
+}

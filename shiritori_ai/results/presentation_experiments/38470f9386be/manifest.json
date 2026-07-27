@@ -1,0 +1,240 @@
+{
+  "commit_id": "a4e41f35c3009743e2bbf005729ce5179fda865a",
+  "config": {
+    "confirmation_seeds": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "dictionary_max_length": 12,
+    "dictionary_min_length": 2,
+    "dictionary_size": 10000,
+    "execution": "serial",
+    "final_agents": [
+      "selective_alpha_beta",
+      "pvs",
+      "beam_alpha_beta",
+      "beam_pvs"
+    ],
+    "fixed_position_comparison": {
+      "adaptive_depth": false,
+      "depths": [
+        3,
+        4,
+        5
+      ],
+      "position_count": 50,
+      "positions_per_seed": 5,
+      "selective_branch_limit": 12
+    },
+    "fixed_position_time_limit_sec": 5.0,
+    "format_version": "presentation_experiments_v1",
+    "initial_agents": [
+      "random",
+      "monte_carlo",
+      "greedy",
+      "minimax",
+      "full_alpha_beta",
+      "selective_alpha_beta"
+    ],
+    "initial_comparison_seeds": [
+      10,
+      11,
+      12
+    ],
+    "max_match_time_sec": 300.0,
+    "max_moves": 1000,
+    "selection_sources": {
+      "beam_agents": "results/beam_hybrid_followup/D10000/c86fc7661da6",
+      "search_agents": "results/search_parameter_tuning/f5a877380b91/adaptive/selected.json",
+      "seed_selection": "beam setting selected on seeds 0-9; confirmation uses 10-19"
+    },
+    "settings": {
+      "beam_alpha_beta": {
+        "adaptive_depth": true,
+        "beam_widths": [
+          12,
+          8,
+          4,
+          2
+        ],
+        "depth_decrease_ratio": 0.95,
+        "depth_recovery_ratio": 0.6,
+        "depth_recovery_turns": 2,
+        "depth_step": 1,
+        "initial_depth": 8,
+        "max_depth": 9,
+        "target_time_sec": 0.6,
+        "timeout_decreases_depth": true
+      },
+      "beam_pvs": {
+        "adaptive_depth": true,
+        "beam_widths": [
+          12,
+          8,
+          4,
+          2
+        ],
+        "depth_decrease_ratio": 0.95,
+        "depth_recovery_ratio": 0.6,
+        "depth_recovery_turns": 2,
+        "depth_step": 1,
+        "initial_depth": 8,
+        "max_depth": 9,
+        "target_time_sec": 0.6,
+        "timeout_decreases_depth": true
+      },
+      "full_alpha_beta": {
+        "adaptive_depth": false,
+        "branch_limit": null,
+        "depth": 4
+      },
+      "greedy": {
+        "search_depth": 1
+      },
+      "minimax": {
+        "adaptive_depth": false,
+        "branch_limit": 8,
+        "depth": 3
+      },
+      "monte_carlo": {
+        "candidate_limit": 20,
+        "max_playout_moves": 200,
+        "playouts_per_move": 10
+      },
+      "pvs": {
+        "adaptive_depth": true,
+        "branch_limit": 8,
+        "depth_decrease_ratio": 0.95,
+        "depth_recovery_ratio": 0.6,
+        "depth_recovery_turns": 2,
+        "depth_step": 1,
+        "initial_depth": 5,
+        "max_depth": 7,
+        "target_time_sec": 0.6,
+        "timeout_decreases_depth": true
+      },
+      "random": {
+        "random_seeded": true
+      },
+      "selective_alpha_beta": {
+        "adaptive_depth": true,
+        "branch_limit": 8,
+        "depth_decrease_ratio": 0.95,
+        "depth_recovery_ratio": 0.6,
+        "depth_recovery_turns": 2,
+        "depth_step": 1,
+        "initial_depth": 5,
+        "max_depth": 7,
+        "target_time_sec": 0.6,
+        "timeout_decreases_depth": true
+      }
+    },
+    "time_limit_sec": 1.0
+  },
+  "created_at": "2026-07-26T16:24:23.796125+00:00",
+  "dictionaries": {
+    "10": {
+      "dictionary_hash": "372d288e29c479127ce907b55f9e3bb4fe8e9b75d5187c65359b5f98be6a739e",
+      "file_sha256": "4c1c6dfbc82fa05596cb55836bc1dcf678edeb9e94eb63e04fd6f1ad414e838f",
+      "path": "/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D10000_L2-12_seed10.runtime.json",
+      "word_count": 10000
+    },
+    "11": {
+      "dictionary_hash": "1ac21adfbf49155b398b7b656096de7b4c577a85a80cfa5784a4268de3b9d1eb",
+      "file_sha256": "168aa7b0e178d825838d8bd15c84851a462ad864089c85e8aaf3f28bab1867df",
+      "path": "/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D10000_L2-12_seed11.runtime.json",
+      "word_count": 10000
+    },
+    "12": {
+      "dictionary_hash": "88dca7b99d0146d4135b55f017993f1ddd5657bd3e185e8a99cc6fe7d9bf849f",
+      "file_sha256": "66c953766ac9965f2f87511959f2bce1d951e29ef5141dd04f163c23a4a44ef2",
+      "path": "/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D10000_L2-12_seed12.runtime.json",
+      "word_count": 10000
+    },
+    "13": {
+      "dictionary_hash": "a9e70ed8bf969536b479267d06cfeb890e6d7bbf127f68c3c491409f7a7d5fd3",
+      "file_sha256": "027fd1b096aaa652b13241428fd9bd2a12202ddbd1819ab23a5ceb080e857a36",
+      "path": "/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D10000_L2-12_seed13.runtime.json",
+      "word_count": 10000
+    },
+    "14": {
+      "dictionary_hash": "ad61e9e96248385f109889e59223253dc07987aef4145b644032f0062a0325bc",
+      "file_sha256": "d6fdf7f386cade7d476c819d248b14ba50419b3503bdffa27f099a78adcb715f",
+      "path": "/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D10000_L2-12_seed14.runtime.json",
+      "word_count": 10000
+    },
+    "15": {
+      "dictionary_hash": "e6d12528d97b561bb1376e38a9335090e37a6f762db3579af169079317e6cf81",
+      "file_sha256": "cc5f54417f37c4712b59fcd5ef7f1f030d138e6d1d40a6f886850b3d2f8bb1be",
+      "path": "/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D10000_L2-12_seed15.runtime.json",
+      "word_count": 10000
+    },
+    "16": {
+      "dictionary_hash": "4f8b19659e22a20e9cd5b29fb7fbaea717764f9afa545616ef9300cab5dbaa3d",
+      "file_sha256": "ddeadaeb9bf177f4e6863fbbddcca7e1c79ac1e5c381200c9222c277814d3767",
+      "path": "/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D10000_L2-12_seed16.runtime.json",
+      "word_count": 10000
+    },
+    "17": {
+      "dictionary_hash": "37daaf1b09c840165e603770a93d665f1c10dc33d25dddfda1a77cda2e455326",
+      "file_sha256": "18cda044ce0568c94b0541c60d0c1d5ef10c420b4b03630fc35d9a8f8d09de24",
+      "path": "/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D10000_L2-12_seed17.runtime.json",
+      "word_count": 10000
+    },
+    "18": {
+      "dictionary_hash": "0ddab7067f219cc99e771b151b8209928125ae99c3c39f89a2895467f344d221",
+      "file_sha256": "050b87aa2ed5b11ac8dbd0aa04c93c12aa1771127b187ada85ae1cdf4e114d22",
+      "path": "/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D10000_L2-12_seed18.runtime.json",
+      "word_count": 10000
+    },
+    "19": {
+      "dictionary_hash": "06f6090b7c08d14249ca91f040ffeef8042cf087fae204019c6fc8968bdb8e97",
+      "file_sha256": "bae35ae02463492c7c4f1cdd7e97bc4979b6b8f042a4efd30055b1e1676486f5",
+      "path": "/Users/onumagakuto/Documents/最強しりとり/shiritori_ai/data/dictionaries/D10000_L2-12_seed19.runtime.json",
+      "word_count": 10000
+    }
+  },
+  "experiment_config_hash": "149a32ccac7f73d46542a654dc25fb961cea184c8dab7965a241e6230ec606c5",
+  "format_version": "presentation_experiments_v1",
+  "last_invocation_elapsed_time_sec": 170.134275166085,
+  "last_resumed_at": "2026-07-27T00:35:44.451052+00:00",
+  "last_stage": "fixed",
+  "last_updated_at": "2026-07-27T00:38:34.590156+00:00",
+  "run_hash": "38470f9386be",
+  "seed_audit": {
+    "basis": "BeamAlphaBeta final setting was selected in c86fc7661da6 using dictionary seeds 0-9.",
+    "confirmation_seeds": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "selection_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ]
+  },
+  "source_fingerprint": "13f2ffed886daaeea903a5e69669fe549c9afd8a0f72e1689a8a0a013822854b"
+}

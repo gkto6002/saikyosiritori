@@ -2452,6 +2452,7 @@ def build_agent(
         "integrated_adaptive_hybrid",
         "score_gap_dynamic_beam_alpha_beta",
         "selective_proof_alpha_beta",
+        "decisive_beam_alpha_beta",
     }:
         from adaptive_hybrid import (  # Avoid an agents.py import cycle.
             AdaptiveHybridConfig,
