@@ -1,0 +1,5 @@
+profile,match_count,wins,losses,draws,win_rate,internal_timeout_count,match_timeout_count,invalid_move_count
+gap_conservative,10,3,7,0,0.3,6,0,0
+gap_responsive,10,3,7,0,0.3,8,0,0
+proof_moderate,10,7,3,0,0.7,17,0,0
+proof_strict,10,7,3,0,0.7,16,0,0

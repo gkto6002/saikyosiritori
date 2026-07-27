@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import itertools
 import json
 import math
 import statistics
@@ -55,6 +56,20 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--decision-time-sec", type=float, default=0.3)
     parser.add_argument("--reference-time-sec", type=float, default=1.0)
     parser.add_argument("--match-seeds", default="0,1,2,3,4")
+    parser.add_argument(
+        "--match-profiles",
+        default="",
+        help=(
+            "comma-separated profiles to match even when screening rejected "
+            "them; empty uses accepted profiles only"
+        ),
+    )
+    parser.add_argument(
+        "--match-plan",
+        choices=("baseline", "round_robin"),
+        default="baseline",
+        help="baseline pairs each profile with fixed; round_robin compares all",
+    )
     parser.add_argument("--max-moves", type=int, default=1000)
     parser.add_argument("--max-match-time-sec", type=float, default=90.0)
     parser.add_argument("--confirm-d10000", action="store_true")
@@ -817,7 +832,19 @@ def make_plots(output: Path, metrics: list[dict[str, Any]]) -> None:
 def run_matches(args: argparse.Namespace) -> Path:
     summary = _load_json(args.output / "benchmark_summary.json")
     selected = summary["selected_profiles"]
-    profiles_to_run = list(selected.values())
+    requested = [
+        value.strip()
+        for value in args.match_profiles.split(",")
+        if value.strip()
+    ]
+    unknown = sorted(set(requested) - set(profiles()))
+    if unknown:
+        raise ValueError(
+            "unknown match profile(s): " + ", ".join(unknown)
+        )
+    profiles_to_run = requested or list(selected.values())
+    if args.match_plan == "round_robin":
+        return run_round_robin_matches(args, profiles_to_run)
     raw_path = args.output / "short_matches.jsonl"
     seeds = tuple(
         int(value.strip())
@@ -878,6 +905,13 @@ def run_matches(args: argparse.Namespace) -> Path:
                 ),
                 "match_elapsed_time_sec": result.match_elapsed_time_sec,
                 "max_match_time_sec": result.max_match_time_sec,
+                "dictionary_size": 10000,
+                "decision_time_sec": args.decision_time_sec,
+                "max_moves": min(args.max_moves, runtime.word_count),
+                "candidate_depth": 8,
+                "candidate_max_depth": 9,
+                "adaptive_depth": True,
+                "beam_widths": [12, 8, 4, 2],
                 "first_timeout_count": result.first_timeout_count,
                 "second_timeout_count": result.second_timeout_count,
             },
@@ -890,6 +924,174 @@ def run_matches(args: argparse.Namespace) -> Path:
         )
     analyze_matches(args.output)
     return raw_path
+
+
+def run_round_robin_matches(
+    args: argparse.Namespace,
+    profiles_to_run: list[str],
+) -> Path:
+    agents = ["fixed_beam_alpha_beta", *profiles_to_run]
+    if len(agents) != len(set(agents)):
+        raise ValueError("round-robin agents must be unique")
+    raw_path = args.output / "round_robin_matches.jsonl"
+    completed_rows = read_jsonl(raw_path)
+    completed = {row["match_id"] for row in completed_rows}
+
+    baseline_path = args.output / "short_matches.jsonl"
+    for row in read_jsonl(baseline_path):
+        if {
+            row.get("first_agent"),
+            row.get("second_agent"),
+        }.issubset(set(agents)) and row["match_id"] not in completed:
+            append_jsonl(raw_path, {**row, "match_plan": "round_robin"})
+            completed.add(row["match_id"])
+
+    seeds = tuple(
+        int(value.strip())
+        for value in args.match_seeds.split(",")
+        if value.strip()
+    )
+    jobs = [
+        (left, right, seed, left_first)
+        for left, right in itertools.combinations(agents, 2)
+        for seed in seeds
+        for left_first in (True, False)
+    ]
+    for left, right, seed, left_first in jobs:
+        first_name = left if left_first else right
+        second_name = right if left_first else left
+        match_id = f"D10000_seed{seed}_{first_name}_vs_{second_name}"
+        if match_id in completed:
+            continue
+        runtime_path = (
+            args.runtime_dir / f"D10000_L2-12_seed{seed}.runtime.json"
+        )
+        runtime = RuntimeDictionary.load(runtime_path)
+        first = build_screening_agent(
+            first_name,
+            time_limit_sec=args.decision_time_sec,
+            fixed_depth=False,
+            random_seed=seed * 1000 + 1,
+        )
+        second = build_screening_agent(
+            second_name,
+            time_limit_sec=args.decision_time_sec,
+            fixed_depth=False,
+            random_seed=seed * 1000 + 2,
+        )
+        result = simulate_runtime_match(
+            runtime.to_edge_dictionary(),
+            first,
+            second,
+            max_moves=min(args.max_moves, runtime.word_count),
+            max_match_time_sec=args.max_match_time_sec,
+            match_id=match_id,
+        )
+        append_jsonl(
+            raw_path,
+            {
+                "match_id": match_id,
+                "match_plan": "round_robin",
+                "dictionary_seed": seed,
+                "first_agent": first_name,
+                "second_agent": second_name,
+                "winner": result.winner,
+                "turn_count": result.turn_count,
+                "loss_reason": result.loss_reason,
+                "invalid_move_count": int(
+                    result.loss_reason == "invalid_ai_move"
+                ),
+                "match_elapsed_time_sec": result.match_elapsed_time_sec,
+                "max_match_time_sec": result.max_match_time_sec,
+                "dictionary_size": 10000,
+                "decision_time_sec": args.decision_time_sec,
+                "max_moves": min(args.max_moves, runtime.word_count),
+                "candidate_depth": 8,
+                "candidate_max_depth": 9,
+                "adaptive_depth": True,
+                "beam_widths": [12, 8, 4, 2],
+                "first_timeout_count": result.first_timeout_count,
+                "second_timeout_count": result.second_timeout_count,
+            },
+        )
+        completed.add(match_id)
+        print(
+            f"[round-robin {len(completed)}/{len(jobs)}] {match_id}: "
+            f"{result.winner}, {result.turn_count} turns",
+            flush=True,
+        )
+    analyze_round_robin_matches(args.output)
+    return raw_path
+
+
+def analyze_round_robin_matches(output: Path) -> list[dict[str, Any]]:
+    rows = read_jsonl(output / "round_robin_matches.jsonl")
+    agents = sorted(
+        {
+            str(row[side])
+            for row in rows
+            for side in ("first_agent", "second_agent")
+        }
+    )
+    summary = []
+    for agent in agents:
+        selected = [
+            row
+            for row in rows
+            if agent in {row["first_agent"], row["second_agent"]}
+        ]
+        wins = sum(
+            (
+                row["winner"] == "first"
+                and row["first_agent"] == agent
+            )
+            or (
+                row["winner"] == "second"
+                and row["second_agent"] == agent
+            )
+            for row in selected
+        )
+        draws = sum(row["winner"] == "draw" for row in selected)
+        losses = len(selected) - wins - draws
+        first_rows = [
+            row for row in selected if row["first_agent"] == agent
+        ]
+        second_rows = [
+            row for row in selected if row["second_agent"] == agent
+        ]
+        summary.append(
+            {
+                "agent": agent,
+                "match_count": len(selected),
+                "wins": wins,
+                "losses": losses,
+                "draws": draws,
+                "win_rate": wins / len(selected) if selected else 0.0,
+                "first_match_count": len(first_rows),
+                "first_wins": sum(
+                    row["winner"] == "first" for row in first_rows
+                ),
+                "second_match_count": len(second_rows),
+                "second_wins": sum(
+                    row["winner"] == "second" for row in second_rows
+                ),
+                "internal_timeout_count": sum(
+                    int(row["first_timeout_count"])
+                    + int(row["second_timeout_count"])
+                    for row in selected
+                ),
+                "match_timeout_count": sum(
+                    row["loss_reason"] == "match_timeout"
+                    for row in selected
+                ),
+                "invalid_move_count": sum(
+                    int(row["invalid_move_count"]) for row in selected
+                ),
+            }
+        )
+    _write_csv_lf(output / "round_robin_summary.csv", summary)
+    _write_json(output / "round_robin_summary.json", summary)
+    return summary
 
 
 def analyze_matches(output: Path) -> list[dict[str, Any]]:
@@ -928,9 +1130,29 @@ def analyze_matches(output: Path) -> list[dict[str, Any]]:
                 ),
             }
         )
-    write_csv(output / "short_match_summary.csv", summary)
+    _write_csv_lf(output / "short_match_summary.csv", summary)
     _write_json(output / "short_match_summary.json", summary)
     return summary
+
+
+def _write_csv_lf(path: Path, rows: list[dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if not rows:
+        path.write_text("", encoding="utf-8")
+        return
+    fields: list[str] = []
+    for row in rows:
+        for field in row:
+            if field not in fields:
+                fields.append(field)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=fields,
+            lineterminator="\n",
+        )
+        writer.writeheader()
+        writer.writerows(rows)
 
 
 def write_report(output: Path) -> Path:
@@ -938,6 +1160,11 @@ def write_report(output: Path) -> Path:
     match_summary = (
         _load_json(output / "short_match_summary.json")
         if (output / "short_match_summary.json").is_file()
+        else []
+    )
+    round_robin_summary = (
+        _load_json(output / "round_robin_summary.json")
+        if (output / "round_robin_summary.json").is_file()
         else []
     )
     prepare_summary = _load_json(output / "prepare_summary.json")
@@ -1003,6 +1230,22 @@ def write_report(output: Path) -> Path:
                 f"match timeouts {row['match_timeout_count']}, "
                 f"invalid moves {row['invalid_move_count']}"
             )
+    if round_robin_summary:
+        lines.extend(
+            [
+                "",
+                "## Explicit five-agent round robin",
+                "",
+            ]
+        )
+        for row in round_robin_summary:
+            lines.append(
+                f"- {row['agent']}: {row['wins']}-{row['losses']}-"
+                f"{row['draws']} ({row['win_rate']:.1%}), "
+                f"n={row['match_count']}, first "
+                f"{row['first_match_count']}, second "
+                f"{row['second_match_count']}"
+            )
     lines.extend(
         [
             "",
@@ -1037,6 +1280,8 @@ def main() -> None:
                 analyze_benchmark(args.output)
             if (args.output / "short_matches.jsonl").is_file():
                 analyze_matches(args.output)
+            if (args.output / "round_robin_matches.jsonl").is_file():
+                analyze_round_robin_matches(args.output)
             print(write_report(args.output))
     except (FileNotFoundError, ValueError, OSError, KeyError) as exc:
         print(f"error: {exc}", file=sys.stderr)

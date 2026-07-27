@@ -25,7 +25,18 @@
 
 ## Short matches
 
-- No method passed screening, so matches were skipped.
+- gap_conservative: 3-7-0 (30.0%), internal timeouts 6, match timeouts 0, invalid moves 0
+- gap_responsive: 3-7-0 (30.0%), internal timeouts 8, match timeouts 0, invalid moves 0
+- proof_moderate: 7-3-0 (70.0%), internal timeouts 17, match timeouts 0, invalid moves 0
+- proof_strict: 7-3-0 (70.0%), internal timeouts 16, match timeouts 0, invalid moves 0
+
+## Explicit five-agent round robin
+
+- fixed_beam_alpha_beta: 20-20-0 (50.0%), n=40, first 20, second 20
+- gap_conservative: 19-21-0 (47.5%), n=40, first 20, second 20
+- gap_responsive: 10-30-0 (25.0%), n=40, first 20, second 20
+- proof_moderate: 28-12-0 (70.0%), n=40, first 20, second 20
+- proof_strict: 23-17-0 (57.5%), n=40, first 20, second 20
 
 ## Reproduction
 

@@ -1,1 +1,46 @@
-[]
+[
+  {
+    "draws": 0,
+    "internal_timeout_count": 6,
+    "invalid_move_count": 0,
+    "losses": 7,
+    "match_count": 10,
+    "match_timeout_count": 0,
+    "profile": "gap_conservative",
+    "win_rate": 0.3,
+    "wins": 3
+  },
+  {
+    "draws": 0,
+    "internal_timeout_count": 8,
+    "invalid_move_count": 0,
+    "losses": 7,
+    "match_count": 10,
+    "match_timeout_count": 0,
+    "profile": "gap_responsive",
+    "win_rate": 0.3,
+    "wins": 3
+  },
+  {
+    "draws": 0,
+    "internal_timeout_count": 17,
+    "invalid_move_count": 0,
+    "losses": 3,
+    "match_count": 10,
+    "match_timeout_count": 0,
+    "profile": "proof_moderate",
+    "win_rate": 0.7,
+    "wins": 7
+  },
+  {
+    "draws": 0,
+    "internal_timeout_count": 16,
+    "invalid_move_count": 0,
+    "losses": 3,
+    "match_count": 10,
+    "match_timeout_count": 0,
+    "profile": "proof_strict",
+    "win_rate": 0.7,
+    "wins": 7
+  }
+]

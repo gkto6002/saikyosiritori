@@ -1,0 +1,6 @@
+agent,match_count,wins,losses,draws,win_rate,first_match_count,first_wins,second_match_count,second_wins,internal_timeout_count,match_timeout_count,invalid_move_count
+fixed_beam_alpha_beta,40,20,20,0,0.5,20,8,20,12,47,0,0
+gap_conservative,40,19,21,0,0.475,20,9,20,10,27,0,0
+gap_responsive,40,10,30,0,0.25,20,6,20,4,44,0,0
+proof_moderate,40,28,12,0,0.7,20,15,20,13,83,0,0
+proof_strict,40,23,17,0,0.575,20,11,20,12,67,0,0
