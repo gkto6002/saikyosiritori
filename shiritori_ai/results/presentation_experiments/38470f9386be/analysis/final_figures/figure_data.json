@@ -129,6 +129,2353 @@
       "presentation_round_robin": 20
     }
   },
+  "end_char_usage": {
+    "agent_totals": {
+      "alpha_beta": 2124,
+      "beam_alpha_beta": 2673,
+      "beam_pvs": 2784,
+      "pvs": 2179
+    },
+    "by_agent": [
+      {
+        "agent": "alpha_beta",
+        "end_char": "る",
+        "label": "Selective AlphaBeta",
+        "move_count": 497,
+        "move_rate": 0.2339924670433145,
+        "rank": 1,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ず",
+        "label": "Selective AlphaBeta",
+        "move_count": 237,
+        "move_rate": 0.1115819209039548,
+        "rank": 2,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "や",
+        "label": "Selective AlphaBeta",
+        "move_count": 181,
+        "move_rate": 0.0852165725047081,
+        "rank": 3,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "つ",
+        "label": "Selective AlphaBeta",
+        "move_count": 123,
+        "move_rate": 0.05790960451977401,
+        "rank": 4,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "う",
+        "label": "Selective AlphaBeta",
+        "move_count": 99,
+        "move_rate": 0.046610169491525424,
+        "rank": 5,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ぐ",
+        "label": "Selective AlphaBeta",
+        "move_count": 85,
+        "move_rate": 0.04001883239171375,
+        "rank": 6,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ぎ",
+        "label": "Selective AlphaBeta",
+        "move_count": 71,
+        "move_rate": 0.033427495291902073,
+        "rank": 7,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "い",
+        "label": "Selective AlphaBeta",
+        "move_count": 64,
+        "move_rate": 0.030131826741996232,
+        "rank": 8,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "す",
+        "label": "Selective AlphaBeta",
+        "move_count": 63,
+        "move_rate": 0.029661016949152543,
+        "rank": 9,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ら",
+        "label": "Selective AlphaBeta",
+        "move_count": 57,
+        "move_rate": 0.026836158192090395,
+        "rank": 10,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "む",
+        "label": "Selective AlphaBeta",
+        "move_count": 56,
+        "move_rate": 0.026365348399246705,
+        "rank": 11,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ぷ",
+        "label": "Selective AlphaBeta",
+        "move_count": 49,
+        "move_rate": 0.023069679849340868,
+        "rank": 12,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "び",
+        "label": "Selective AlphaBeta",
+        "move_count": 48,
+        "move_rate": 0.022598870056497175,
+        "rank": 13,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ざ",
+        "label": "Selective AlphaBeta",
+        "move_count": 47,
+        "move_rate": 0.022128060263653482,
+        "rank": 14,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ゆ",
+        "label": "Selective AlphaBeta",
+        "move_count": 42,
+        "move_rate": 0.01977401129943503,
+        "rank": 15,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "よ",
+        "label": "Selective AlphaBeta",
+        "move_count": 34,
+        "move_rate": 0.0160075329566855,
+        "rank": 16,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "と",
+        "label": "Selective AlphaBeta",
+        "move_count": 28,
+        "move_rate": 0.013182674199623353,
+        "rank": 17,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ん",
+        "label": "Selective AlphaBeta",
+        "move_count": 25,
+        "move_rate": 0.011770244821092278,
+        "rank": 18,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "げ",
+        "label": "Selective AlphaBeta",
+        "move_count": 24,
+        "move_rate": 0.011299435028248588,
+        "rank": 19,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ね",
+        "label": "Selective AlphaBeta",
+        "move_count": 23,
+        "move_rate": 0.010828625235404897,
+        "rank": 20,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ぽ",
+        "label": "Selective AlphaBeta",
+        "move_count": 23,
+        "move_rate": 0.010828625235404897,
+        "rank": 21,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "き",
+        "label": "Selective AlphaBeta",
+        "move_count": 22,
+        "move_rate": 0.010357815442561206,
+        "rank": 22,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "の",
+        "label": "Selective AlphaBeta",
+        "move_count": 22,
+        "move_rate": 0.010357815442561206,
+        "rank": 23,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ぬ",
+        "label": "Selective AlphaBeta",
+        "move_count": 21,
+        "move_rate": 0.009887005649717515,
+        "rank": 24,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "れ",
+        "label": "Selective AlphaBeta",
+        "move_count": 20,
+        "move_rate": 0.009416195856873822,
+        "rank": 25,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "め",
+        "label": "Selective AlphaBeta",
+        "move_count": 14,
+        "move_rate": 0.006591337099811676,
+        "rank": 26,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "く",
+        "label": "Selective AlphaBeta",
+        "move_count": 13,
+        "move_rate": 0.006120527306967985,
+        "rank": 27,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ぜ",
+        "label": "Selective AlphaBeta",
+        "move_count": 12,
+        "move_rate": 0.005649717514124294,
+        "rank": 28,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "じ",
+        "label": "Selective AlphaBeta",
+        "move_count": 10,
+        "move_rate": 0.004708097928436911,
+        "rank": 29,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ち",
+        "label": "Selective AlphaBeta",
+        "move_count": 10,
+        "move_rate": 0.004708097928436911,
+        "rank": 30,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "あ",
+        "label": "Selective AlphaBeta",
+        "move_count": 9,
+        "move_rate": 0.00423728813559322,
+        "rank": 31,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ご",
+        "label": "Selective AlphaBeta",
+        "move_count": 9,
+        "move_rate": 0.00423728813559322,
+        "rank": 32,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "り",
+        "label": "Selective AlphaBeta",
+        "move_count": 9,
+        "move_rate": 0.00423728813559322,
+        "rank": 33,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "な",
+        "label": "Selective AlphaBeta",
+        "move_count": 8,
+        "move_rate": 0.003766478342749529,
+        "rank": 34,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "べ",
+        "label": "Selective AlphaBeta",
+        "move_count": 8,
+        "move_rate": 0.003766478342749529,
+        "rank": 35,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ど",
+        "label": "Selective AlphaBeta",
+        "move_count": 7,
+        "move_rate": 0.003295668549905838,
+        "rank": 36,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "し",
+        "label": "Selective AlphaBeta",
+        "move_count": 6,
+        "move_rate": 0.002824858757062147,
+        "rank": 37,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ば",
+        "label": "Selective AlphaBeta",
+        "move_count": 6,
+        "move_rate": 0.002824858757062147,
+        "rank": 38,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ふ",
+        "label": "Selective AlphaBeta",
+        "move_count": 6,
+        "move_rate": 0.002824858757062147,
+        "rank": 39,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "わ",
+        "label": "Selective AlphaBeta",
+        "move_count": 6,
+        "move_rate": 0.002824858757062147,
+        "rank": 40,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "で",
+        "label": "Selective AlphaBeta",
+        "move_count": 5,
+        "move_rate": 0.0023540489642184556,
+        "rank": 41,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ぴ",
+        "label": "Selective AlphaBeta",
+        "move_count": 5,
+        "move_rate": 0.0023540489642184556,
+        "rank": 42,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ぶ",
+        "label": "Selective AlphaBeta",
+        "move_count": 5,
+        "move_rate": 0.0023540489642184556,
+        "rank": 43,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ぼ",
+        "label": "Selective AlphaBeta",
+        "move_count": 5,
+        "move_rate": 0.0023540489642184556,
+        "rank": 44,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ろ",
+        "label": "Selective AlphaBeta",
+        "move_count": 5,
+        "move_rate": 0.0023540489642184556,
+        "rank": 45,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ぞ",
+        "label": "Selective AlphaBeta",
+        "move_count": 2,
+        "move_rate": 0.0009416195856873823,
+        "rank": 46,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "に",
+        "label": "Selective AlphaBeta",
+        "move_count": 2,
+        "move_rate": 0.0009416195856873823,
+        "rank": 47,
+        "total_moves": 2124
+      },
+      {
+        "agent": "alpha_beta",
+        "end_char": "ぺ",
+        "label": "Selective AlphaBeta",
+        "move_count": 1,
+        "move_rate": 0.00047080979284369113,
+        "rank": 48,
+        "total_moves": 2124
+      },
+      {
+        "agent": "pvs",
+        "end_char": "る",
+        "label": "PVS",
+        "move_count": 456,
+        "move_rate": 0.20927030748049563,
+        "rank": 1,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ず",
+        "label": "PVS",
+        "move_count": 222,
+        "move_rate": 0.10188159706287288,
+        "rank": 2,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "や",
+        "label": "PVS",
+        "move_count": 159,
+        "move_rate": 0.07296925195043598,
+        "rank": 3,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "う",
+        "label": "PVS",
+        "move_count": 136,
+        "move_rate": 0.062413951353832035,
+        "rank": 4,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "つ",
+        "label": "PVS",
+        "move_count": 127,
+        "move_rate": 0.05828361633776962,
+        "rank": 5,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ぐ",
+        "label": "PVS",
+        "move_count": 83,
+        "move_rate": 0.03809086737035337,
+        "rank": 6,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ぎ",
+        "label": "PVS",
+        "move_count": 80,
+        "move_rate": 0.036714089031665904,
+        "rank": 7,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "す",
+        "label": "PVS",
+        "move_count": 78,
+        "move_rate": 0.03579623680587425,
+        "rank": 8,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "い",
+        "label": "PVS",
+        "move_count": 66,
+        "move_rate": 0.030289123451124368,
+        "rank": 9,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ざ",
+        "label": "PVS",
+        "move_count": 63,
+        "move_rate": 0.0289123451124369,
+        "rank": 10,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ゆ",
+        "label": "PVS",
+        "move_count": 57,
+        "move_rate": 0.026158788435061954,
+        "rank": 11,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "び",
+        "label": "PVS",
+        "move_count": 55,
+        "move_rate": 0.025240936209270308,
+        "rank": 12,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "む",
+        "label": "PVS",
+        "move_count": 54,
+        "move_rate": 0.024782010096374485,
+        "rank": 13,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ら",
+        "label": "PVS",
+        "move_count": 52,
+        "move_rate": 0.023864157870582835,
+        "rank": 14,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "と",
+        "label": "PVS",
+        "move_count": 49,
+        "move_rate": 0.022487379531895366,
+        "rank": 15,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ぷ",
+        "label": "PVS",
+        "move_count": 47,
+        "move_rate": 0.021569527306103717,
+        "rank": 16,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "よ",
+        "label": "PVS",
+        "move_count": 31,
+        "move_rate": 0.014226709499770536,
+        "rank": 17,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ん",
+        "label": "PVS",
+        "move_count": 30,
+        "move_rate": 0.013767783386874713,
+        "rank": 18,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ぽ",
+        "label": "PVS",
+        "move_count": 27,
+        "move_rate": 0.012391005048187242,
+        "rank": 19,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "れ",
+        "label": "PVS",
+        "move_count": 23,
+        "move_rate": 0.010555300596603947,
+        "rank": 20,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "き",
+        "label": "PVS",
+        "move_count": 22,
+        "move_rate": 0.010096374483708122,
+        "rank": 21,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "げ",
+        "label": "PVS",
+        "move_count": 22,
+        "move_rate": 0.010096374483708122,
+        "rank": 22,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "の",
+        "label": "PVS",
+        "move_count": 21,
+        "move_rate": 0.009637448370812299,
+        "rank": 23,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ぬ",
+        "label": "PVS",
+        "move_count": 20,
+        "move_rate": 0.009178522257916476,
+        "rank": 24,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ね",
+        "label": "PVS",
+        "move_count": 20,
+        "move_rate": 0.009178522257916476,
+        "rank": 25,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "り",
+        "label": "PVS",
+        "move_count": 17,
+        "move_rate": 0.007801743919229004,
+        "rank": 26,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ぜ",
+        "label": "PVS",
+        "move_count": 16,
+        "move_rate": 0.0073428178063331805,
+        "rank": 27,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "あ",
+        "label": "PVS",
+        "move_count": 13,
+        "move_rate": 0.005966039467645709,
+        "rank": 28,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "じ",
+        "label": "PVS",
+        "move_count": 12,
+        "move_rate": 0.005507113354749885,
+        "rank": 29,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ち",
+        "label": "PVS",
+        "move_count": 12,
+        "move_rate": 0.005507113354749885,
+        "rank": 30,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "め",
+        "label": "PVS",
+        "move_count": 12,
+        "move_rate": 0.005507113354749885,
+        "rank": 31,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "く",
+        "label": "PVS",
+        "move_count": 11,
+        "move_rate": 0.005048187241854061,
+        "rank": 32,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "な",
+        "label": "PVS",
+        "move_count": 10,
+        "move_rate": 0.004589261128958238,
+        "rank": 33,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ど",
+        "label": "PVS",
+        "move_count": 9,
+        "move_rate": 0.004130335016062414,
+        "rank": 34,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ふ",
+        "label": "PVS",
+        "move_count": 9,
+        "move_rate": 0.004130335016062414,
+        "rank": 35,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ご",
+        "label": "PVS",
+        "move_count": 7,
+        "move_rate": 0.0032124827902707664,
+        "rank": 36,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "べ",
+        "label": "PVS",
+        "move_count": 7,
+        "move_rate": 0.0032124827902707664,
+        "rank": 37,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "わ",
+        "label": "PVS",
+        "move_count": 7,
+        "move_rate": 0.0032124827902707664,
+        "rank": 38,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ぼ",
+        "label": "PVS",
+        "move_count": 6,
+        "move_rate": 0.0027535566773749425,
+        "rank": 39,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "し",
+        "label": "PVS",
+        "move_count": 5,
+        "move_rate": 0.002294630564479119,
+        "rank": 40,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "で",
+        "label": "PVS",
+        "move_count": 5,
+        "move_rate": 0.002294630564479119,
+        "rank": 41,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ば",
+        "label": "PVS",
+        "move_count": 5,
+        "move_rate": 0.002294630564479119,
+        "rank": 42,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ぶ",
+        "label": "PVS",
+        "move_count": 5,
+        "move_rate": 0.002294630564479119,
+        "rank": 43,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ぴ",
+        "label": "PVS",
+        "move_count": 3,
+        "move_rate": 0.0013767783386874712,
+        "rank": 44,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "え",
+        "label": "PVS",
+        "move_count": 2,
+        "move_rate": 0.0009178522257916476,
+        "rank": 45,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ぞ",
+        "label": "PVS",
+        "move_count": 2,
+        "move_rate": 0.0009178522257916476,
+        "rank": 46,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "に",
+        "label": "PVS",
+        "move_count": 1,
+        "move_rate": 0.0004589261128958238,
+        "rank": 47,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ぺ",
+        "label": "PVS",
+        "move_count": 1,
+        "move_rate": 0.0004589261128958238,
+        "rank": 48,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "も",
+        "label": "PVS",
+        "move_count": 1,
+        "move_rate": 0.0004589261128958238,
+        "rank": 49,
+        "total_moves": 2179
+      },
+      {
+        "agent": "pvs",
+        "end_char": "ろ",
+        "label": "PVS",
+        "move_count": 1,
+        "move_rate": 0.0004589261128958238,
+        "rank": 50,
+        "total_moves": 2179
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "る",
+        "label": "Beam AlphaBeta",
+        "move_count": 364,
+        "move_rate": 0.13617658062102506,
+        "rank": 1,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ず",
+        "label": "Beam AlphaBeta",
+        "move_count": 237,
+        "move_rate": 0.08866442199775533,
+        "rank": 2,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "や",
+        "label": "Beam AlphaBeta",
+        "move_count": 226,
+        "move_rate": 0.08454919566030678,
+        "rank": 3,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "つ",
+        "label": "Beam AlphaBeta",
+        "move_count": 220,
+        "move_rate": 0.0823045267489712,
+        "rank": 4,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "う",
+        "label": "Beam AlphaBeta",
+        "move_count": 199,
+        "move_rate": 0.07444818555929666,
+        "rank": 5,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "い",
+        "label": "Beam AlphaBeta",
+        "move_count": 115,
+        "move_rate": 0.04302282080059858,
+        "rank": 6,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ぐ",
+        "label": "Beam AlphaBeta",
+        "move_count": 86,
+        "move_rate": 0.032173587729143284,
+        "rank": 7,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ぎ",
+        "label": "Beam AlphaBeta",
+        "move_count": 84,
+        "move_rate": 0.031425364758698095,
+        "rank": 8,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ゆ",
+        "label": "Beam AlphaBeta",
+        "move_count": 76,
+        "move_rate": 0.02843247287691732,
+        "rank": 9,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "す",
+        "label": "Beam AlphaBeta",
+        "move_count": 74,
+        "move_rate": 0.027684249906472128,
+        "rank": 10,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "よ",
+        "label": "Beam AlphaBeta",
+        "move_count": 67,
+        "move_rate": 0.025065469509913955,
+        "rank": 11,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "と",
+        "label": "Beam AlphaBeta",
+        "move_count": 65,
+        "move_rate": 0.024317246539468762,
+        "rank": 12,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ぷ",
+        "label": "Beam AlphaBeta",
+        "move_count": 62,
+        "move_rate": 0.02319491208380097,
+        "rank": 13,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ど",
+        "label": "Beam AlphaBeta",
+        "move_count": 61,
+        "move_rate": 0.022820800598578377,
+        "rank": 14,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ら",
+        "label": "Beam AlphaBeta",
+        "move_count": 61,
+        "move_rate": 0.022820800598578377,
+        "rank": 15,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "む",
+        "label": "Beam AlphaBeta",
+        "move_count": 60,
+        "move_rate": 0.02244668911335578,
+        "rank": 16,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ざ",
+        "label": "Beam AlphaBeta",
+        "move_count": 57,
+        "move_rate": 0.02132435465768799,
+        "rank": 17,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "げ",
+        "label": "Beam AlphaBeta",
+        "move_count": 40,
+        "move_rate": 0.014964459408903853,
+        "rank": 18,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "き",
+        "label": "Beam AlphaBeta",
+        "move_count": 37,
+        "move_rate": 0.013842124953236064,
+        "rank": 19,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "び",
+        "label": "Beam AlphaBeta",
+        "move_count": 36,
+        "move_rate": 0.013468013468013467,
+        "rank": 20,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ん",
+        "label": "Beam AlphaBeta",
+        "move_count": 36,
+        "move_rate": 0.013468013468013467,
+        "rank": 21,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "り",
+        "label": "Beam AlphaBeta",
+        "move_count": 35,
+        "move_rate": 0.013093901982790871,
+        "rank": 22,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ぽ",
+        "label": "Beam AlphaBeta",
+        "move_count": 27,
+        "move_rate": 0.010101010101010102,
+        "rank": 23,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "れ",
+        "label": "Beam AlphaBeta",
+        "move_count": 27,
+        "move_rate": 0.010101010101010102,
+        "rank": 24,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ご",
+        "label": "Beam AlphaBeta",
+        "move_count": 26,
+        "move_rate": 0.009726898615787506,
+        "rank": 25,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "め",
+        "label": "Beam AlphaBeta",
+        "move_count": 21,
+        "move_rate": 0.007856341189674524,
+        "rank": 26,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ぜ",
+        "label": "Beam AlphaBeta",
+        "move_count": 19,
+        "move_rate": 0.00710811821922933,
+        "rank": 27,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ね",
+        "label": "Beam AlphaBeta",
+        "move_count": 19,
+        "move_rate": 0.00710811821922933,
+        "rank": 28,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "の",
+        "label": "Beam AlphaBeta",
+        "move_count": 19,
+        "move_rate": 0.00710811821922933,
+        "rank": 29,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ろ",
+        "label": "Beam AlphaBeta",
+        "move_count": 17,
+        "move_rate": 0.006359895248784137,
+        "rank": 30,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "わ",
+        "label": "Beam AlphaBeta",
+        "move_count": 17,
+        "move_rate": 0.006359895248784137,
+        "rank": 31,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ち",
+        "label": "Beam AlphaBeta",
+        "move_count": 16,
+        "move_rate": 0.005985783763561541,
+        "rank": 32,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "あ",
+        "label": "Beam AlphaBeta",
+        "move_count": 15,
+        "move_rate": 0.005611672278338945,
+        "rank": 33,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "く",
+        "label": "Beam AlphaBeta",
+        "move_count": 15,
+        "move_rate": 0.005611672278338945,
+        "rank": 34,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "な",
+        "label": "Beam AlphaBeta",
+        "move_count": 12,
+        "move_rate": 0.004489337822671156,
+        "rank": 35,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ふ",
+        "label": "Beam AlphaBeta",
+        "move_count": 12,
+        "move_rate": 0.004489337822671156,
+        "rank": 36,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "し",
+        "label": "Beam AlphaBeta",
+        "move_count": 11,
+        "move_rate": 0.00411522633744856,
+        "rank": 37,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "え",
+        "label": "Beam AlphaBeta",
+        "move_count": 10,
+        "move_rate": 0.0037411148522259632,
+        "rank": 38,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "け",
+        "label": "Beam AlphaBeta",
+        "move_count": 10,
+        "move_rate": 0.0037411148522259632,
+        "rank": 39,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ぶ",
+        "label": "Beam AlphaBeta",
+        "move_count": 9,
+        "move_rate": 0.003367003367003367,
+        "rank": 40,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "じ",
+        "label": "Beam AlphaBeta",
+        "move_count": 8,
+        "move_rate": 0.0029928918817807705,
+        "rank": 41,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ぬ",
+        "label": "Beam AlphaBeta",
+        "move_count": 8,
+        "move_rate": 0.0029928918817807705,
+        "rank": 42,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "べ",
+        "label": "Beam AlphaBeta",
+        "move_count": 8,
+        "move_rate": 0.0029928918817807705,
+        "rank": 43,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "そ",
+        "label": "Beam AlphaBeta",
+        "move_count": 6,
+        "move_rate": 0.002244668911335578,
+        "rank": 44,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "で",
+        "label": "Beam AlphaBeta",
+        "move_count": 6,
+        "move_rate": 0.002244668911335578,
+        "rank": 45,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ば",
+        "label": "Beam AlphaBeta",
+        "move_count": 6,
+        "move_rate": 0.002244668911335578,
+        "rank": 46,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ぱ",
+        "label": "Beam AlphaBeta",
+        "move_count": 5,
+        "move_rate": 0.0018705574261129816,
+        "rank": 47,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ぴ",
+        "label": "Beam AlphaBeta",
+        "move_count": 5,
+        "move_rate": 0.0018705574261129816,
+        "rank": 48,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "み",
+        "label": "Beam AlphaBeta",
+        "move_count": 5,
+        "move_rate": 0.0018705574261129816,
+        "rank": 49,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "が",
+        "label": "Beam AlphaBeta",
+        "move_count": 3,
+        "move_rate": 0.001122334455667789,
+        "rank": 50,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "に",
+        "label": "Beam AlphaBeta",
+        "move_count": 3,
+        "move_rate": 0.001122334455667789,
+        "rank": 51,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ぼ",
+        "label": "Beam AlphaBeta",
+        "move_count": 3,
+        "move_rate": 0.001122334455667789,
+        "rank": 52,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "こ",
+        "label": "Beam AlphaBeta",
+        "move_count": 2,
+        "move_rate": 0.0007482229704451926,
+        "rank": 53,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ぞ",
+        "label": "Beam AlphaBeta",
+        "move_count": 2,
+        "move_rate": 0.0007482229704451926,
+        "rank": 54,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "ぺ",
+        "label": "Beam AlphaBeta",
+        "move_count": 2,
+        "move_rate": 0.0007482229704451926,
+        "rank": 55,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_alpha_beta",
+        "end_char": "だ",
+        "label": "Beam AlphaBeta",
+        "move_count": 1,
+        "move_rate": 0.0003741114852225963,
+        "rank": 56,
+        "total_moves": 2673
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "る",
+        "label": "Beam PVS",
+        "move_count": 456,
+        "move_rate": 0.16379310344827586,
+        "rank": 1,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "う",
+        "label": "Beam PVS",
+        "move_count": 237,
+        "move_rate": 0.08512931034482758,
+        "rank": 2,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ず",
+        "label": "Beam PVS",
+        "move_count": 233,
+        "move_rate": 0.08369252873563218,
+        "rank": 3,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "つ",
+        "label": "Beam PVS",
+        "move_count": 230,
+        "move_rate": 0.08261494252873564,
+        "rank": 4,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "や",
+        "label": "Beam PVS",
+        "move_count": 216,
+        "move_rate": 0.07758620689655173,
+        "rank": 5,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ぐ",
+        "label": "Beam PVS",
+        "move_count": 111,
+        "move_rate": 0.03987068965517242,
+        "rank": 6,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "い",
+        "label": "Beam PVS",
+        "move_count": 92,
+        "move_rate": 0.033045977011494254,
+        "rank": 7,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ぎ",
+        "label": "Beam PVS",
+        "move_count": 82,
+        "move_rate": 0.029454022988505746,
+        "rank": 8,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "む",
+        "label": "Beam PVS",
+        "move_count": 73,
+        "move_rate": 0.02622126436781609,
+        "rank": 9,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "よ",
+        "label": "Beam PVS",
+        "move_count": 70,
+        "move_rate": 0.02514367816091954,
+        "rank": 10,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "す",
+        "label": "Beam PVS",
+        "move_count": 66,
+        "move_rate": 0.023706896551724137,
+        "rank": 11,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ゆ",
+        "label": "Beam PVS",
+        "move_count": 64,
+        "move_rate": 0.022988505747126436,
+        "rank": 12,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ぷ",
+        "label": "Beam PVS",
+        "move_count": 55,
+        "move_rate": 0.019755747126436782,
+        "rank": 13,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ざ",
+        "label": "Beam PVS",
+        "move_count": 54,
+        "move_rate": 0.01939655172413793,
+        "rank": 14,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ら",
+        "label": "Beam PVS",
+        "move_count": 54,
+        "move_rate": 0.01939655172413793,
+        "rank": 15,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ど",
+        "label": "Beam PVS",
+        "move_count": 50,
+        "move_rate": 0.017959770114942528,
+        "rank": 16,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "と",
+        "label": "Beam PVS",
+        "move_count": 46,
+        "move_rate": 0.016522988505747127,
+        "rank": 17,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "げ",
+        "label": "Beam PVS",
+        "move_count": 41,
+        "move_rate": 0.014727011494252873,
+        "rank": 18,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "び",
+        "label": "Beam PVS",
+        "move_count": 41,
+        "move_rate": 0.014727011494252873,
+        "rank": 19,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "れ",
+        "label": "Beam PVS",
+        "move_count": 40,
+        "move_rate": 0.014367816091954023,
+        "rank": 20,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "き",
+        "label": "Beam PVS",
+        "move_count": 39,
+        "move_rate": 0.014008620689655173,
+        "rank": 21,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "り",
+        "label": "Beam PVS",
+        "move_count": 36,
+        "move_rate": 0.01293103448275862,
+        "rank": 22,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "め",
+        "label": "Beam PVS",
+        "move_count": 33,
+        "move_rate": 0.011853448275862068,
+        "rank": 23,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ん",
+        "label": "Beam PVS",
+        "move_count": 29,
+        "move_rate": 0.010416666666666666,
+        "rank": 24,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ご",
+        "label": "Beam PVS",
+        "move_count": 27,
+        "move_rate": 0.009698275862068966,
+        "rank": 25,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ぽ",
+        "label": "Beam PVS",
+        "move_count": 25,
+        "move_rate": 0.008979885057471264,
+        "rank": 26,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ぜ",
+        "label": "Beam PVS",
+        "move_count": 21,
+        "move_rate": 0.007543103448275862,
+        "rank": 27,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ち",
+        "label": "Beam PVS",
+        "move_count": 21,
+        "move_rate": 0.007543103448275862,
+        "rank": 28,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "の",
+        "label": "Beam PVS",
+        "move_count": 18,
+        "move_rate": 0.00646551724137931,
+        "rank": 29,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "え",
+        "label": "Beam PVS",
+        "move_count": 15,
+        "move_rate": 0.005387931034482759,
+        "rank": 30,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "な",
+        "label": "Beam PVS",
+        "move_count": 14,
+        "move_rate": 0.005028735632183908,
+        "rank": 31,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ね",
+        "label": "Beam PVS",
+        "move_count": 14,
+        "move_rate": 0.005028735632183908,
+        "rank": 32,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "け",
+        "label": "Beam PVS",
+        "move_count": 12,
+        "move_rate": 0.004310344827586207,
+        "rank": 33,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ば",
+        "label": "Beam PVS",
+        "move_count": 12,
+        "move_rate": 0.004310344827586207,
+        "rank": 34,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ぴ",
+        "label": "Beam PVS",
+        "move_count": 12,
+        "move_rate": 0.004310344827586207,
+        "rank": 35,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ろ",
+        "label": "Beam PVS",
+        "move_count": 12,
+        "move_rate": 0.004310344827586207,
+        "rank": 36,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "わ",
+        "label": "Beam PVS",
+        "move_count": 12,
+        "move_rate": 0.004310344827586207,
+        "rank": 37,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "が",
+        "label": "Beam PVS",
+        "move_count": 11,
+        "move_rate": 0.003951149425287357,
+        "rank": 38,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "し",
+        "label": "Beam PVS",
+        "move_count": 11,
+        "move_rate": 0.003951149425287357,
+        "rank": 39,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "で",
+        "label": "Beam PVS",
+        "move_count": 11,
+        "move_rate": 0.003951149425287357,
+        "rank": 40,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ぶ",
+        "label": "Beam PVS",
+        "move_count": 11,
+        "move_rate": 0.003951149425287357,
+        "rank": 41,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ぬ",
+        "label": "Beam PVS",
+        "move_count": 10,
+        "move_rate": 0.0035919540229885057,
+        "rank": 42,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "く",
+        "label": "Beam PVS",
+        "move_count": 9,
+        "move_rate": 0.003232758620689655,
+        "rank": 43,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "あ",
+        "label": "Beam PVS",
+        "move_count": 8,
+        "move_rate": 0.0028735632183908046,
+        "rank": 44,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ふ",
+        "label": "Beam PVS",
+        "move_count": 8,
+        "move_rate": 0.0028735632183908046,
+        "rank": 45,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "べ",
+        "label": "Beam PVS",
+        "move_count": 8,
+        "move_rate": 0.0028735632183908046,
+        "rank": 46,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "み",
+        "label": "Beam PVS",
+        "move_count": 7,
+        "move_rate": 0.002514367816091954,
+        "rank": 47,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "そ",
+        "label": "Beam PVS",
+        "move_count": 5,
+        "move_rate": 0.0017959770114942528,
+        "rank": 48,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "じ",
+        "label": "Beam PVS",
+        "move_count": 4,
+        "move_rate": 0.0014367816091954023,
+        "rank": 49,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ま",
+        "label": "Beam PVS",
+        "move_count": 4,
+        "move_rate": 0.0014367816091954023,
+        "rank": 50,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "だ",
+        "label": "Beam PVS",
+        "move_count": 3,
+        "move_rate": 0.0010775862068965517,
+        "rank": 51,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ぼ",
+        "label": "Beam PVS",
+        "move_count": 3,
+        "move_rate": 0.0010775862068965517,
+        "rank": 52,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ぱ",
+        "label": "Beam PVS",
+        "move_count": 2,
+        "move_rate": 0.0007183908045977011,
+        "rank": 53,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "も",
+        "label": "Beam PVS",
+        "move_count": 2,
+        "move_rate": 0.0007183908045977011,
+        "rank": 54,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "こ",
+        "label": "Beam PVS",
+        "move_count": 1,
+        "move_rate": 0.00035919540229885057,
+        "rank": 55,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ぞ",
+        "label": "Beam PVS",
+        "move_count": 1,
+        "move_rate": 0.00035919540229885057,
+        "rank": 56,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "に",
+        "label": "Beam PVS",
+        "move_count": 1,
+        "move_rate": 0.00035919540229885057,
+        "rank": 57,
+        "total_moves": 2784
+      },
+      {
+        "agent": "beam_pvs",
+        "end_char": "ぺ",
+        "label": "Beam PVS",
+        "move_count": 1,
+        "move_rate": 0.00035919540229885057,
+        "rank": 58,
+        "total_moves": 2784
+      }
+    ],
+    "ends_with_n_count": 120,
+    "ends_with_n_rate": 0.012295081967213115,
+    "match_count": 120,
+    "overall": [
+      {
+        "end_char": "る",
+        "move_count": 1773,
+        "move_rate": 0.18165983606557376,
+        "rank": 1
+      },
+      {
+        "end_char": "ず",
+        "move_count": 929,
+        "move_rate": 0.09518442622950819,
+        "rank": 2
+      },
+      {
+        "end_char": "や",
+        "move_count": 782,
+        "move_rate": 0.08012295081967213,
+        "rank": 3
+      },
+      {
+        "end_char": "つ",
+        "move_count": 700,
+        "move_rate": 0.07172131147540983,
+        "rank": 4
+      },
+      {
+        "end_char": "う",
+        "move_count": 671,
+        "move_rate": 0.06875,
+        "rank": 5
+      },
+      {
+        "end_char": "ぐ",
+        "move_count": 365,
+        "move_rate": 0.03739754098360656,
+        "rank": 6
+      },
+      {
+        "end_char": "い",
+        "move_count": 337,
+        "move_rate": 0.034528688524590165,
+        "rank": 7
+      },
+      {
+        "end_char": "ぎ",
+        "move_count": 317,
+        "move_rate": 0.03247950819672131,
+        "rank": 8
+      },
+      {
+        "end_char": "す",
+        "move_count": 281,
+        "move_rate": 0.028790983606557376,
+        "rank": 9
+      },
+      {
+        "end_char": "む",
+        "move_count": 243,
+        "move_rate": 0.024897540983606557,
+        "rank": 10
+      },
+      {
+        "end_char": "ゆ",
+        "move_count": 239,
+        "move_rate": 0.024487704918032788,
+        "rank": 11
+      },
+      {
+        "end_char": "ら",
+        "move_count": 224,
+        "move_rate": 0.022950819672131147,
+        "rank": 12
+      },
+      {
+        "end_char": "ざ",
+        "move_count": 221,
+        "move_rate": 0.02264344262295082,
+        "rank": 13
+      },
+      {
+        "end_char": "ぷ",
+        "move_count": 213,
+        "move_rate": 0.021823770491803278,
+        "rank": 14
+      },
+      {
+        "end_char": "よ",
+        "move_count": 202,
+        "move_rate": 0.02069672131147541,
+        "rank": 15
+      },
+      {
+        "end_char": "と",
+        "move_count": 188,
+        "move_rate": 0.019262295081967213,
+        "rank": 16
+      },
+      {
+        "end_char": "び",
+        "move_count": 180,
+        "move_rate": 0.018442622950819672,
+        "rank": 17
+      },
+      {
+        "end_char": "げ",
+        "move_count": 127,
+        "move_rate": 0.013012295081967213,
+        "rank": 18
+      },
+      {
+        "end_char": "ど",
+        "move_count": 127,
+        "move_rate": 0.013012295081967213,
+        "rank": 19
+      },
+      {
+        "end_char": "き",
+        "move_count": 120,
+        "move_rate": 0.012295081967213115,
+        "rank": 20
+      },
+      {
+        "end_char": "ん",
+        "move_count": 120,
+        "move_rate": 0.012295081967213115,
+        "rank": 21
+      },
+      {
+        "end_char": "れ",
+        "move_count": 110,
+        "move_rate": 0.011270491803278689,
+        "rank": 22
+      },
+      {
+        "end_char": "ぽ",
+        "move_count": 102,
+        "move_rate": 0.010450819672131148,
+        "rank": 23
+      },
+      {
+        "end_char": "り",
+        "move_count": 97,
+        "move_rate": 0.009938524590163934,
+        "rank": 24
+      },
+      {
+        "end_char": "の",
+        "move_count": 80,
+        "move_rate": 0.00819672131147541,
+        "rank": 25
+      },
+      {
+        "end_char": "め",
+        "move_count": 80,
+        "move_rate": 0.00819672131147541,
+        "rank": 26
+      },
+      {
+        "end_char": "ね",
+        "move_count": 76,
+        "move_rate": 0.00778688524590164,
+        "rank": 27
+      },
+      {
+        "end_char": "ご",
+        "move_count": 69,
+        "move_rate": 0.007069672131147541,
+        "rank": 28
+      },
+      {
+        "end_char": "ぜ",
+        "move_count": 68,
+        "move_rate": 0.0069672131147540985,
+        "rank": 29
+      },
+      {
+        "end_char": "ち",
+        "move_count": 59,
+        "move_rate": 0.006045081967213115,
+        "rank": 30
+      },
+      {
+        "end_char": "ぬ",
+        "move_count": 59,
+        "move_rate": 0.006045081967213115,
+        "rank": 31
+      },
+      {
+        "end_char": "く",
+        "move_count": 48,
+        "move_rate": 0.004918032786885246,
+        "rank": 32
+      },
+      {
+        "end_char": "あ",
+        "move_count": 45,
+        "move_rate": 0.004610655737704918,
+        "rank": 33
+      },
+      {
+        "end_char": "な",
+        "move_count": 44,
+        "move_rate": 0.004508196721311476,
+        "rank": 34
+      },
+      {
+        "end_char": "わ",
+        "move_count": 42,
+        "move_rate": 0.00430327868852459,
+        "rank": 35
+      },
+      {
+        "end_char": "ふ",
+        "move_count": 35,
+        "move_rate": 0.003586065573770492,
+        "rank": 36
+      },
+      {
+        "end_char": "ろ",
+        "move_count": 35,
+        "move_rate": 0.003586065573770492,
+        "rank": 37
+      },
+      {
+        "end_char": "じ",
+        "move_count": 34,
+        "move_rate": 0.0034836065573770492,
+        "rank": 38
+      },
+      {
+        "end_char": "し",
+        "move_count": 33,
+        "move_rate": 0.0033811475409836066,
+        "rank": 39
+      },
+      {
+        "end_char": "べ",
+        "move_count": 31,
+        "move_rate": 0.0031762295081967213,
+        "rank": 40
+      },
+      {
+        "end_char": "ぶ",
+        "move_count": 30,
+        "move_rate": 0.0030737704918032786,
+        "rank": 41
+      },
+      {
+        "end_char": "ば",
+        "move_count": 29,
+        "move_rate": 0.002971311475409836,
+        "rank": 42
+      },
+      {
+        "end_char": "え",
+        "move_count": 27,
+        "move_rate": 0.0027663934426229507,
+        "rank": 43
+      },
+      {
+        "end_char": "で",
+        "move_count": 27,
+        "move_rate": 0.0027663934426229507,
+        "rank": 44
+      },
+      {
+        "end_char": "ぴ",
+        "move_count": 25,
+        "move_rate": 0.0025614754098360654,
+        "rank": 45
+      },
+      {
+        "end_char": "け",
+        "move_count": 22,
+        "move_rate": 0.002254098360655738,
+        "rank": 46
+      },
+      {
+        "end_char": "ぼ",
+        "move_count": 17,
+        "move_rate": 0.0017418032786885246,
+        "rank": 47
+      },
+      {
+        "end_char": "が",
+        "move_count": 14,
+        "move_rate": 0.0014344262295081967,
+        "rank": 48
+      },
+      {
+        "end_char": "み",
+        "move_count": 12,
+        "move_rate": 0.0012295081967213116,
+        "rank": 49
+      },
+      {
+        "end_char": "そ",
+        "move_count": 11,
+        "move_rate": 0.001127049180327869,
+        "rank": 50
+      },
+      {
+        "end_char": "ぞ",
+        "move_count": 7,
+        "move_rate": 0.0007172131147540983,
+        "rank": 51
+      },
+      {
+        "end_char": "に",
+        "move_count": 7,
+        "move_rate": 0.0007172131147540983,
+        "rank": 52
+      },
+      {
+        "end_char": "ぱ",
+        "move_count": 7,
+        "move_rate": 0.0007172131147540983,
+        "rank": 53
+      },
+      {
+        "end_char": "ぺ",
+        "move_count": 5,
+        "move_rate": 0.0005122950819672131,
+        "rank": 54
+      },
+      {
+        "end_char": "だ",
+        "move_count": 4,
+        "move_rate": 0.0004098360655737705,
+        "rank": 55
+      },
+      {
+        "end_char": "ま",
+        "move_count": 4,
+        "move_rate": 0.0004098360655737705,
+        "rank": 56
+      },
+      {
+        "end_char": "こ",
+        "move_count": 3,
+        "move_rate": 0.0003073770491803279,
+        "rank": 57
+      },
+      {
+        "end_char": "も",
+        "move_count": 3,
+        "move_rate": 0.0003073770491803279,
+        "rank": 58
+      }
+    ],
+    "top_end_chars": [
+      {
+        "end_char": "る",
+        "move_count": 1773,
+        "move_rate": 0.18165983606557376,
+        "rank": 1
+      },
+      {
+        "end_char": "ず",
+        "move_count": 929,
+        "move_rate": 0.09518442622950819,
+        "rank": 2
+      },
+      {
+        "end_char": "や",
+        "move_count": 782,
+        "move_rate": 0.08012295081967213,
+        "rank": 3
+      },
+      {
+        "end_char": "つ",
+        "move_count": 700,
+        "move_rate": 0.07172131147540983,
+        "rank": 4
+      },
+      {
+        "end_char": "う",
+        "move_count": 671,
+        "move_rate": 0.06875,
+        "rank": 5
+      },
+      {
+        "end_char": "ぐ",
+        "move_count": 365,
+        "move_rate": 0.03739754098360656,
+        "rank": 6
+      },
+      {
+        "end_char": "い",
+        "move_count": 337,
+        "move_rate": 0.034528688524590165,
+        "rank": 7
+      },
+      {
+        "end_char": "ぎ",
+        "move_count": 317,
+        "move_rate": 0.03247950819672131,
+        "rank": 8
+      },
+      {
+        "end_char": "す",
+        "move_count": 281,
+        "move_rate": 0.028790983606557376,
+        "rank": 9
+      },
+      {
+        "end_char": "む",
+        "move_count": 243,
+        "move_rate": 0.024897540983606557,
+        "rank": 10
+      },
+      {
+        "end_char": "ゆ",
+        "move_count": 239,
+        "move_rate": 0.024487704918032788,
+        "rank": 11
+      },
+      {
+        "end_char": "ら",
+        "move_count": 224,
+        "move_rate": 0.022950819672131147,
+        "rank": 12
+      }
+    ],
+    "top_n": 12,
+    "total_moves": 9760
+  },
   "format_version": "final_presentation_figures_v1",
   "four_agents": [
     {
@@ -587,6 +2934,19 @@
     "direct_selective_alpha_beta_wins": 17,
     "direct_selective_first_count": 20,
     "direct_settings_match": true,
+    "end_char_usage": {
+      "agent_total_matches_overall": true,
+      "agent_totals": {
+        "alpha_beta": 2124,
+        "beam_alpha_beta": 2673,
+        "beam_pvs": 2784,
+        "pvs": 2179
+      },
+      "all_history_turns_have_end_char": true,
+      "match_count": 120,
+      "top_end_char": "る",
+      "total_moves": 9760
+    },
     "fixed_comparable_position_count": 40,
     "fixed_position_count": 50,
     "four_agent_match_count": 120,
@@ -654,6 +3014,14 @@
         },
         {
           "aspect_ratio": 1.7777777777777777,
+          "file": "08_end_char_usage.png",
+          "height": 1584,
+          "minimum_slide_resolution": true,
+          "valid_16_9": true,
+          "width": 2816
+        },
+        {
+          "aspect_ratio": 1.7777777777777777,
           "file": "appendix_beam_parameters.png",
           "height": 1584,
           "minimum_slide_resolution": true,
@@ -661,7 +3029,7 @@
           "width": 2816
         }
       ],
-      "image_count": 8
+      "image_count": 9
     },
     "initial_match_count": 90,
     "initial_unique_match_count": 90,

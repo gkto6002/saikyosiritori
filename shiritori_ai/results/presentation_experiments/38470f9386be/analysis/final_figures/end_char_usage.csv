@@ -1,0 +1,271 @@
+scope,agent,label,rank,end_char,move_count,move_rate,total_moves
+overall,,全手法,1,る,1773,0.18165983606557376,9760
+overall,,全手法,2,ず,929,0.09518442622950819,9760
+overall,,全手法,3,や,782,0.08012295081967213,9760
+overall,,全手法,4,つ,700,0.07172131147540983,9760
+overall,,全手法,5,う,671,0.06875,9760
+overall,,全手法,6,ぐ,365,0.03739754098360656,9760
+overall,,全手法,7,い,337,0.034528688524590165,9760
+overall,,全手法,8,ぎ,317,0.03247950819672131,9760
+overall,,全手法,9,す,281,0.028790983606557376,9760
+overall,,全手法,10,む,243,0.024897540983606557,9760
+overall,,全手法,11,ゆ,239,0.024487704918032788,9760
+overall,,全手法,12,ら,224,0.022950819672131147,9760
+overall,,全手法,13,ざ,221,0.02264344262295082,9760
+overall,,全手法,14,ぷ,213,0.021823770491803278,9760
+overall,,全手法,15,よ,202,0.02069672131147541,9760
+overall,,全手法,16,と,188,0.019262295081967213,9760
+overall,,全手法,17,び,180,0.018442622950819672,9760
+overall,,全手法,18,げ,127,0.013012295081967213,9760
+overall,,全手法,19,ど,127,0.013012295081967213,9760
+overall,,全手法,20,き,120,0.012295081967213115,9760
+overall,,全手法,21,ん,120,0.012295081967213115,9760
+overall,,全手法,22,れ,110,0.011270491803278689,9760
+overall,,全手法,23,ぽ,102,0.010450819672131148,9760
+overall,,全手法,24,り,97,0.009938524590163934,9760
+overall,,全手法,25,の,80,0.00819672131147541,9760
+overall,,全手法,26,め,80,0.00819672131147541,9760
+overall,,全手法,27,ね,76,0.00778688524590164,9760
+overall,,全手法,28,ご,69,0.007069672131147541,9760
+overall,,全手法,29,ぜ,68,0.0069672131147540985,9760
+overall,,全手法,30,ち,59,0.006045081967213115,9760
+overall,,全手法,31,ぬ,59,0.006045081967213115,9760
+overall,,全手法,32,く,48,0.004918032786885246,9760
+overall,,全手法,33,あ,45,0.004610655737704918,9760
+overall,,全手法,34,な,44,0.004508196721311476,9760
+overall,,全手法,35,わ,42,0.00430327868852459,9760
+overall,,全手法,36,ふ,35,0.003586065573770492,9760
+overall,,全手法,37,ろ,35,0.003586065573770492,9760
+overall,,全手法,38,じ,34,0.0034836065573770492,9760
+overall,,全手法,39,し,33,0.0033811475409836066,9760
+overall,,全手法,40,べ,31,0.0031762295081967213,9760
+overall,,全手法,41,ぶ,30,0.0030737704918032786,9760
+overall,,全手法,42,ば,29,0.002971311475409836,9760
+overall,,全手法,43,え,27,0.0027663934426229507,9760
+overall,,全手法,44,で,27,0.0027663934426229507,9760
+overall,,全手法,45,ぴ,25,0.0025614754098360654,9760
+overall,,全手法,46,け,22,0.002254098360655738,9760
+overall,,全手法,47,ぼ,17,0.0017418032786885246,9760
+overall,,全手法,48,が,14,0.0014344262295081967,9760
+overall,,全手法,49,み,12,0.0012295081967213116,9760
+overall,,全手法,50,そ,11,0.001127049180327869,9760
+overall,,全手法,51,ぞ,7,0.0007172131147540983,9760
+overall,,全手法,52,に,7,0.0007172131147540983,9760
+overall,,全手法,53,ぱ,7,0.0007172131147540983,9760
+overall,,全手法,54,ぺ,5,0.0005122950819672131,9760
+overall,,全手法,55,だ,4,0.0004098360655737705,9760
+overall,,全手法,56,ま,4,0.0004098360655737705,9760
+overall,,全手法,57,こ,3,0.0003073770491803279,9760
+overall,,全手法,58,も,3,0.0003073770491803279,9760
+agent,alpha_beta,Selective AlphaBeta,1,る,497,0.2339924670433145,2124
+agent,alpha_beta,Selective AlphaBeta,2,ず,237,0.1115819209039548,2124
+agent,alpha_beta,Selective AlphaBeta,3,や,181,0.0852165725047081,2124
+agent,alpha_beta,Selective AlphaBeta,4,つ,123,0.05790960451977401,2124
+agent,alpha_beta,Selective AlphaBeta,5,う,99,0.046610169491525424,2124
+agent,alpha_beta,Selective AlphaBeta,6,ぐ,85,0.04001883239171375,2124
+agent,alpha_beta,Selective AlphaBeta,7,ぎ,71,0.033427495291902073,2124
+agent,alpha_beta,Selective AlphaBeta,8,い,64,0.030131826741996232,2124
+agent,alpha_beta,Selective AlphaBeta,9,す,63,0.029661016949152543,2124
+agent,alpha_beta,Selective AlphaBeta,10,ら,57,0.026836158192090395,2124
+agent,alpha_beta,Selective AlphaBeta,11,む,56,0.026365348399246705,2124
+agent,alpha_beta,Selective AlphaBeta,12,ぷ,49,0.023069679849340868,2124
+agent,alpha_beta,Selective AlphaBeta,13,び,48,0.022598870056497175,2124
+agent,alpha_beta,Selective AlphaBeta,14,ざ,47,0.022128060263653482,2124
+agent,alpha_beta,Selective AlphaBeta,15,ゆ,42,0.01977401129943503,2124
+agent,alpha_beta,Selective AlphaBeta,16,よ,34,0.0160075329566855,2124
+agent,alpha_beta,Selective AlphaBeta,17,と,28,0.013182674199623353,2124
+agent,alpha_beta,Selective AlphaBeta,18,ん,25,0.011770244821092278,2124
+agent,alpha_beta,Selective AlphaBeta,19,げ,24,0.011299435028248588,2124
+agent,alpha_beta,Selective AlphaBeta,20,ね,23,0.010828625235404897,2124
+agent,alpha_beta,Selective AlphaBeta,21,ぽ,23,0.010828625235404897,2124
+agent,alpha_beta,Selective AlphaBeta,22,き,22,0.010357815442561206,2124
+agent,alpha_beta,Selective AlphaBeta,23,の,22,0.010357815442561206,2124
+agent,alpha_beta,Selective AlphaBeta,24,ぬ,21,0.009887005649717515,2124
+agent,alpha_beta,Selective AlphaBeta,25,れ,20,0.009416195856873822,2124
+agent,alpha_beta,Selective AlphaBeta,26,め,14,0.006591337099811676,2124
+agent,alpha_beta,Selective AlphaBeta,27,く,13,0.006120527306967985,2124
+agent,alpha_beta,Selective AlphaBeta,28,ぜ,12,0.005649717514124294,2124
+agent,alpha_beta,Selective AlphaBeta,29,じ,10,0.004708097928436911,2124
+agent,alpha_beta,Selective AlphaBeta,30,ち,10,0.004708097928436911,2124
+agent,alpha_beta,Selective AlphaBeta,31,あ,9,0.00423728813559322,2124
+agent,alpha_beta,Selective AlphaBeta,32,ご,9,0.00423728813559322,2124
+agent,alpha_beta,Selective AlphaBeta,33,り,9,0.00423728813559322,2124
+agent,alpha_beta,Selective AlphaBeta,34,な,8,0.003766478342749529,2124
+agent,alpha_beta,Selective AlphaBeta,35,べ,8,0.003766478342749529,2124
+agent,alpha_beta,Selective AlphaBeta,36,ど,7,0.003295668549905838,2124
+agent,alpha_beta,Selective AlphaBeta,37,し,6,0.002824858757062147,2124
+agent,alpha_beta,Selective AlphaBeta,38,ば,6,0.002824858757062147,2124
+agent,alpha_beta,Selective AlphaBeta,39,ふ,6,0.002824858757062147,2124
+agent,alpha_beta,Selective AlphaBeta,40,わ,6,0.002824858757062147,2124
+agent,alpha_beta,Selective AlphaBeta,41,で,5,0.0023540489642184556,2124
+agent,alpha_beta,Selective AlphaBeta,42,ぴ,5,0.0023540489642184556,2124
+agent,alpha_beta,Selective AlphaBeta,43,ぶ,5,0.0023540489642184556,2124
+agent,alpha_beta,Selective AlphaBeta,44,ぼ,5,0.0023540489642184556,2124
+agent,alpha_beta,Selective AlphaBeta,45,ろ,5,0.0023540489642184556,2124
+agent,alpha_beta,Selective AlphaBeta,46,ぞ,2,0.0009416195856873823,2124
+agent,alpha_beta,Selective AlphaBeta,47,に,2,0.0009416195856873823,2124
+agent,alpha_beta,Selective AlphaBeta,48,ぺ,1,0.00047080979284369113,2124
+agent,pvs,PVS,1,る,456,0.20927030748049563,2179
+agent,pvs,PVS,2,ず,222,0.10188159706287288,2179
+agent,pvs,PVS,3,や,159,0.07296925195043598,2179
+agent,pvs,PVS,4,う,136,0.062413951353832035,2179
+agent,pvs,PVS,5,つ,127,0.05828361633776962,2179
+agent,pvs,PVS,6,ぐ,83,0.03809086737035337,2179
+agent,pvs,PVS,7,ぎ,80,0.036714089031665904,2179
+agent,pvs,PVS,8,す,78,0.03579623680587425,2179
+agent,pvs,PVS,9,い,66,0.030289123451124368,2179
+agent,pvs,PVS,10,ざ,63,0.0289123451124369,2179
+agent,pvs,PVS,11,ゆ,57,0.026158788435061954,2179
+agent,pvs,PVS,12,び,55,0.025240936209270308,2179
+agent,pvs,PVS,13,む,54,0.024782010096374485,2179
+agent,pvs,PVS,14,ら,52,0.023864157870582835,2179
+agent,pvs,PVS,15,と,49,0.022487379531895366,2179
+agent,pvs,PVS,16,ぷ,47,0.021569527306103717,2179
+agent,pvs,PVS,17,よ,31,0.014226709499770536,2179
+agent,pvs,PVS,18,ん,30,0.013767783386874713,2179
+agent,pvs,PVS,19,ぽ,27,0.012391005048187242,2179
+agent,pvs,PVS,20,れ,23,0.010555300596603947,2179
+agent,pvs,PVS,21,き,22,0.010096374483708122,2179
+agent,pvs,PVS,22,げ,22,0.010096374483708122,2179
+agent,pvs,PVS,23,の,21,0.009637448370812299,2179
+agent,pvs,PVS,24,ぬ,20,0.009178522257916476,2179
+agent,pvs,PVS,25,ね,20,0.009178522257916476,2179
+agent,pvs,PVS,26,り,17,0.007801743919229004,2179
+agent,pvs,PVS,27,ぜ,16,0.0073428178063331805,2179
+agent,pvs,PVS,28,あ,13,0.005966039467645709,2179
+agent,pvs,PVS,29,じ,12,0.005507113354749885,2179
+agent,pvs,PVS,30,ち,12,0.005507113354749885,2179
+agent,pvs,PVS,31,め,12,0.005507113354749885,2179
+agent,pvs,PVS,32,く,11,0.005048187241854061,2179
+agent,pvs,PVS,33,な,10,0.004589261128958238,2179
+agent,pvs,PVS,34,ど,9,0.004130335016062414,2179
+agent,pvs,PVS,35,ふ,9,0.004130335016062414,2179
+agent,pvs,PVS,36,ご,7,0.0032124827902707664,2179
+agent,pvs,PVS,37,べ,7,0.0032124827902707664,2179
+agent,pvs,PVS,38,わ,7,0.0032124827902707664,2179
+agent,pvs,PVS,39,ぼ,6,0.0027535566773749425,2179
+agent,pvs,PVS,40,し,5,0.002294630564479119,2179
+agent,pvs,PVS,41,で,5,0.002294630564479119,2179
+agent,pvs,PVS,42,ば,5,0.002294630564479119,2179
+agent,pvs,PVS,43,ぶ,5,0.002294630564479119,2179
+agent,pvs,PVS,44,ぴ,3,0.0013767783386874712,2179
+agent,pvs,PVS,45,え,2,0.0009178522257916476,2179
+agent,pvs,PVS,46,ぞ,2,0.0009178522257916476,2179
+agent,pvs,PVS,47,に,1,0.0004589261128958238,2179
+agent,pvs,PVS,48,ぺ,1,0.0004589261128958238,2179
+agent,pvs,PVS,49,も,1,0.0004589261128958238,2179
+agent,pvs,PVS,50,ろ,1,0.0004589261128958238,2179
+agent,beam_alpha_beta,Beam AlphaBeta,1,る,364,0.13617658062102506,2673
+agent,beam_alpha_beta,Beam AlphaBeta,2,ず,237,0.08866442199775533,2673
+agent,beam_alpha_beta,Beam AlphaBeta,3,や,226,0.08454919566030678,2673
+agent,beam_alpha_beta,Beam AlphaBeta,4,つ,220,0.0823045267489712,2673
+agent,beam_alpha_beta,Beam AlphaBeta,5,う,199,0.07444818555929666,2673
+agent,beam_alpha_beta,Beam AlphaBeta,6,い,115,0.04302282080059858,2673
+agent,beam_alpha_beta,Beam AlphaBeta,7,ぐ,86,0.032173587729143284,2673
+agent,beam_alpha_beta,Beam AlphaBeta,8,ぎ,84,0.031425364758698095,2673
+agent,beam_alpha_beta,Beam AlphaBeta,9,ゆ,76,0.02843247287691732,2673
+agent,beam_alpha_beta,Beam AlphaBeta,10,す,74,0.027684249906472128,2673
+agent,beam_alpha_beta,Beam AlphaBeta,11,よ,67,0.025065469509913955,2673
+agent,beam_alpha_beta,Beam AlphaBeta,12,と,65,0.024317246539468762,2673
+agent,beam_alpha_beta,Beam AlphaBeta,13,ぷ,62,0.02319491208380097,2673
+agent,beam_alpha_beta,Beam AlphaBeta,14,ど,61,0.022820800598578377,2673
+agent,beam_alpha_beta,Beam AlphaBeta,15,ら,61,0.022820800598578377,2673
+agent,beam_alpha_beta,Beam AlphaBeta,16,む,60,0.02244668911335578,2673
+agent,beam_alpha_beta,Beam AlphaBeta,17,ざ,57,0.02132435465768799,2673
+agent,beam_alpha_beta,Beam AlphaBeta,18,げ,40,0.014964459408903853,2673
+agent,beam_alpha_beta,Beam AlphaBeta,19,き,37,0.013842124953236064,2673
+agent,beam_alpha_beta,Beam AlphaBeta,20,び,36,0.013468013468013467,2673
+agent,beam_alpha_beta,Beam AlphaBeta,21,ん,36,0.013468013468013467,2673
+agent,beam_alpha_beta,Beam AlphaBeta,22,り,35,0.013093901982790871,2673
+agent,beam_alpha_beta,Beam AlphaBeta,23,ぽ,27,0.010101010101010102,2673
+agent,beam_alpha_beta,Beam AlphaBeta,24,れ,27,0.010101010101010102,2673
+agent,beam_alpha_beta,Beam AlphaBeta,25,ご,26,0.009726898615787506,2673
+agent,beam_alpha_beta,Beam AlphaBeta,26,め,21,0.007856341189674524,2673
+agent,beam_alpha_beta,Beam AlphaBeta,27,ぜ,19,0.00710811821922933,2673
+agent,beam_alpha_beta,Beam AlphaBeta,28,ね,19,0.00710811821922933,2673
+agent,beam_alpha_beta,Beam AlphaBeta,29,の,19,0.00710811821922933,2673
+agent,beam_alpha_beta,Beam AlphaBeta,30,ろ,17,0.006359895248784137,2673
+agent,beam_alpha_beta,Beam AlphaBeta,31,わ,17,0.006359895248784137,2673
+agent,beam_alpha_beta,Beam AlphaBeta,32,ち,16,0.005985783763561541,2673
+agent,beam_alpha_beta,Beam AlphaBeta,33,あ,15,0.005611672278338945,2673
+agent,beam_alpha_beta,Beam AlphaBeta,34,く,15,0.005611672278338945,2673
+agent,beam_alpha_beta,Beam AlphaBeta,35,な,12,0.004489337822671156,2673
+agent,beam_alpha_beta,Beam AlphaBeta,36,ふ,12,0.004489337822671156,2673
+agent,beam_alpha_beta,Beam AlphaBeta,37,し,11,0.00411522633744856,2673
+agent,beam_alpha_beta,Beam AlphaBeta,38,え,10,0.0037411148522259632,2673
+agent,beam_alpha_beta,Beam AlphaBeta,39,け,10,0.0037411148522259632,2673
+agent,beam_alpha_beta,Beam AlphaBeta,40,ぶ,9,0.003367003367003367,2673
+agent,beam_alpha_beta,Beam AlphaBeta,41,じ,8,0.0029928918817807705,2673
+agent,beam_alpha_beta,Beam AlphaBeta,42,ぬ,8,0.0029928918817807705,2673
+agent,beam_alpha_beta,Beam AlphaBeta,43,べ,8,0.0029928918817807705,2673
+agent,beam_alpha_beta,Beam AlphaBeta,44,そ,6,0.002244668911335578,2673
+agent,beam_alpha_beta,Beam AlphaBeta,45,で,6,0.002244668911335578,2673
+agent,beam_alpha_beta,Beam AlphaBeta,46,ば,6,0.002244668911335578,2673
+agent,beam_alpha_beta,Beam AlphaBeta,47,ぱ,5,0.0018705574261129816,2673
+agent,beam_alpha_beta,Beam AlphaBeta,48,ぴ,5,0.0018705574261129816,2673
+agent,beam_alpha_beta,Beam AlphaBeta,49,み,5,0.0018705574261129816,2673
+agent,beam_alpha_beta,Beam AlphaBeta,50,が,3,0.001122334455667789,2673
+agent,beam_alpha_beta,Beam AlphaBeta,51,に,3,0.001122334455667789,2673
+agent,beam_alpha_beta,Beam AlphaBeta,52,ぼ,3,0.001122334455667789,2673
+agent,beam_alpha_beta,Beam AlphaBeta,53,こ,2,0.0007482229704451926,2673
+agent,beam_alpha_beta,Beam AlphaBeta,54,ぞ,2,0.0007482229704451926,2673
+agent,beam_alpha_beta,Beam AlphaBeta,55,ぺ,2,0.0007482229704451926,2673
+agent,beam_alpha_beta,Beam AlphaBeta,56,だ,1,0.0003741114852225963,2673
+agent,beam_pvs,Beam PVS,1,る,456,0.16379310344827586,2784
+agent,beam_pvs,Beam PVS,2,う,237,0.08512931034482758,2784
+agent,beam_pvs,Beam PVS,3,ず,233,0.08369252873563218,2784
+agent,beam_pvs,Beam PVS,4,つ,230,0.08261494252873564,2784
+agent,beam_pvs,Beam PVS,5,や,216,0.07758620689655173,2784
+agent,beam_pvs,Beam PVS,6,ぐ,111,0.03987068965517242,2784
+agent,beam_pvs,Beam PVS,7,い,92,0.033045977011494254,2784
+agent,beam_pvs,Beam PVS,8,ぎ,82,0.029454022988505746,2784
+agent,beam_pvs,Beam PVS,9,む,73,0.02622126436781609,2784
+agent,beam_pvs,Beam PVS,10,よ,70,0.02514367816091954,2784
+agent,beam_pvs,Beam PVS,11,す,66,0.023706896551724137,2784
+agent,beam_pvs,Beam PVS,12,ゆ,64,0.022988505747126436,2784
+agent,beam_pvs,Beam PVS,13,ぷ,55,0.019755747126436782,2784
+agent,beam_pvs,Beam PVS,14,ざ,54,0.01939655172413793,2784
+agent,beam_pvs,Beam PVS,15,ら,54,0.01939655172413793,2784
+agent,beam_pvs,Beam PVS,16,ど,50,0.017959770114942528,2784
+agent,beam_pvs,Beam PVS,17,と,46,0.016522988505747127,2784
+agent,beam_pvs,Beam PVS,18,げ,41,0.014727011494252873,2784
+agent,beam_pvs,Beam PVS,19,び,41,0.014727011494252873,2784
+agent,beam_pvs,Beam PVS,20,れ,40,0.014367816091954023,2784
+agent,beam_pvs,Beam PVS,21,き,39,0.014008620689655173,2784
+agent,beam_pvs,Beam PVS,22,り,36,0.01293103448275862,2784
+agent,beam_pvs,Beam PVS,23,め,33,0.011853448275862068,2784
+agent,beam_pvs,Beam PVS,24,ん,29,0.010416666666666666,2784
+agent,beam_pvs,Beam PVS,25,ご,27,0.009698275862068966,2784
+agent,beam_pvs,Beam PVS,26,ぽ,25,0.008979885057471264,2784
+agent,beam_pvs,Beam PVS,27,ぜ,21,0.007543103448275862,2784
+agent,beam_pvs,Beam PVS,28,ち,21,0.007543103448275862,2784
+agent,beam_pvs,Beam PVS,29,の,18,0.00646551724137931,2784
+agent,beam_pvs,Beam PVS,30,え,15,0.005387931034482759,2784
+agent,beam_pvs,Beam PVS,31,な,14,0.005028735632183908,2784
+agent,beam_pvs,Beam PVS,32,ね,14,0.005028735632183908,2784
+agent,beam_pvs,Beam PVS,33,け,12,0.004310344827586207,2784
+agent,beam_pvs,Beam PVS,34,ば,12,0.004310344827586207,2784
+agent,beam_pvs,Beam PVS,35,ぴ,12,0.004310344827586207,2784
+agent,beam_pvs,Beam PVS,36,ろ,12,0.004310344827586207,2784
+agent,beam_pvs,Beam PVS,37,わ,12,0.004310344827586207,2784
+agent,beam_pvs,Beam PVS,38,が,11,0.003951149425287357,2784
+agent,beam_pvs,Beam PVS,39,し,11,0.003951149425287357,2784
+agent,beam_pvs,Beam PVS,40,で,11,0.003951149425287357,2784
+agent,beam_pvs,Beam PVS,41,ぶ,11,0.003951149425287357,2784
+agent,beam_pvs,Beam PVS,42,ぬ,10,0.0035919540229885057,2784
+agent,beam_pvs,Beam PVS,43,く,9,0.003232758620689655,2784
+agent,beam_pvs,Beam PVS,44,あ,8,0.0028735632183908046,2784
+agent,beam_pvs,Beam PVS,45,ふ,8,0.0028735632183908046,2784
+agent,beam_pvs,Beam PVS,46,べ,8,0.0028735632183908046,2784
+agent,beam_pvs,Beam PVS,47,み,7,0.002514367816091954,2784
+agent,beam_pvs,Beam PVS,48,そ,5,0.0017959770114942528,2784
+agent,beam_pvs,Beam PVS,49,じ,4,0.0014367816091954023,2784
+agent,beam_pvs,Beam PVS,50,ま,4,0.0014367816091954023,2784
+agent,beam_pvs,Beam PVS,51,だ,3,0.0010775862068965517,2784
+agent,beam_pvs,Beam PVS,52,ぼ,3,0.0010775862068965517,2784
+agent,beam_pvs,Beam PVS,53,ぱ,2,0.0007183908045977011,2784
+agent,beam_pvs,Beam PVS,54,も,2,0.0007183908045977011,2784
+agent,beam_pvs,Beam PVS,55,こ,1,0.00035919540229885057,2784
+agent,beam_pvs,Beam PVS,56,ぞ,1,0.00035919540229885057,2784
+agent,beam_pvs,Beam PVS,57,に,1,0.00035919540229885057,2784
+agent,beam_pvs,Beam PVS,58,ぺ,1,0.00035919540229885057,2784

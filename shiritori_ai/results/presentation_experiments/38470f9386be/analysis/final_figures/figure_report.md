@@ -89,6 +89,18 @@
 - 発表用一文: 固定型を明確に上回る盤面適応型は確認できなかった。
 - 断定できないこと: Proof Moderateは総当たり70.0%だが、各方式40局でWilson区間が重なるため、統計的な優位性や一般的な強さは断定できない。
 
+## 08 主要4手法の終端文字使用傾向
+
+- raw: `final4/raw_matches.jsonl` の各手`end_char`
+- 抽出条件: D10000、主要4手法の共通条件120局、全履歴
+- 使用手数: 9,760手
+- 全体上位: る 1,773回（18.2%）、ず 929回（9.5%）、や 782回（8.0%）、つ 700回（7.2%）、う 671回（6.9%）
+- 手法別最多: Selective AlphaBeta「る」497回（23.4%）、PVS「る」456回（20.9%）、Beam AlphaBeta「る」364回（13.6%）、Beam PVS「る」456回（16.4%）
+- 「ん」終端: 120回（1.2%）
+- 変更点: 全体の使用回数と、手数差を補正した手法別使用率を一枚へ統合。
+- 発表用一文: 全手法で「る」が最も多い一方、使用率には手法ごとの差が見られた。
+- 断定できないこと: 出現頻度だけでは、その終端文字を選ぶことが勝敗に有利だったとは断定できない。
+
 ## 発表全体の結論
 
 候補制限と枝刈りによって探索量を削減し、より深い探索が可能になった。Beam AlphaBetaはSelective AlphaBetaとの全40局で23勝17敗だったが、主要4手法の総当たりでは明確な優位性は確認できなかった。このことから、探索の深さだけでなく、Beamに残す候補の選び方も重要だと考えられる。
@@ -206,8 +218,21 @@
       }
     }
   },
+  "end_char_usage": {
+    "match_count": 120,
+    "total_moves": 9760,
+    "agent_totals": {
+      "alpha_beta": 2124,
+      "pvs": 2179,
+      "beam_alpha_beta": 2673,
+      "beam_pvs": 2784
+    },
+    "agent_total_matches_overall": true,
+    "top_end_char": "る",
+    "all_history_turns_have_end_char": true
+  },
   "images": {
-    "image_count": 8,
+    "image_count": 9,
     "all_openable": true,
     "all_16_9": true,
     "all_high_resolution": true,
@@ -262,6 +287,14 @@
       },
       {
         "file": "07_board_adaptive_comparison.png",
+        "width": 2816,
+        "height": 1584,
+        "aspect_ratio": 1.7777777777777777,
+        "valid_16_9": true,
+        "minimum_slide_resolution": true
+      },
+      {
+        "file": "08_end_char_usage.png",
         "width": 2816,
         "height": 1584,
         "aspect_ratio": 1.7777777777777777,

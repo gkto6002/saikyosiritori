@@ -741,6 +741,95 @@ def board_adaptive_match_summary(
     return result, validation
 
 
+def end_char_usage_summary(
+    rows: list[dict[str, Any]],
+    *,
+    top_n: int = 12,
+) -> dict[str, Any]:
+    agents = (
+        "alpha_beta",
+        "pvs",
+        "beam_alpha_beta",
+        "beam_pvs",
+    )
+    counts: dict[str, dict[str, int]] = {
+        agent: {} for agent in agents
+    }
+    overall: dict[str, int] = {}
+    for match in rows:
+        history = match.get("history")
+        if not isinstance(history, list):
+            raise AssertionError(
+                f"history is missing: {match.get('match_id')}"
+            )
+        for turn in history:
+            agent = str(turn["agent"])
+            end_char = str(turn["end_char"])
+            if agent not in counts:
+                raise AssertionError(f"unexpected history agent: {agent}")
+            if not end_char:
+                raise AssertionError("empty end_char in match history")
+            counts[agent][end_char] = (
+                counts[agent].get(end_char, 0) + 1
+            )
+            overall[end_char] = overall.get(end_char, 0) + 1
+
+    total_moves = sum(overall.values())
+    overall_rows = [
+        {
+            "rank": rank,
+            "end_char": end_char,
+            "move_count": count,
+            "move_rate": count / total_moves if total_moves else 0.0,
+        }
+        for rank, (end_char, count) in enumerate(
+            sorted(
+                overall.items(),
+                key=lambda item: (-item[1], item[0]),
+            ),
+            start=1,
+        )
+    ]
+    agent_rows: list[dict[str, Any]] = []
+    agent_totals: dict[str, int] = {}
+    for agent in agents:
+        agent_total = sum(counts[agent].values())
+        agent_totals[agent] = agent_total
+        for rank, (end_char, count) in enumerate(
+            sorted(
+                counts[agent].items(),
+                key=lambda item: (-item[1], item[0]),
+            ),
+            start=1,
+        ):
+            agent_rows.append(
+                {
+                    "agent": agent,
+                    "label": AGENT_LABELS[agent],
+                    "rank": rank,
+                    "end_char": end_char,
+                    "move_count": count,
+                    "move_rate": (
+                        count / agent_total if agent_total else 0.0
+                    ),
+                    "total_moves": agent_total,
+                }
+            )
+    return {
+        "match_count": len(rows),
+        "total_moves": total_moves,
+        "top_n": top_n,
+        "top_end_chars": overall_rows[:top_n],
+        "overall": overall_rows,
+        "by_agent": agent_rows,
+        "agent_totals": agent_totals,
+        "ends_with_n_count": overall.get("ん", 0),
+        "ends_with_n_rate": (
+            overall.get("ん", 0) / total_moves if total_moves else 0.0
+        ),
+    }
+
+
 def configure_matplotlib():
     plt = ensure_matplotlib()
     plt.rcParams.update(
@@ -1295,6 +1384,105 @@ def plot_board_adaptive_comparison(
     save_figure(plt, fig, path)
 
 
+def plot_end_char_usage(
+    plt,
+    data: dict[str, Any],
+    path: Path,
+) -> None:
+    fig, axes = plt.subplots(
+        1,
+        2,
+        figsize=(12.8, 7.2),
+        constrained_layout=True,
+        gridspec_kw={"width_ratios": [0.9, 1.45]},
+    )
+    fig.suptitle(
+        "主要4手法の終端文字使用傾向\n"
+        f"D10000・{data['match_count']}局・"
+        f"{data['total_moves']:,}手／「ん」終端 "
+        f"{data['ends_with_n_count']}回"
+        f"（{data['ends_with_n_rate']:.1%}）",
+        fontsize=18,
+    )
+    top_rows = data["top_end_chars"]
+    chars = [str(row["end_char"]) for row in top_rows]
+
+    counts = [int(row["move_count"]) for row in top_rows]
+    positions = list(range(len(chars)))
+    bars = axes[0].barh(
+        positions,
+        counts,
+        color=AGENT_COLORS["beam_alpha_beta"],
+        height=0.68,
+    )
+    axes[0].set_yticks(positions, chars)
+    axes[0].invert_yaxis()
+    axes[0].set_xlabel("使用回数")
+    axes[0].set_title("全手法合計")
+    style_axis(axes[0], grid_axis="x")
+    for bar, row in zip(bars, top_rows):
+        axes[0].text(
+            bar.get_width(),
+            bar.get_y() + bar.get_height() / 2,
+            f" {row['move_count']:,}回"
+            f"（{row['move_rate']:.1%}）",
+            ha="left",
+            va="center",
+            fontsize=10,
+        )
+    axes[0].set_xlim(0, max(counts) * 1.28)
+
+    agent_order = (
+        "alpha_beta",
+        "pvs",
+        "beam_alpha_beta",
+        "beam_pvs",
+    )
+    lookup = {
+        (str(row["agent"]), str(row["end_char"])): float(
+            row["move_rate"]
+        )
+        for row in data["by_agent"]
+    }
+    matrix = [
+        [lookup.get((agent, end_char), 0.0) for end_char in chars]
+        for agent in agent_order
+    ]
+    image = axes[1].imshow(
+        matrix,
+        cmap="Reds",
+        aspect="auto",
+        vmin=0.0,
+        vmax=max(max(row) for row in matrix),
+    )
+    axes[1].set_xticks(range(len(chars)), chars)
+    axes[1].set_yticks(
+        range(len(agent_order)),
+        [AGENT_LABELS[agent] for agent in agent_order],
+    )
+    axes[1].set_xlabel("終端文字")
+    axes[1].set_title("手法別の使用率")
+    max_rate = max(max(row) for row in matrix)
+    for y, row in enumerate(matrix):
+        for x, value in enumerate(row):
+            axes[1].text(
+                x,
+                y,
+                f"{value:.1%}",
+                ha="center",
+                va="center",
+                fontsize=9,
+                color="white" if value >= max_rate * 0.55 else "black",
+            )
+    colorbar = fig.colorbar(image, ax=axes[1], fraction=0.035, pad=0.02)
+    format_percent_axis(colorbar.ax.yaxis)
+    colorbar.set_label("各手法内の使用率", fontsize=11)
+    axes[1].tick_params(axis="both", length=0)
+    axes[1].spines["top"].set_visible(False)
+    axes[1].spines["right"].set_visible(False)
+    save_figure(plt, fig, path)
+
+
 def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
     fields: list[str] = []
     for row in rows:
@@ -1302,7 +1490,11 @@ def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
             if key not in fields:
                 fields.append(key)
     with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fields)
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=fields,
+            lineterminator="\n",
+        )
         writer.writeheader()
         writer.writerows(rows)
 
@@ -1440,6 +1632,36 @@ def figure_data_rows(data: dict[str, Any]) -> list[dict[str, Any]]:
     return rows
 
 
+def end_char_csv_rows(data: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = [
+        {
+            "scope": "overall",
+            "agent": "",
+            "label": "全手法",
+            "rank": row["rank"],
+            "end_char": row["end_char"],
+            "move_count": row["move_count"],
+            "move_rate": row["move_rate"],
+            "total_moves": data["total_moves"],
+        }
+        for row in data["overall"]
+    ]
+    rows.extend(
+        {
+            "scope": "agent",
+            "agent": row["agent"],
+            "label": row["label"],
+            "rank": row["rank"],
+            "end_char": row["end_char"],
+            "move_count": row["move_count"],
+            "move_rate": row["move_rate"],
+            "total_moves": row["total_moves"],
+        }
+        for row in data["by_agent"]
+    )
+    return rows
+
+
 def verify_images(paths: list[Path]) -> dict[str, Any]:
     details = []
     for path in paths:
@@ -1487,6 +1709,10 @@ def write_report(
     proof_moderate = next(
         row for row in board if row["profile"] == "proof_moderate"
     )
+    end_chars = data["end_char_usage"]
+    agent_top_end_chars = [
+        row for row in end_chars["by_agent"] if row["rank"] == 1
+    ]
     lines = [
         "# 発表用グラフ再集計レポート",
         "",
@@ -1651,6 +1877,33 @@ def write_report(
         f"{proof_moderate['win_rate']:.1%}だが、"
         "各方式40局でWilson区間が重なるため、統計的な優位性や"
         "一般的な強さは断定できない。",
+        "",
+        "## 08 主要4手法の終端文字使用傾向",
+        "",
+        "- raw: `final4/raw_matches.jsonl` の各手`end_char`",
+        f"- 抽出条件: D10000、主要4手法の共通条件"
+        f"{end_chars['match_count']}局、全履歴",
+        f"- 使用手数: {end_chars['total_moves']:,}手",
+        "- 全体上位: "
+        + "、".join(
+            f"{row['end_char']} {row['move_count']:,}回"
+            f"（{row['move_rate']:.1%}）"
+            for row in end_chars["top_end_chars"][:5]
+        ),
+        "- 手法別最多: "
+        + "、".join(
+            f"{row['label']}「{row['end_char']}」"
+            f"{row['move_count']:,}回（{row['move_rate']:.1%}）"
+            for row in agent_top_end_chars
+        ),
+        f"- 「ん」終端: {end_chars['ends_with_n_count']}回"
+        f"（{end_chars['ends_with_n_rate']:.1%}）",
+        "- 変更点: 全体の使用回数と、手数差を補正した手法別使用率を"
+        "一枚へ統合。",
+        "- 発表用一文: 全手法で「る」が最も多い一方、"
+        "使用率には手法ごとの差が見られた。",
+        "- 断定できないこと: 出現頻度だけでは、その終端文字を"
+        "選ぶことが勝敗に有利だったとは断定できない。",
         "",
         "## 発表全体の結論",
         "",
@@ -1842,6 +2095,7 @@ def main() -> None:
             board_adaptive_rows,
         )
     )
+    end_char_usage = end_char_usage_summary(final_rows)
     presentation_signature, followup_signature = canonical_settings(
         presentation_manifest, followup_manifest
     )
@@ -1859,6 +2113,19 @@ def main() -> None:
         recorded_conditions_match,
     )
     validation["board_adaptive"] = board_adaptive_validation
+    validation["end_char_usage"] = {
+        "match_count": end_char_usage["match_count"],
+        "total_moves": end_char_usage["total_moves"],
+        "agent_totals": end_char_usage["agent_totals"],
+        "agent_total_matches_overall": (
+            sum(end_char_usage["agent_totals"].values())
+            == end_char_usage["total_moves"]
+        ),
+        "top_end_char": end_char_usage["top_end_chars"][0][
+            "end_char"
+        ],
+        "all_history_turns_have_end_char": True,
+    }
     data = {
         "format_version": "final_presentation_figures_v1",
         "presentation_run": str(presentation),
@@ -1891,6 +2158,7 @@ def main() -> None:
         },
         "appendix_beam_parameters": appendix,
         "board_adaptive_comparison": board_adaptive,
+        "end_char_usage": end_char_usage,
         "validation": validation,
     }
 
@@ -1903,6 +2171,7 @@ def main() -> None:
         output / "05_beam_alpha_beta_direct.png",
         output / "06_search_depth_and_strength.png",
         output / "07_board_adaptive_comparison.png",
+        output / "08_end_char_usage.png",
         output / "appendix_beam_parameters.png",
     ]
     plot_horizontal_win_rates(plt, initial_agents, paths[0])
@@ -1912,7 +2181,8 @@ def main() -> None:
     plot_direct(plt, direct, paths[4])
     plot_depth_strength(plt, four_agents, paths[5])
     plot_board_adaptive_comparison(plt, board_adaptive, paths[6])
-    plot_appendix_parameters(plt, appendix, paths[7])
+    plot_end_char_usage(plt, end_char_usage, paths[7])
+    plot_appendix_parameters(plt, appendix, paths[8])
 
     validation["images"] = verify_images(paths)
     if not all(
@@ -1935,6 +2205,20 @@ def main() -> None:
         json_text, encoding="utf-8"
     )
     write_csv(output / "figure_data.csv", figure_data_rows(data))
+    write_csv(
+        output / "end_char_usage.csv",
+        end_char_csv_rows(end_char_usage),
+    )
+    (output / "end_char_usage.json").write_text(
+        json.dumps(
+            end_char_usage,
+            ensure_ascii=False,
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     write_report(output / "figure_report.md", data, validation)
     print(output)
 

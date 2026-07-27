@@ -14,6 +14,7 @@ from create_final_presentation_figures import (  # noqa: E402
     board_adaptive_summary,
     canonical_settings,
     direct_result,
+    end_char_usage_summary,
     same_depth_effect,
 )
 from run_presentation_experiments import experiment_config  # noqa: E402
@@ -194,6 +195,32 @@ class FinalPresentationFiguresTest(unittest.TestCase):
         self.assertTrue(validation["all_profiles_have_40_games"])
         self.assertTrue(validation["all_profiles_have_balanced_seats"])
         self.assertEqual(validation["match_count"], 100)
+
+    def test_end_char_usage_uses_all_history_turns(self) -> None:
+        agents = (
+            "alpha_beta",
+            "pvs",
+            "beam_alpha_beta",
+            "beam_pvs",
+        )
+        rows = [
+            {
+                "match_id": "m1",
+                "history": [
+                    {"agent": agent, "end_char": end_char}
+                    for agent, end_char in zip(
+                        agents,
+                        ("る", "る", "う", "ん"),
+                    )
+                ],
+            }
+        ]
+        summary = end_char_usage_summary(rows, top_n=2)
+        self.assertEqual(summary["total_moves"], 4)
+        self.assertEqual(summary["top_end_chars"][0]["end_char"], "る")
+        self.assertEqual(summary["top_end_chars"][0]["move_count"], 2)
+        self.assertEqual(summary["ends_with_n_count"], 1)
+        self.assertEqual(sum(summary["agent_totals"].values()), 4)
 
 
 if __name__ == "__main__":
